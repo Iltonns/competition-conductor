@@ -75,20 +75,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "IS Arena — Gestão completa para grandes competições" },
+      { title: "IS Arena — Gestão premium para grandes competições" },
       {
         name: "description",
         content:
-          "IS Arena é a plataforma esportiva premium para organizar campeonatos, equipes, atletas, súmula digital, financeiro e página pública.",
+          "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
       },
       { name: "theme-color", content: "#0b1220" },
-      { property: "og:title", content: "IS Arena — Sports OS" },
+      { property: "og:title", content: "IS Arena — Gestão premium para grandes competições" },
       {
         property: "og:description",
-        content: "Gestão completa para grandes competições.",
+        content: "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "IS Arena — Gestão premium para grandes competições" },
+      { name: "twitter:description", content: "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
