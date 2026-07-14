@@ -59,6 +59,17 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
+
+    const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+    if (isLocalDevelopment) {
+      setBusy(false);
+      toast.info(
+        "No ambiente local, entre com e-mail e senha. O Google OAuth está disponível na versão publicada.",
+      );
+      return;
+    }
+
     const res = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
@@ -119,15 +130,35 @@ function AuthPage() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="mt-4 space-y-4">
                 <Field label="E-mail">
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
                 </Field>
                 <Field label="Senha">
-                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
                 </Field>
-                <button type="button" onClick={handleForgot} className="text-xs text-muted-foreground hover:text-neon">
+                <button
+                  type="button"
+                  onClick={handleForgot}
+                  className="text-xs text-muted-foreground hover:text-neon"
+                >
                   Esqueci minha senha
                 </button>
-                <Button type="submit" disabled={busy} className="w-full bg-neon text-neon-foreground hover:bg-neon/90">
+                <Button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full bg-neon text-neon-foreground hover:bg-neon/90"
+                >
                   {busy ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
@@ -136,15 +167,36 @@ function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="mt-4 space-y-4">
                 <Field label="Nome do organizador">
-                  <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+                  <Input
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    required
+                  />
                 </Field>
                 <Field label="E-mail">
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
                 </Field>
                 <Field label="Senha">
-                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="new-password" />
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
                 </Field>
-                <Button type="submit" disabled={busy} className="w-full bg-neon text-neon-foreground hover:bg-neon/90">
+                <Button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full bg-neon text-neon-foreground hover:bg-neon/90"
+                >
                   {busy ? "Criando..." : "Criar minha conta"}
                 </Button>
               </form>
@@ -171,8 +223,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4-5.5 4-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.5 14.6 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z" />
+      <path
+        fill="#EA4335"
+        d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4-5.5 4-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.5 14.6 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z"
+      />
     </svg>
   );
 }
-
