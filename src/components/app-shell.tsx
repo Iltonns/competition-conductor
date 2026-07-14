@@ -11,7 +11,7 @@ import {
   BarChart3,
   Wallet,
   Image as ImageIcon,
-  Whistle,
+  Flag,
   Handshake,
   Settings,
   Bell,
