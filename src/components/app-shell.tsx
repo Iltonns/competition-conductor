@@ -40,7 +40,7 @@ const NAV = [
   { to: "/stats", label: "Estatísticas", icon: BarChart3 },
   { to: "/finance", label: "Financeiro", icon: Wallet },
   { to: "/media", label: "Mídia", icon: ImageIcon },
-  { to: "/referees", label: "Arbitragem", icon: Whistle },
+  { to: "/referees", label: "Arbitragem", icon: Flag },
   { to: "/sponsors", label: "Patrocinadores", icon: Handshake },
   { to: "/settings", label: "Configurações", icon: Settings },
 ] as const;
