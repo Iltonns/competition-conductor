@@ -6,6 +6,7 @@ import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -25,6 +26,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
@@ -33,9 +35,17 @@ function AuthPage() {
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const normalizedEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (error.code === "email_not_confirmed") setAwaitingEmailConfirmation(true);
+      return toast.error(getSignInErrorMessage(error));
+    }
+    setAwaitingEmailConfirmation(false);
     toast.success("Bem-vindo de volta!");
     navigate({ to: "/dashboard", replace: true });
   }
@@ -43,18 +53,52 @@ function AuthPage() {
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
+    const normalizedEmail = email.trim().toLowerCase();
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizedEmail,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
-        data: { display_name: displayName },
+        emailRedirectTo: `${window.location.origin}/auth`,
+        data: { display_name: displayName.trim() },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Conta criada! Você já pode entrar.");
+
+    if (data.session) {
+      toast.success("Conta criada com sucesso!");
+      navigate({ to: "/dashboard", replace: true });
+      return;
+    }
+
+    setAwaitingEmailConfirmation(true);
     setTab("signin");
+    setPassword("");
+
+    if (data.user?.identities?.length === 0) {
+      toast.info(
+        "Se este e-mail já estiver cadastrado, confirme a conta ou redefina a senha antes de entrar.",
+      );
+      return;
+    }
+
+    toast.success("Cadastro recebido. Confirme seu e-mail antes de entrar.");
+  }
+
+  async function handleResendConfirmation() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return toast.error("Informe seu e-mail primeiro");
+
+    setBusy(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: normalizedEmail,
+      options: { emailRedirectTo: `${window.location.origin}/auth` },
+    });
+    setBusy(false);
+
+    if (error) return toast.error(error.message);
+    toast.success("E-mail de confirmação reenviado.");
   }
 
   async function handleGoogle() {
@@ -83,8 +127,9 @@ function AuthPage() {
   }
 
   async function handleForgot() {
-    if (!email) return toast.error("Informe seu e-mail primeiro");
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return toast.error("Informe seu e-mail primeiro");
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: window.location.origin + "/reset-password",
     });
     if (error) return toast.error(error.message);
@@ -128,6 +173,22 @@ function AuthPage() {
             </TabsList>
 
             <TabsContent value="signin">
+              {awaitingEmailConfirmation && (
+                <Alert className="mt-4 border-neon/30 bg-neon/5">
+                  <AlertTitle>Confirme seu e-mail</AlertTitle>
+                  <AlertDescription className="mt-1 text-muted-foreground">
+                    Abra o link enviado para {email.trim().toLowerCase()} antes de entrar.
+                    <button
+                      type="button"
+                      onClick={handleResendConfirmation}
+                      disabled={busy}
+                      className="mt-2 block font-medium text-neon hover:underline disabled:opacity-50"
+                    >
+                      Reenviar confirmação
+                    </button>
+                  </AlertDescription>
+                </Alert>
+              )}
               <form onSubmit={handleSignIn} className="mt-4 space-y-4">
                 <Field label="E-mail">
                   <Input
@@ -209,6 +270,18 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+function getSignInErrorMessage(error: { code?: string; message: string }) {
+  if (error.code === "email_not_confirmed") {
+    return "Confirme seu e-mail antes de entrar.";
+  }
+
+  if (error.code === "invalid_credentials") {
+    return "E-mail ou senha inválidos. Se acabou de se cadastrar, confirme seu e-mail ou redefina a senha.";
+  }
+
+  return error.message;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
