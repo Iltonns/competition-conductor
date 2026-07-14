@@ -4,3 +4,4 @@ export const Route = createFileRoute("/_authenticated/")({
     throw redirect({ to: "/dashboard" });
   },
 });
+

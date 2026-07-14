@@ -326,3 +326,4 @@ function TeamBig({ name, abbr, tone }: { name: string; abbr: string; tone: "neon
     </div>
   );
 }
+
