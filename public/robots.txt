@@ -3,3 +3,4 @@ Allow: /
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /dashboard
+

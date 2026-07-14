@@ -2,5 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ComingSoon } from "@/components/coming-soon";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  component: () => <ComingSoon title="Settings" />,
+  component: () => (
+    <ComingSoon
+      title="Configurações"
+      description="Personalize a organização, permissões, notificações e preferências da plataforma."
+    />
+  ),
 });

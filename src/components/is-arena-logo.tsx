@@ -4,11 +4,20 @@ interface LogoProps {
   className?: string;
   showWordmark?: boolean;
   size?: number;
+  markOnlyLabel?: string;
 }
 
-export function IsArenaLogo({ className, showWordmark = true, size = 32 }: LogoProps) {
+export function IsArenaLogo({
+  className,
+  showWordmark = true,
+  size = 32,
+  markOnlyLabel = "IS Arena",
+}: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <div
+      className={cn("inline-flex items-center gap-2.5", className)}
+      aria-label={markOnlyLabel}
+    >
       <svg
         width={size}
         height={size}
@@ -24,43 +33,34 @@ export function IsArenaLogo({ className, showWordmark = true, size = 32 }: LogoP
             <stop offset="1" stopColor="oklch(0.82 0.22 140)" />
           </linearGradient>
         </defs>
-        <rect x="1" y="1" width="38" height="38" rx="10" fill="oklch(0.18 0.03 260)" stroke="oklch(1 0 0 / 0.08)" />
-        {/* Speed lines */}
         <path
-          d="M4 30 L14 30"
-          stroke="url(#isa-neon)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-        <path
-          d="M4 34 L10 34"
-          stroke="url(#isa-neon)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.3"
-        />
-        {/* Stylised "I" */}
-        <rect x="10" y="9" width="4" height="22" rx="1.2" fill="white" />
-        {/* Stylised "S" — angular sports mark */}
-        <path
-          d="M30 10 L20 10 C17.8 10 16 11.8 16 14 C16 16.2 17.8 18 20 18 L26 18 C28.2 18 30 19.8 30 22 C30 24.2 28.2 26 26 26 L16 26"
-          stroke="url(#isa-neon)"
-          strokeWidth="3.2"
-          strokeLinecap="round"
+          d="M8 5.5h23.5l4 5.5-4 5.5H16.7l-3.1 3.5 3.1 3.5h14.8l4 5.5-4 5.5H8l-4-5.5 4-5.5h14.8l3.1-3.5-3.1-3.5H8l-4-5.5 4-5.5Z"
+          fill="oklch(0.12 0.02 255)"
+          stroke="oklch(1 0 0 / 0.08)"
+          strokeWidth="1"
           strokeLinejoin="round"
+        />
+        <path
+          d="M2.5 12h7.5M1.5 17h6M3 28h7"
+          stroke="url(#isa-neon)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          opacity="0.65"
+        />
+        <path d="M11.5 11h4v18h-4z" fill="white" />
+        <path
+          d="M30.5 11H21l-3.5 4.5L21 20h6l1.5 2-1.5 3h-9.5"
+          stroke="url(#isa-neon)"
+          strokeWidth="3.4"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
           fill="none"
         />
       </svg>
       {showWordmark && (
-        <div className="flex flex-col leading-none">
-          <span className="font-display text-[15px] font-extrabold tracking-tight text-foreground">
-            IS <span className="text-neon">Arena</span>
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-            Sports OS
-          </span>
-        </div>
+        <span className="font-display text-[14px] font-extrabold uppercase tracking-[-0.035em] text-foreground">
+          IS <span className="text-neon">Arena</span>
+        </span>
       )}
     </div>
   );
