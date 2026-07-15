@@ -1,10 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { teamSchema, type TeamFormValues } from "../schemas/team.schema";
+import { uploadTeamImage } from "../services/team-media.service";
 import type { Team, TeamInput } from "../types/team.types";
 import { slugifyTeamName } from "../utils/team-utils";
 
@@ -24,8 +27,6 @@ const textFields = [
   ["instagram", "Instagram", "@equipe"],
   ["facebook", "Facebook", "Perfil ou página"],
   ["website", "Site", "https://exemplo.com"],
-  ["crest_url", "URL do escudo", "https://..."],
-  ["cover_url", "URL da capa", "https://..."],
 ] as const;
 
 function defaults(team?: Team): TeamFormValues {
@@ -72,14 +73,55 @@ export function TeamForm({
     resolver: zodResolver(teamSchema),
     defaultValues: defaults(team),
   });
-  const submit = async (values: TeamFormValues) => {
-    const input: TeamInput = {
-      ...values,
-      slug: values.slug || slugifyTeamName(values.name),
-      foundation_year: values.foundation_year === "" ? undefined : Number(values.foundation_year),
+  const [crestFile, setCrestFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [crestPreview, setCrestPreview] = useState(team?.crest_url ?? "");
+  const [coverPreview, setCoverPreview] = useState(team?.cover_url ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (crestPreview.startsWith("blob:")) URL.revokeObjectURL(crestPreview);
+      if (coverPreview.startsWith("blob:")) URL.revokeObjectURL(coverPreview);
     };
-    await onSubmit(input);
+  }, [coverPreview, crestPreview]);
+
+  const selectImage = (
+    file: File | undefined,
+    setFile: (file: File | null) => void,
+    setPreview: (url: string) => void,
+  ) => {
+    if (!file) return;
+    setUploadError(null);
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
   };
+
+  const submit = async (values: TeamFormValues) => {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const [crestUrl, coverUrl] = await Promise.all([
+        crestFile ? uploadTeamImage(crestFile, "crest") : Promise.resolve(values.crest_url),
+        coverFile ? uploadTeamImage(coverFile, "cover") : Promise.resolve(values.cover_url),
+      ]);
+      const input: TeamInput = {
+        ...values,
+        crest_url: crestUrl,
+        cover_url: coverUrl,
+        slug: values.slug || slugifyTeamName(values.name),
+        foundation_year: values.foundation_year === "" ? undefined : Number(values.foundation_year),
+      };
+      await onSubmit(input);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Não foi possível enviar a imagem.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isPending = pending || uploading;
 
   return (
     <form onSubmit={form.handleSubmit(submit)} className="space-y-6" noValidate>
@@ -92,17 +134,28 @@ export function TeamForm({
             <Input {...form.register(name)} placeholder={placeholder} />
           </Field>
         ))}
-        <Field label="Cor principal" error={form.formState.errors.primary_color?.message}>
-          <Input {...form.register("primary_color")} placeholder="#B6FF00" />
-        </Field>
-        <Field label="Cor secundária" error={form.formState.errors.secondary_color?.message}>
-          <Input {...form.register("secondary_color")} placeholder="#111827" />
-        </Field>
-        {textFields.slice(15).map(([name, label, placeholder]) => (
-          <Field key={name} label={label} error={form.formState.errors[name]?.message}>
-            <Input {...form.register(name)} placeholder={placeholder} />
-          </Field>
-        ))}
+        <ImageField
+          label="Escudo"
+          kind="crest"
+          preview={crestPreview}
+          onSelect={(file) => selectImage(file, setCrestFile, setCrestPreview)}
+          onClear={() => {
+            setCrestFile(null);
+            setCrestPreview("");
+            form.setValue("crest_url", "");
+          }}
+        />
+        <ImageField
+          label="Capa"
+          kind="cover"
+          preview={coverPreview}
+          onSelect={(file) => selectImage(file, setCoverFile, setCoverPreview)}
+          onClear={() => {
+            setCoverFile(null);
+            setCoverPreview("");
+            form.setValue("cover_url", "");
+          }}
+        />
       </FormSection>
 
       <FormSection
@@ -126,17 +179,19 @@ export function TeamForm({
             {...form.register("foundation_year")}
           />
         </Field>
-        <Field label="Descrição" error={form.formState.errors.description?.message} wide>
-          <Textarea
-            rows={3}
-            {...form.register("description")}
-            placeholder="Apresentação curta da equipe"
-          />
-        </Field>
         <Field label="História" error={form.formState.errors.history?.message} wide>
           <Textarea rows={4} {...form.register("history")} placeholder="História e conquistas" />
         </Field>
       </FormSection>
+
+      {uploadError && (
+        <p
+          className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
+          role="alert"
+        >
+          {uploadError}
+        </p>
+      )}
 
       <FormSection
         title="Contato e administração"
@@ -165,14 +220,80 @@ export function TeamForm({
       </FormSection>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={pending}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={pending}>
-          {pending ? "Salvando..." : team ? "Salvar alterações" : "Cadastrar equipe"}
+        <Button type="submit" disabled={isPending}>
+          {uploading
+            ? "Enviando imagens..."
+            : pending
+              ? "Salvando..."
+              : team
+                ? "Salvar alterações"
+                : "Cadastrar equipe"}
         </Button>
       </div>
     </form>
+  );
+}
+
+function ImageField({
+  label,
+  kind,
+  preview,
+  onSelect,
+  onClear,
+}: {
+  label: string;
+  kind: "crest" | "cover";
+  preview: string;
+  onSelect: (file?: File) => void;
+  onClear: () => void;
+}) {
+  const id = useId();
+  return (
+    <div className={kind === "cover" ? "space-y-2 sm:col-span-2" : "space-y-2"}>
+      <Label htmlFor={id}>{label}</Label>
+      <div
+        className={
+          kind === "cover"
+            ? "relative h-32 overflow-hidden rounded-xl border border-dashed border-white/15 bg-white/[0.03]"
+            : "relative h-32 max-w-40 overflow-hidden rounded-xl border border-dashed border-white/15 bg-white/[0.03]"
+        }
+      >
+        {preview ? (
+          <img
+            src={preview}
+            alt={`Prévia de ${label.toLowerCase()}`}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="grid h-full place-items-center text-muted-foreground">
+            <ImagePlus className="h-7 w-7" />
+          </div>
+        )}
+        {preview && (
+          <Button
+            type="button"
+            size="icon"
+            variant="destructive"
+            className="absolute right-2 top-2 h-7 w-7"
+            onClick={onClear}
+            aria-label={`Remover ${label.toLowerCase()}`}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+      <Input
+        id={id}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+        onChange={(event) => onSelect(event.target.files?.[0])}
+        className="file:mr-3 file:border-0 file:bg-transparent file:text-xs"
+      />
+      <p className="text-[10px] text-muted-foreground">JPG, PNG, WebP ou HEIC, até 5 MB.</p>
+    </div>
   );
 }
 
