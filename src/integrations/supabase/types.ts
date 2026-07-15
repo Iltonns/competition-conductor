@@ -817,51 +817,204 @@ export type Database = {
           },
         ];
       };
-      teams: {
+      championship_teams: {
         Row: {
-          championship_id: string | null;
-          city: string | null;
+          approved_at: string | null;
+          approved_by: string | null;
+          archived_at: string | null;
+          category_id: string | null;
+          championship_id: string;
           created_at: string;
           created_by: string | null;
-          crest_url: string | null;
+          fee_amount: number;
+          group_id: string | null;
           id: string;
-          name: string;
+          joined_at: string;
+          metadata: Json;
+          notes: string | null;
           organization_id: string;
-          primary_color: string | null;
-          short_name: string | null;
+          payment_status: string;
+          registration_number: string | null;
+          seed: number | null;
           status: string;
+          submitted_at: string | null;
+          team_id: string;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
-          championship_id?: string | null;
-          city?: string | null;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          archived_at?: string | null;
+          category_id?: string | null;
+          championship_id: string;
           created_at?: string;
           created_by?: string | null;
-          crest_url?: string | null;
+          fee_amount?: number;
+          group_id?: string | null;
           id?: string;
-          name: string;
+          joined_at?: string;
+          metadata?: Json;
+          notes?: string | null;
           organization_id: string;
-          primary_color?: string | null;
-          short_name?: string | null;
+          payment_status?: string;
+          registration_number?: string | null;
+          seed?: number | null;
           status?: string;
+          submitted_at?: string | null;
+          team_id: string;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          archived_at?: string | null;
+          category_id?: string | null;
+          championship_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          fee_amount?: number;
+          group_id?: string | null;
+          id?: string;
+          joined_at?: string;
+          metadata?: Json;
+          notes?: string | null;
+          organization_id?: string;
+          payment_status?: string;
+          registration_number?: string | null;
+          seed?: number | null;
+          status?: string;
+          submitted_at?: string | null;
+          team_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "championship_teams_championship_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "championship_teams_team_same_org_fkey";
+            columns: ["team_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      teams: {
+        Row: {
+          abbreviation: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string | null;
+          championship_id: string | null;
+          city: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          crest_url: string | null;
+          description: string | null;
+          email: string | null;
+          facebook: string | null;
+          foundation_year: number | null;
+          gender: string | null;
+          history: string | null;
+          id: string;
+          instagram: string | null;
+          internal_notes: string | null;
+          name: string;
+          neighborhood: string | null;
+          organization_id: string;
+          phone: string | null;
+          primary_color: string | null;
+          registration_number: string | null;
+          secondary_color: string | null;
+          short_name: string | null;
+          slug: string | null;
+          state: string | null;
+          status: string;
+          updated_at: string;
+          updated_by: string | null;
+          website: string | null;
+          whatsapp: string | null;
+        };
+        Insert: {
+          abbreviation?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          category?: string | null;
           championship_id?: string | null;
           city?: string | null;
+          cover_url?: string | null;
           created_at?: string;
           created_by?: string | null;
           crest_url?: string | null;
+          description?: string | null;
+          email?: string | null;
+          facebook?: string | null;
+          foundation_year?: number | null;
+          gender?: string | null;
+          history?: string | null;
           id?: string;
-          name?: string;
-          organization_id?: string;
+          instagram?: string | null;
+          internal_notes?: string | null;
+          name: string;
+          neighborhood?: string | null;
+          organization_id: string;
+          phone?: string | null;
           primary_color?: string | null;
+          registration_number?: string | null;
+          secondary_color?: string | null;
           short_name?: string | null;
+          slug?: string | null;
+          state?: string | null;
           status?: string;
           updated_at?: string;
           updated_by?: string | null;
+          website?: string | null;
+          whatsapp?: string | null;
+        };
+        Update: {
+          abbreviation?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          category?: string | null;
+          championship_id?: string | null;
+          city?: string | null;
+          cover_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          crest_url?: string | null;
+          description?: string | null;
+          email?: string | null;
+          facebook?: string | null;
+          foundation_year?: number | null;
+          gender?: string | null;
+          history?: string | null;
+          id?: string;
+          instagram?: string | null;
+          internal_notes?: string | null;
+          name?: string;
+          neighborhood?: string | null;
+          organization_id?: string;
+          phone?: string | null;
+          primary_color?: string | null;
+          registration_number?: string | null;
+          secondary_color?: string | null;
+          short_name?: string | null;
+          slug?: string | null;
+          state?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          website?: string | null;
+          whatsapp?: string | null;
         };
         Relationships: [
           {
@@ -925,6 +1078,36 @@ export type Database = {
     };
     Functions: {
       can_administer_org: { Args: { _org: string }; Returns: boolean };
+      create_team_for_championship: {
+        Args: {
+          p_abbreviation?: string;
+          p_category?: string;
+          p_championship_id: string;
+          p_city?: string;
+          p_cover_url?: string;
+          p_crest_url?: string;
+          p_description?: string;
+          p_email?: string;
+          p_facebook?: string;
+          p_foundation_year?: number;
+          p_gender?: string;
+          p_history?: string;
+          p_instagram?: string;
+          p_internal_notes?: string;
+          p_name: string;
+          p_neighborhood?: string;
+          p_phone?: string;
+          p_primary_color?: string;
+          p_registration_number?: string;
+          p_secondary_color?: string;
+          p_short_name?: string;
+          p_slug?: string;
+          p_state?: string;
+          p_website?: string;
+          p_whatsapp?: string;
+        };
+        Returns: Database["public"]["Tables"]["teams"]["Row"];
+      };
       create_championship: {
         Args: {
           p_category_name?: string;
@@ -958,6 +1141,45 @@ export type Database = {
         Returns: boolean;
       };
       is_org_member: { Args: { _org: string }; Returns: boolean };
+      remove_team_from_championship: {
+        Args: { p_championship_id: string; p_team_id: string };
+        Returns: undefined;
+      };
+      set_team_championship_archived: {
+        Args: { p_archived: boolean; p_championship_id: string; p_team_id: string };
+        Returns: Database["public"]["Tables"]["championship_teams"]["Row"];
+      };
+      update_team_for_championship: {
+        Args: {
+          p_abbreviation?: string;
+          p_category?: string;
+          p_championship_id: string;
+          p_city?: string;
+          p_cover_url?: string;
+          p_crest_url?: string;
+          p_description?: string;
+          p_email?: string;
+          p_facebook?: string;
+          p_foundation_year?: number;
+          p_gender?: string;
+          p_history?: string;
+          p_instagram?: string;
+          p_internal_notes?: string;
+          p_name: string;
+          p_neighborhood?: string;
+          p_phone?: string;
+          p_primary_color?: string;
+          p_registration_number?: string;
+          p_secondary_color?: string;
+          p_short_name?: string;
+          p_slug?: string;
+          p_state?: string;
+          p_team_id: string;
+          p_website?: string;
+          p_whatsapp?: string;
+        };
+        Returns: Database["public"]["Tables"]["teams"]["Row"];
+      };
     };
     Enums: {
       app_role: "owner" | "admin" | "editor" | "viewer";
