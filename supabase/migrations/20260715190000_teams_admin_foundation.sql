@@ -369,11 +369,24 @@ BEGIN
 END
 $$;
 
-REVOKE ALL ON FUNCTION public.create_team_for_championship(uuid,text,text,text,text,text,text,text,text,text,text,text,integer,text,text,text,text,text,text,text,text,text,text,text,text) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION public.update_team_for_championship(uuid,uuid,text,text,text,text,text,text,text,text,text,text,text,integer,text,text,text,text,text,text,text,text,text,text,text,text) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION public.set_team_championship_archived(uuid,uuid,boolean) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION public.remove_team_from_championship(uuid,uuid) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.create_team_for_championship(uuid,text,text,text,text,text,text,text,text,text,text,text,integer,text,text,text,text,text,text,text,text,text,text,text,text,text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.update_team_for_championship(uuid,uuid,text,text,text,text,text,text,text,text,text,text,text,integer,text,text,text,text,text,text,text,text,text,text,text,text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.set_team_championship_archived(uuid,uuid,boolean) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.remove_team_from_championship(uuid,uuid) TO authenticated;
+DO $$
+DECLARE
+  function_signature regprocedure;
+BEGIN
+  FOR function_signature IN
+    SELECT p.oid::regprocedure
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname IN (
+        'create_team_for_championship',
+        'update_team_for_championship',
+        'set_team_championship_archived',
+        'remove_team_from_championship'
+      )
+  LOOP
+    EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon', function_signature);
+    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', function_signature);
+  END LOOP;
+END
+$$;
