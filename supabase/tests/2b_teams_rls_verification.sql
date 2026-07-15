@@ -53,15 +53,21 @@ END
 $$;
 
 -- Falha no segundo INSERT nao deixa equipe parcial.
+RESET ROLE;
 CREATE OR REPLACE FUNCTION pg_temp.fail_team_link() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'forced link failure'; END $$;
 CREATE TRIGGER force_link_failure BEFORE INSERT ON public.championship_teams FOR EACH ROW EXECUTE FUNCTION pg_temp.fail_team_link();
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '11000000-0000-0000-0000-000000000001', true);
+SELECT set_config('request.jwt.claims', '{"sub":"11000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
 DO $$ BEGIN
   BEGIN PERFORM public.create_team_for_championship('31000000-0000-0000-0000-000000000001', 'Equipe Parcial', p_slug => 'equipe-parcial'); EXCEPTION WHEN OTHERS THEN NULL; END;
   IF EXISTS (SELECT 1 FROM public.teams WHERE slug='equipe-parcial') THEN RAISE EXCEPTION 'FAIL: equipe parcial persistiu'; END IF;
 END $$;
+RESET ROLE;
 DROP TRIGGER force_link_failure ON public.championship_teams;
 
 -- Viewer le, mas nao cria nem edita.
+SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', '11000000-0000-0000-0000-000000000002', true);
 SELECT set_config('request.jwt.claims', '{"sub":"11000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
 DO $$ BEGIN
