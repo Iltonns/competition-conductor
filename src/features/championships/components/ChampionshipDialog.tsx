@@ -45,16 +45,10 @@ const EMPTY_FORM: ChampionshipFormValues = {
 interface ChampionshipDialogProps {
   open: boolean;
   championship: Championship | null;
-  organizationId?: string;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ChampionshipDialog({
-  open,
-  championship,
-  organizationId,
-  onOpenChange,
-}: ChampionshipDialogProps) {
+export function ChampionshipDialog({ open, championship, onOpenChange }: ChampionshipDialogProps) {
   const createMutation = useCreateChampionship();
   const updateMutation = useUpdateChampionship();
   const form = useForm<ChampionshipFormValues>({
@@ -91,10 +85,9 @@ export function ChampionshipDialog({
 
     try {
       if (championship) {
-        if (!organizationId) throw new Error("Organização não identificada.");
         const changes: UpdateChampionshipDTO = { ...common, status: values.status };
         await updateMutation.mutateAsync({
-          organizationId,
+          organizationId: championship.organization_id,
           championshipId: championship.id,
           changes,
         });

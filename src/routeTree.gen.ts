@@ -27,6 +27,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedChampionshipsRouteImport } from './routes/_authenticated/championships'
 import { Route as AuthenticatedAthletesRouteImport } from './routes/_authenticated/athletes'
 import { Route as AuthenticatedChampionshipsIdRouteImport } from './routes/_authenticated/championships_.$id'
+import { Route as AuthenticatedChampionshipsIdIndexRouteImport } from './routes/_authenticated/championships_.$id.index'
+import { Route as AuthenticatedChampionshipsIdTeamsRouteImport } from './routes/_authenticated/championships_.$id.teams'
+import { Route as AuthenticatedChampionshipsIdAthletesRouteImport } from './routes/_authenticated/championships_.$id.athletes'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -119,6 +122,24 @@ const AuthenticatedChampionshipsIdRoute =
     path: '/championships/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChampionshipsIdIndexRoute =
+  AuthenticatedChampionshipsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
+const AuthenticatedChampionshipsIdTeamsRoute =
+  AuthenticatedChampionshipsIdTeamsRouteImport.update({
+    id: '/teams',
+    path: '/teams',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
+const AuthenticatedChampionshipsIdAthletesRoute =
+  AuthenticatedChampionshipsIdAthletesRouteImport.update({
+    id: '/athletes',
+    path: '/athletes',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,7 +158,10 @@ export interface FileRoutesByFullPath {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
-  '/championships/$id': typeof AuthenticatedChampionshipsIdRoute
+  '/championships/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
+  '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
+  '/championships/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRoute
+  '/championships/$id/': typeof AuthenticatedChampionshipsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,7 +180,9 @@ export interface FileRoutesByTo {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
-  '/championships/$id': typeof AuthenticatedChampionshipsIdRoute
+  '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
+  '/championships/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRoute
+  '/championships/$id': typeof AuthenticatedChampionshipsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,7 +203,10 @@ export interface FileRoutesById {
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
-  '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRoute
+  '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
+  '/_authenticated/championships_/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
+  '/_authenticated/championships_/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRoute
+  '/_authenticated/championships_/$id/': typeof AuthenticatedChampionshipsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,6 +228,9 @@ export interface FileRouteTypes {
     | '/teams'
     | '/c/$slug'
     | '/championships/$id'
+    | '/championships/$id/athletes'
+    | '/championships/$id/teams'
+    | '/championships/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +249,8 @@ export interface FileRouteTypes {
     | '/stats'
     | '/teams'
     | '/c/$slug'
+    | '/championships/$id/athletes'
+    | '/championships/$id/teams'
     | '/championships/$id'
   id:
     | '__root__'
@@ -238,6 +272,9 @@ export interface FileRouteTypes {
     | '/_authenticated/teams'
     | '/c/$slug'
     | '/_authenticated/championships_/$id'
+    | '/_authenticated/championships_/$id/athletes'
+    | '/_authenticated/championships_/$id/teams'
+    | '/_authenticated/championships_/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -376,8 +413,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChampionshipsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/championships_/$id/': {
+      id: '/_authenticated/championships_/$id/'
+      path: '/'
+      fullPath: '/championships/$id/'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
+    '/_authenticated/championships_/$id/teams': {
+      id: '/_authenticated/championships_/$id/teams'
+      path: '/teams'
+      fullPath: '/championships/$id/teams'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdTeamsRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
+    '/_authenticated/championships_/$id/athletes': {
+      id: '/_authenticated/championships_/$id/athletes'
+      path: '/athletes'
+      fullPath: '/championships/$id/athletes'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdAthletesRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
   }
 }
+
+interface AuthenticatedChampionshipsIdRouteChildren {
+  AuthenticatedChampionshipsIdAthletesRoute: typeof AuthenticatedChampionshipsIdAthletesRoute
+  AuthenticatedChampionshipsIdTeamsRoute: typeof AuthenticatedChampionshipsIdTeamsRoute
+  AuthenticatedChampionshipsIdIndexRoute: typeof AuthenticatedChampionshipsIdIndexRoute
+}
+
+const AuthenticatedChampionshipsIdRouteChildren: AuthenticatedChampionshipsIdRouteChildren =
+  {
+    AuthenticatedChampionshipsIdAthletesRoute:
+      AuthenticatedChampionshipsIdAthletesRoute,
+    AuthenticatedChampionshipsIdTeamsRoute:
+      AuthenticatedChampionshipsIdTeamsRoute,
+    AuthenticatedChampionshipsIdIndexRoute:
+      AuthenticatedChampionshipsIdIndexRoute,
+  }
+
+const AuthenticatedChampionshipsIdRouteWithChildren =
+  AuthenticatedChampionshipsIdRoute._addFileChildren(
+    AuthenticatedChampionshipsIdRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAthletesRoute: typeof AuthenticatedAthletesRoute
@@ -392,7 +471,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStandingsRoute: typeof AuthenticatedStandingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
-  AuthenticatedChampionshipsIdRoute: typeof AuthenticatedChampionshipsIdRoute
+  AuthenticatedChampionshipsIdRoute: typeof AuthenticatedChampionshipsIdRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -408,7 +487,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStandingsRoute: AuthenticatedStandingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
-  AuthenticatedChampionshipsIdRoute: AuthenticatedChampionshipsIdRoute,
+  AuthenticatedChampionshipsIdRoute:
+    AuthenticatedChampionshipsIdRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

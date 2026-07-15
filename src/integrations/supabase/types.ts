@@ -22,6 +22,7 @@ export type Database = {
           status: string;
           team_id: string | null;
           updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           birth_date?: string | null;
@@ -36,6 +37,7 @@ export type Database = {
           status?: string;
           team_id?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           birth_date?: string | null;
@@ -50,6 +52,7 @@ export type Database = {
           status?: string;
           team_id?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [
           {
@@ -65,6 +68,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "teams";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "athletes_team_same_org_fkey";
+            columns: ["team_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id", "organization_id"];
           },
         ];
       };
@@ -84,6 +94,7 @@ export type Database = {
           starts_at: string | null;
           status: Database["public"]["Enums"]["championship_status"];
           updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           cover_url?: string | null;
@@ -100,6 +111,7 @@ export type Database = {
           starts_at?: string | null;
           status?: Database["public"]["Enums"]["championship_status"];
           updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           cover_url?: string | null;
@@ -116,10 +128,254 @@ export type Database = {
           starts_at?: string | null;
           status?: Database["public"]["Enums"]["championship_status"];
           updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: "championships_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      championship_categories: {
+        Row: {
+          championship_id: string;
+          code: string | null;
+          created_at: string;
+          created_by: string | null;
+          ends_at: string | null;
+          gender: string;
+          id: string;
+          maximum_age: number | null;
+          minimum_age: number | null;
+          name: string;
+          organization_id: string;
+          settings: Json;
+          starts_at: string | null;
+          status: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          championship_id: string;
+          code?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string | null;
+          gender?: string;
+          id?: string;
+          maximum_age?: number | null;
+          minimum_age?: number | null;
+          name: string;
+          organization_id: string;
+          settings?: Json;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          championship_id?: string;
+          code?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string | null;
+          gender?: string;
+          id?: string;
+          maximum_age?: number | null;
+          minimum_age?: number | null;
+          name?: string;
+          organization_id?: string;
+          settings?: Json;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "championship_categories_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "championship_categories_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      championship_settings: {
+        Row: {
+          allow_draw: boolean;
+          championship_id: string;
+          competition_format: string;
+          created_at: string;
+          created_by: string | null;
+          custom_rules: Json;
+          group_count: number | null;
+          id: string;
+          legs: number;
+          max_athletes_per_team: number | null;
+          minimum_rest_hours: number;
+          organization_id: string;
+          points_draw: number;
+          points_loss: number;
+          points_win: number;
+          public_theme: Json;
+          qualifiers_per_group: number | null;
+          third_place_match: boolean;
+          tiebreakers: string[];
+          updated_at: string;
+          updated_by: string | null;
+          uses_extra_time: boolean;
+          uses_penalties: boolean;
+          wo_score_against: number;
+          wo_score_for: number;
+          yellow_cards_for_suspension: number;
+        };
+        Insert: {
+          allow_draw?: boolean;
+          championship_id: string;
+          competition_format?: string;
+          created_at?: string;
+          created_by?: string | null;
+          custom_rules?: Json;
+          group_count?: number | null;
+          id?: string;
+          legs?: number;
+          max_athletes_per_team?: number | null;
+          minimum_rest_hours?: number;
+          organization_id: string;
+          points_draw?: number;
+          points_loss?: number;
+          points_win?: number;
+          public_theme?: Json;
+          qualifiers_per_group?: number | null;
+          third_place_match?: boolean;
+          tiebreakers?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+          uses_extra_time?: boolean;
+          uses_penalties?: boolean;
+          wo_score_against?: number;
+          wo_score_for?: number;
+          yellow_cards_for_suspension?: number;
+        };
+        Update: {
+          allow_draw?: boolean;
+          championship_id?: string;
+          competition_format?: string;
+          created_at?: string;
+          created_by?: string | null;
+          custom_rules?: Json;
+          group_count?: number | null;
+          id?: string;
+          legs?: number;
+          max_athletes_per_team?: number | null;
+          minimum_rest_hours?: number;
+          organization_id?: string;
+          points_draw?: number;
+          points_loss?: number;
+          points_win?: number;
+          public_theme?: Json;
+          qualifiers_per_group?: number | null;
+          third_place_match?: boolean;
+          tiebreakers?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+          uses_extra_time?: boolean;
+          uses_penalties?: boolean;
+          wo_score_against?: number;
+          wo_score_for?: number;
+          yellow_cards_for_suspension?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "championship_settings_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: true;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "championship_settings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      competition_stages: {
+        Row: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          ends_at: string | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          sequence: number;
+          settings: Json;
+          category_id: string | null;
+          stage_type: string;
+          starts_at: string | null;
+          status: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          championship_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string | null;
+          id?: string;
+          name: string;
+          organization_id: string;
+          sequence?: number;
+          settings?: Json;
+          category_id?: string | null;
+          stage_type: string;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          championship_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string | null;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          sequence?: number;
+          settings?: Json;
+          category_id?: string | null;
+          stage_type?: string;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "competition_stages_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "competition_stages_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -140,6 +396,7 @@ export type Database = {
           period: string | null;
           team_id: string | null;
           type: Database["public"]["Enums"]["event_type"];
+          updated_by: string | null;
         };
         Insert: {
           athlete_id?: string | null;
@@ -153,6 +410,7 @@ export type Database = {
           period?: string | null;
           team_id?: string | null;
           type: Database["public"]["Enums"]["event_type"];
+          updated_by?: string | null;
         };
         Update: {
           athlete_id?: string | null;
@@ -166,6 +424,7 @@ export type Database = {
           period?: string | null;
           team_id?: string | null;
           type?: Database["public"]["Enums"]["event_type"];
+          updated_by?: string | null;
         };
         Relationships: [
           {
@@ -196,6 +455,27 @@ export type Database = {
             referencedRelation: "teams";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "match_events_match_same_org_fkey";
+            columns: ["match_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "match_events_team_same_org_fkey";
+            columns: ["team_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "match_events_athlete_same_org_fkey";
+            columns: ["athlete_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "athletes";
+            referencedColumns: ["id", "organization_id"];
+          },
         ];
       };
       matches: {
@@ -214,6 +494,7 @@ export type Database = {
           scheduled_at: string | null;
           status: Database["public"]["Enums"]["match_status"];
           updated_at: string;
+          updated_by: string | null;
           venue: string | null;
         };
         Insert: {
@@ -231,6 +512,7 @@ export type Database = {
           scheduled_at?: string | null;
           status?: Database["public"]["Enums"]["match_status"];
           updated_at?: string;
+          updated_by?: string | null;
           venue?: string | null;
         };
         Update: {
@@ -248,6 +530,7 @@ export type Database = {
           scheduled_at?: string | null;
           status?: Database["public"]["Enums"]["match_status"];
           updated_at?: string;
+          updated_by?: string | null;
           venue?: string | null;
         };
         Relationships: [
@@ -279,6 +562,27 @@ export type Database = {
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "matches_championship_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "matches_home_team_same_org_fkey";
+            columns: ["home_team_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "matches_away_team_same_org_fkey";
+            columns: ["away_team_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id", "organization_id"];
+          },
         ];
       };
       news: {
@@ -296,6 +600,7 @@ export type Database = {
           summary: string | null;
           title: string;
           updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           author?: string | null;
@@ -311,6 +616,7 @@ export type Database = {
           summary?: string | null;
           title: string;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           author?: string | null;
@@ -326,6 +632,7 @@ export type Database = {
           summary?: string | null;
           title?: string;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [
           {
@@ -341,6 +648,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "news_championship_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
           },
         ];
       };
@@ -384,6 +698,7 @@ export type Database = {
           plan_expires_at: string | null;
           slug: string | null;
           updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           created_at?: string;
@@ -395,6 +710,7 @@ export type Database = {
           plan_expires_at?: string | null;
           slug?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           created_at?: string;
@@ -406,6 +722,7 @@ export type Database = {
           plan_expires_at?: string | null;
           slug?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [];
       };
@@ -447,6 +764,7 @@ export type Database = {
           organization_id: string;
           tier: string | null;
           updated_at: string;
+          updated_by: string | null;
           website: string | null;
         };
         Insert: {
@@ -459,6 +777,7 @@ export type Database = {
           organization_id: string;
           tier?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
           website?: string | null;
         };
         Update: {
@@ -471,6 +790,7 @@ export type Database = {
           organization_id?: string;
           tier?: string | null;
           updated_at?: string;
+          updated_by?: string | null;
           website?: string | null;
         };
         Relationships: [
@@ -488,6 +808,13 @@ export type Database = {
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "sponsors_championship_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
         ];
       };
       teams: {
@@ -504,6 +831,7 @@ export type Database = {
           short_name: string | null;
           status: string;
           updated_at: string;
+          updated_by: string | null;
         };
         Insert: {
           championship_id?: string | null;
@@ -518,6 +846,7 @@ export type Database = {
           short_name?: string | null;
           status?: string;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Update: {
           championship_id?: string | null;
@@ -532,6 +861,7 @@ export type Database = {
           short_name?: string | null;
           status?: string;
           updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [
           {
@@ -547,6 +877,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "teams_championship_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
           },
         ];
       };
@@ -587,6 +924,31 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      can_administer_org: { Args: { _org: string }; Returns: boolean };
+      create_championship: {
+        Args: {
+          p_category_name?: string;
+          p_create_initial_stage?: boolean;
+          p_description?: string;
+          p_ends_at?: string;
+          p_is_public?: boolean;
+          p_name: string;
+          p_organization_id: string;
+          p_season?: string;
+          p_slug: string;
+          p_starts_at?: string;
+        };
+        Returns: Database["public"]["Tables"]["championships"]["Row"];
+      };
+      current_user_has_role: {
+        Args: { _org: string; _role: Database["public"]["Enums"]["app_role"] };
+        Returns: boolean;
+      };
+      delete_championship: { Args: { p_championship_id: string }; Returns: undefined };
+      get_championship_context: {
+        Args: { p_championship_id: string };
+        Returns: Database["public"]["Tables"]["championships"]["Row"];
+      };
       has_role: {
         Args: {
           _org: string;

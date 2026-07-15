@@ -5,9 +5,9 @@ export function useCreateChampionship() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createChampionship,
-    onSuccess: (championship) =>
+    onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: championshipKeys.organization(championship.organization_id),
+        queryKey: championshipKeys.all,
       }),
   });
 }

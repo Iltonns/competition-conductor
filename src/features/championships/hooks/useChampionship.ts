@@ -4,36 +4,21 @@ import {
   getChampionship,
   getChampionshipOverview,
 } from "../services/championship.service";
-import { useCurrentOrganizationId } from "./useChampionships";
+import type { Championship } from "../types/championship.types";
 
 export function useChampionship(championshipId: string) {
-  const organization = useCurrentOrganizationId();
-  const championship = useQuery({
-    queryKey: championshipKeys.detail(organization.data ?? "pending", championshipId),
-    queryFn: () => getChampionship(organization.data!, championshipId),
-    enabled: Boolean(organization.data && championshipId),
+  return useQuery({
+    queryKey: championshipKeys.detail(championshipId),
+    queryFn: () => getChampionship(championshipId),
+    enabled: Boolean(championshipId),
+    retry: false,
   });
-
-  return {
-    ...championship,
-    organizationId: organization.data,
-    isLoading: organization.isLoading || championship.isLoading,
-    error: organization.error ?? championship.error,
-  };
 }
 
-export function useChampionshipOverview(championshipId: string) {
-  const organization = useCurrentOrganizationId();
-  const overview = useQuery({
-    queryKey: championshipKeys.overview(organization.data ?? "pending", championshipId),
-    queryFn: () => getChampionshipOverview(organization.data!, championshipId),
-    enabled: Boolean(organization.data && championshipId),
+export function useChampionshipOverview(championship?: Championship) {
+  return useQuery({
+    queryKey: championshipKeys.overview(championship?.id ?? "pending"),
+    queryFn: () => getChampionshipOverview(championship!.organization_id, championship!.id),
+    enabled: Boolean(championship),
   });
-
-  return {
-    ...overview,
-    organizationId: organization.data,
-    isLoading: organization.isLoading || overview.isLoading,
-    error: organization.error ?? overview.error,
-  };
 }

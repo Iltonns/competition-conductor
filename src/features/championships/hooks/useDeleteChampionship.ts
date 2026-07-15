@@ -5,11 +5,11 @@ import type { DeleteChampionshipVariables } from "../types/championship.types";
 export function useDeleteChampionship() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ organizationId, championshipId }: DeleteChampionshipVariables) =>
-      deleteChampionship(organizationId, championshipId),
-    onSuccess: (_data, variables) =>
+    mutationFn: ({ championshipId }: DeleteChampionshipVariables) =>
+      deleteChampionship(championshipId),
+    onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: championshipKeys.organization(variables.organizationId),
+        queryKey: championshipKeys.all,
       }),
   });
 }

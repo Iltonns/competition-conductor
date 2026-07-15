@@ -1,19 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import {
+  createChampionshipAtomic,
   deleteChampionship as deleteRecord,
   fetchChampionship,
-  fetchChampionshipDependencies,
   fetchChampionshipOverview,
   fetchChampionships,
-  findOrganizationIdForUser,
-  insertChampionship,
-  insertChampionshipSettings,
-  insertDefaultChampionshipCategory,
+  fetchMemberOrganizationIds,
+  fetchWritableOrganizationIds,
   updateChampionship as updateRecord,
 } from "../api/championships";
+import {
+  ChampionshipDomainError,
+  withChampionshipErrorTranslation,
+} from "../errors/championship-errors";
 import type {
   Championship,
-  ChampionshipDependencies,
   ChampionshipOverview,
   CreateChampionshipDTO,
   UpdateChampionshipDTO,
@@ -21,26 +22,11 @@ import type {
 
 export const championshipKeys = {
   all: ["championships"] as const,
-  organization: (organizationId: string) => [...championshipKeys.all, organizationId] as const,
-  list: (organizationId: string) =>
-    [...championshipKeys.organization(organizationId), "list"] as const,
-  detail: (organizationId: string, championshipId: string) =>
-    [...championshipKeys.organization(organizationId), "detail", championshipId] as const,
-  overview: (organizationId: string, championshipId: string) =>
-    [...championshipKeys.detail(organizationId, championshipId), "overview"] as const,
+  list: () => [...championshipKeys.all, "list"] as const,
+  detail: (championshipId: string) => [...championshipKeys.all, "detail", championshipId] as const,
+  overview: (championshipId: string) =>
+    [...championshipKeys.detail(championshipId), "overview"] as const,
 };
-
-export class ChampionshipHasDependenciesError extends Error {
-  constructor(public readonly dependencies: ChampionshipDependencies) {
-    const labels = [
-      dependencies.matches && `${dependencies.matches} partida(s)`,
-      dependencies.registrations && `${dependencies.registrations} inscrição(ões)`,
-      dependencies.teams && `${dependencies.teams} equipe(s)`,
-    ].filter(Boolean);
-    super(`Este campeonato não pode ser excluído porque possui ${labels.join(", ")} vinculada(s).`);
-    this.name = "ChampionshipHasDependenciesError";
-  }
-}
 
 export function slugifyChampionshipName(name: string): string {
   return name
@@ -52,93 +38,55 @@ export function slugifyChampionshipName(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-async function requireContext(): Promise<{ userId: string; organizationId: string }> {
+async function requireUserId(): Promise<string> {
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new Error("Sua sessão expirou. Entre novamente.");
-  return {
-    userId: data.user.id,
-    organizationId: await findOrganizationIdForUser(data.user.id),
-  };
+  if (error || !data.user) throw new ChampionshipDomainError("AUTHENTICATION_REQUIRED");
+  return data.user.id;
 }
 
-export async function getCurrentOrganizationId(): Promise<string> {
-  return (await requireContext()).organizationId;
+async function resolveSingleWritableOrganization(): Promise<string> {
+  const organizationIds = await fetchWritableOrganizationIds(await requireUserId());
+  if (organizationIds.length === 0) throw new ChampionshipDomainError("FORBIDDEN");
+  if (organizationIds.length > 1)
+    throw new ChampionshipDomainError("ORGANIZATION_SELECTION_REQUIRED");
+  return organizationIds[0];
 }
 
-export async function listChampionships(organizationId: string): Promise<Championship[]> {
-  if (!organizationId) throw new Error("Organização não informada.");
-  return fetchChampionships(organizationId);
+export async function listChampionships(): Promise<Championship[]> {
+  return withChampionshipErrorTranslation(async () =>
+    fetchChampionships(await fetchMemberOrganizationIds(await requireUserId())),
+  );
 }
 
-export async function getChampionship(
-  organizationId: string,
-  championshipId: string,
-): Promise<Championship> {
-  if (!organizationId) throw new Error("Organização não informada.");
-  if (!championshipId) throw new Error("Campeonato não informado.");
-  return fetchChampionship(organizationId, championshipId);
+export async function getChampionship(championshipId: string): Promise<Championship> {
+  if (!championshipId) throw new ChampionshipDomainError("NOT_FOUND");
+  return withChampionshipErrorTranslation(() => fetchChampionship(championshipId));
 }
 
 export async function getChampionshipOverview(
   organizationId: string,
   championshipId: string,
 ): Promise<ChampionshipOverview> {
-  if (!organizationId) throw new Error("Organização não informada.");
-  if (!championshipId) throw new Error("Campeonato não informado.");
-  return fetchChampionshipOverview(organizationId, championshipId);
+  if (!organizationId) throw new ChampionshipDomainError("INVALID_ORGANIZATION");
+  if (!championshipId) throw new ChampionshipDomainError("NOT_FOUND");
+  return withChampionshipErrorTranslation(() =>
+    fetchChampionshipOverview(organizationId, championshipId),
+  );
 }
 
 export async function createChampionship(input: CreateChampionshipDTO): Promise<Championship> {
-  const { userId, organizationId } = await requireContext();
-  const baseSlug = slugifyChampionshipName(input.name);
-  if (!baseSlug) throw new Error("Não foi possível gerar um endereço para o campeonato.");
-
-  let championship: Championship | null = null;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const slug = attempt === 0 ? baseSlug : `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
-    try {
-      championship = await insertChampionship({
-        organization_id: organizationId,
-        created_by: userId,
-        name: input.name,
-        slug,
-        season: input.season,
-        description: input.description,
-        starts_at: input.starts_at,
-        ends_at: input.ends_at,
-        is_public: input.is_public,
-      });
-      break;
-    } catch (error) {
-      if (
-        attempt === 0 &&
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        error.code === "23505"
-      )
-        continue;
-      throw error;
-    }
-  }
-
-  if (!championship) throw new Error("Não foi possível criar o campeonato.");
   try {
-    await insertChampionshipSettings(organizationId, championship.id);
-    await insertDefaultChampionshipCategory(organizationId, championship.id);
-    return championship;
-  } catch (error) {
-    try {
-      await deleteRecord(organizationId, championship.id);
-    } catch {
-      throw new Error(
-        "O campeonato foi criado parcialmente e a reversão automática falhou. Contate o suporte antes de tentar novamente.",
-        { cause: error },
-      );
-    }
-    throw new Error("Não foi possível configurar o campeonato. Nenhuma alteração foi mantida.", {
-      cause: error,
+    return await withChampionshipErrorTranslation(async () => {
+      const organizationId = await resolveSingleWritableOrganization();
+      const slug = slugifyChampionshipName(input.name);
+      if (!slug) throw new ChampionshipDomainError("INVALID_PAYLOAD");
+      return createChampionshipAtomic(organizationId, slug, input);
     });
+  } catch (error) {
+    if (error instanceof ChampionshipDomainError && error.code === "UNKNOWN") {
+      throw new ChampionshipDomainError("TRANSACTION_FAILED", { cause: error });
+    }
+    throw error;
   }
 }
 
@@ -147,18 +95,12 @@ export async function updateChampionship(
   championshipId: string,
   changes: UpdateChampionshipDTO,
 ): Promise<Championship> {
-  if (!organizationId) throw new Error("Organização não informada.");
-  return updateRecord(organizationId, championshipId, changes);
+  if (!organizationId) throw new ChampionshipDomainError("INVALID_ORGANIZATION");
+  return withChampionshipErrorTranslation(() =>
+    updateRecord(organizationId, championshipId, changes),
+  );
 }
 
-export async function deleteChampionship(
-  organizationId: string,
-  championshipId: string,
-): Promise<void> {
-  if (!organizationId) throw new Error("Organização não informada.");
-  const dependencies = await fetchChampionshipDependencies(organizationId, championshipId);
-  if (dependencies.matches || dependencies.registrations || dependencies.teams) {
-    throw new ChampionshipHasDependenciesError(dependencies);
-  }
-  await deleteRecord(organizationId, championshipId);
+export async function deleteChampionship(championshipId: string): Promise<void> {
+  return withChampionshipErrorTranslation(() => deleteRecord(championshipId));
 }

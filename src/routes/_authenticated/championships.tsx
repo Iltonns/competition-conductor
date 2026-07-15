@@ -39,10 +39,10 @@ function ChampionshipsPage() {
   };
 
   const confirmDelete = async () => {
-    if (!deleting || !championships.organizationId) return;
+    if (!deleting) return;
     try {
       await deleteMutation.mutateAsync({
-        organizationId: championships.organizationId,
+        organizationId: deleting.organization_id,
         championshipId: deleting.id,
       });
       toast.success("Campeonato excluído.");
@@ -116,12 +116,7 @@ function ChampionshipsPage() {
         </section>
       )}
 
-      <ChampionshipDialog
-        open={formOpen}
-        championship={editing}
-        organizationId={championships.organizationId}
-        onOpenChange={setFormOpen}
-      />
+      <ChampionshipDialog open={formOpen} championship={editing} onOpenChange={setFormOpen} />
 
       <AlertDialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>

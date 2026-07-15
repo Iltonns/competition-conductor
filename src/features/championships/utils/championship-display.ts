@@ -1,3 +1,4 @@
+import { translateChampionshipError } from "../errors/championship-errors";
 import type { ChampionshipStatus } from "../types/championship.types";
 
 export const CHAMPIONSHIP_STATUS_LABELS: Record<ChampionshipStatus, string> = {
@@ -20,5 +21,5 @@ export function formatChampionshipDateTime(date: string): string {
 }
 
 export function getChampionshipErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+  return translateChampionshipError(error).message;
 }

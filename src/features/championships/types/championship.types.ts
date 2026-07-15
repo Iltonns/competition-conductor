@@ -11,6 +11,7 @@ export interface CreateChampionshipDTO {
   starts_at: string | null;
   ends_at: string | null;
   is_public: boolean;
+  category_name?: string | null;
 }
 
 export interface UpdateChampionshipDTO {
@@ -21,12 +22,6 @@ export interface UpdateChampionshipDTO {
   ends_at?: string | null;
   is_public?: boolean;
   status?: ChampionshipStatus;
-}
-
-export interface ChampionshipDependencies {
-  matches: number;
-  registrations: number;
-  teams: number;
 }
 
 export interface ChampionshipOverview {

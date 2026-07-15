@@ -7,9 +7,9 @@ export function useUpdateChampionship() {
   return useMutation({
     mutationFn: ({ organizationId, championshipId, changes }: UpdateChampionshipVariables) =>
       updateChampionship(organizationId, championshipId, changes),
-    onSuccess: (championship) =>
+    onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: championshipKeys.organization(championship.organization_id),
+        queryKey: championshipKeys.all,
       }),
   });
 }
