@@ -28,13 +28,7 @@ import {
   TeamCrest,
 } from "@/components/arena/arena-ui";
 import { Button } from "@/components/ui/button";
-import {
-  RECENT_RESULTS,
-  SCORERS,
-  STANDINGS,
-  TEAMS,
-  UPCOMING_MATCHES,
-} from "@/data/arena-demo";
+import { RECENT_RESULTS, SCORERS, STANDINGS, TEAMS, UPCOMING_MATCHES } from "@/data/arena-demo";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · IS Arena" }] }),
@@ -95,31 +89,10 @@ function Dashboard() {
 function DesktopDashboard() {
   return (
     <div className="hidden space-y-4 lg:block">
-      <section
-        className="grid grid-cols-4 gap-3"
-        aria-label="Indicadores da competição"
-      >
-        <KpiCard
-          icon={Trophy}
-          value={8}
-          label="Campeonatos ativos"
-          tone="violet"
-          delta="+2"
-        />
-        <KpiCard
-          icon={Shield}
-          value={32}
-          label="Equipes cadastradas"
-          tone="emerald"
-          delta="+4"
-        />
-        <KpiCard
-          icon={Users}
-          value={432}
-          label="Atletas registrados"
-          tone="amber"
-          delta="+18"
-        />
+      <section className="grid grid-cols-4 gap-3" aria-label="Indicadores da competição">
+        <KpiCard icon={Trophy} value={8} label="Campeonatos ativos" tone="violet" delta="+2" />
+        <KpiCard icon={Shield} value={32} label="Equipes cadastradas" tone="emerald" delta="+4" />
+        <KpiCard icon={Users} value={432} label="Atletas registrados" tone="amber" delta="+18" />
         <KpiCard
           icon={CalendarDays}
           value={112}
@@ -149,9 +122,7 @@ function DesktopDashboard() {
                 </span>
                 <PlayerAvatar initials={scorer.initials} size="sm" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[10px] font-semibold">
-                    {scorer.name}
-                  </span>
+                  <span className="block truncate text-[10px] font-semibold">{scorer.name}</span>
                   <span className="block truncate text-[8px] text-muted-foreground">
                     {scorer.team.name}
                   </span>
@@ -160,9 +131,7 @@ function DesktopDashboard() {
                   <strong className="block font-display text-sm font-extrabold">
                     {scorer.goals}
                   </strong>
-                  <span className="block text-[7px] text-muted-foreground">
-                    gols
-                  </span>
+                  <span className="block text-[7px] text-muted-foreground">gols</span>
                 </span>
               </li>
             ))}
@@ -184,28 +153,11 @@ function DesktopDashboard() {
         <div className="mt-3 grid grid-cols-[1fr_150px] items-stretch gap-4">
           <div className="h-[150px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={PERFORMANCE}
-                margin={{ top: 8, right: 6, left: -28, bottom: 0 }}
-              >
+              <AreaChart data={PERFORMANCE} margin={{ top: 8, right: 6, left: -28, bottom: 0 }}>
                 <defs>
-                  <linearGradient
-                    id="dashboard-performance"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="oklch(0.88 0.22 128)"
-                      stopOpacity={0.34}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="oklch(0.88 0.22 128)"
-                      stopOpacity={0}
-                    />
+                  <linearGradient id="dashboard-performance" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="oklch(0.88 0.22 128)" stopOpacity={0.34} />
+                    <stop offset="100%" stopColor="oklch(0.88 0.22 128)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="oklch(1 0 0 / 0.045)" />
@@ -240,15 +192,11 @@ function DesktopDashboard() {
             </ResponsiveContainer>
           </div>
           <div className="flex flex-col justify-center border-l border-white/[0.06] pl-5">
-            <span className="text-[9px] text-muted-foreground">
-              Total de gols
-            </span>
+            <span className="text-[9px] text-muted-foreground">Total de gols</span>
             <strong className="number-tabular mt-1 font-display text-4xl font-extrabold tracking-[-0.06em]">
               312
             </strong>
-            <span className="mt-2 text-[9px] font-semibold text-neon">
-              +12% vs 2025
-            </span>
+            <span className="mt-2 text-[9px] font-semibold text-neon">+12% vs 2025</span>
           </div>
         </div>
       </section>
@@ -263,9 +211,7 @@ function MobileDashboard() {
         <h2 className="font-display text-xl font-extrabold tracking-[-0.04em]">
           Olá, Lucas <span aria-hidden="true">👋</span>
         </h2>
-        <p className="mt-0.5 text-[10px] text-muted-foreground">
-          Vamos fazer hoje um grande jogo.
-        </p>
+        <p className="mt-0.5 text-[10px] text-muted-foreground">Vamos fazer hoje um grande jogo.</p>
       </section>
 
       <section className="hero-media relative min-h-[150px] overflow-hidden rounded-2xl border border-white/[0.08] bg-[url('/assets/championship-trophy.webp')] shadow-[0_24px_54px_-36px_rgba(0,0,0,.95)]">
@@ -298,9 +244,7 @@ function MobileDashboard() {
             to={action.to}
             className="card-arena flex min-h-[72px] flex-col items-center justify-center gap-2 px-1.5 py-2 text-center transition active:scale-[0.98]"
           >
-            <span
-              className={`grid h-8 w-8 place-items-center rounded-lg ${action.tone}`}
-            >
+            <span className={`grid h-8 w-8 place-items-center rounded-lg ${action.tone}`}>
               <action.icon className="h-4 w-4" />
             </span>
             <span className="text-[7px] font-semibold leading-tight text-muted-foreground">
@@ -320,22 +264,16 @@ function MobileDashboard() {
             >
               <span className="flex min-w-0 items-center gap-2">
                 <TeamCrest team={result.home} size="xs" />
-                <span className="truncate text-[9px] font-semibold">
-                  {result.home.name}
-                </span>
+                <span className="truncate text-[9px] font-semibold">{result.home.name}</span>
               </span>
-              <strong className="font-display text-sm font-extrabold">
-                {result.homeScore}
-              </strong>
+              <strong className="font-display text-sm font-extrabold">{result.homeScore}</strong>
               <span className="flex min-w-0 items-center justify-end gap-2">
                 <span className="truncate text-right text-[9px] font-semibold">
                   {result.away.name}
                 </span>
                 <TeamCrest team={result.away} size="xs" />
               </span>
-              <strong className="font-display text-sm font-extrabold">
-                {result.awayScore}
-              </strong>
+              <strong className="font-display text-sm font-extrabold">{result.awayScore}</strong>
             </div>
           ))}
         </div>
@@ -351,21 +289,13 @@ function MobileDashboard() {
       <section className="grid grid-cols-2 gap-3">
         <div className="card-arena p-3">
           <Goal className="h-4 w-4 text-neon" />
-          <strong className="mt-3 block font-display text-2xl font-extrabold">
-            312
-          </strong>
-          <span className="text-[8px] text-muted-foreground">
-            Gols na temporada
-          </span>
+          <strong className="mt-3 block font-display text-2xl font-extrabold">312</strong>
+          <span className="text-[8px] text-muted-foreground">Gols na temporada</span>
         </div>
         <div className="card-arena p-3">
           <FilePlus2 className="h-4 w-4 text-sky-300" />
-          <strong className="mt-3 block font-display text-2xl font-extrabold">
-            24
-          </strong>
-          <span className="text-[8px] text-muted-foreground">
-            Súmulas finalizadas
-          </span>
+          <strong className="mt-3 block font-display text-2xl font-extrabold">24</strong>
+          <span className="text-[8px] text-muted-foreground">Súmulas finalizadas</span>
         </div>
       </section>
 

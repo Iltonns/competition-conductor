@@ -303,4 +303,3 @@ function GoogleIcon() {
     </svg>
   );
 }
-

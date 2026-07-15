@@ -15,8 +15,7 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground shadow-[var(--shadow-soft)] hover:bg-destructive/90",
         outline:
           "border border-input bg-card/72 text-foreground shadow-none hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-none hover:bg-secondary/88",
+        secondary: "bg-secondary text-secondary-foreground shadow-none hover:bg-secondary/88",
         ghost: "hover:bg-accent/86 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
@@ -50,4 +49,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
-

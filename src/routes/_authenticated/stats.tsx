@@ -1,18 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Crosshair,
-  Goal,
-  Medal,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
-import {
-  PlayerAvatar,
-  SectionHeader,
-  TeamCrest,
-} from "@/components/arena/arena-ui";
+import { Crosshair, Goal, Medal, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { PlayerAvatar, SectionHeader, TeamCrest } from "@/components/arena/arena-ui";
 import { SCORERS, TEAMS } from "@/data/arena-demo";
 import { cn } from "@/lib/utils";
 
@@ -77,9 +66,7 @@ function StatisticsPage() {
             <h2 className="mt-8 font-display text-xl font-extrabold tracking-[-0.04em]">
               {SCORERS[0].name}
             </h2>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {SCORERS[0].team.name}
-            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground">{SCORERS[0].team.name}</p>
             <div className="mt-5 grid grid-cols-3 divide-x divide-white/[0.06] rounded-xl border border-white/[0.06] bg-black/15 py-3">
               <Metric value="5" label="Jogos" />
               <Metric value="1,6" label="Média" />
@@ -105,19 +92,14 @@ function StatisticsPage() {
                 </span>
                 <PlayerAvatar initials={player.initials} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[11px] font-semibold">
-                    {player.name}
-                  </span>
+                  <span className="block truncate text-[11px] font-semibold">{player.name}</span>
                   <span className="mt-0.5 flex items-center gap-1.5 text-[8px] text-muted-foreground">
-                    <TeamCrest team={player.team} size="xs" />{" "}
-                    {player.team.name}
+                    <TeamCrest team={player.team} size="xs" /> {player.team.name}
                   </span>
                 </span>
                 <span className="text-right">
                   <strong className="block font-display text-xl font-extrabold">
-                    {filter === "Artilharia"
-                      ? player.goals
-                      : Math.max(player.goals - 2, 1)}
+                    {filter === "Artilharia" ? player.goals : Math.max(player.goals - 2, 1)}
                   </strong>
                   <span className="text-[8px] text-muted-foreground">
                     {filter === "Artilharia" ? "gols" : "eventos"}
@@ -168,12 +150,10 @@ function StatisticsPage() {
           <Sparkles className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-sm font-extrabold">
-            Resumo inteligente da rodada
-          </h2>
+          <h2 className="font-display text-sm font-extrabold">Resumo inteligente da rodada</h2>
           <p className="mt-1 text-[9px] leading-relaxed text-muted-foreground">
-            A rodada teve média de 3,4 gols por partida. O Amazonas EC liderou
-            em finalizações e o Unidos do Sul terminou sem sofrer gols.
+            A rodada teve média de 3,4 gols por partida. O Amazonas EC liderou em finalizações e o
+            Unidos do Sul terminou sem sofrer gols.
           </p>
         </div>
         <button className="inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 text-[9px] font-semibold text-muted-foreground hover:text-foreground">
@@ -187,9 +167,7 @@ function StatisticsPage() {
 function Metric({ value, label }: { value: string; label: string }) {
   return (
     <span>
-      <strong className="block font-display text-base font-extrabold">
-        {value}
-      </strong>
+      <strong className="block font-display text-base font-extrabold">{value}</strong>
       <span className="text-[8px] text-muted-foreground">{label}</span>
     </span>
   );
@@ -211,22 +189,14 @@ function TeamHighlight({
   return (
     <article className="card-arena card-interactive p-4">
       <div className="flex items-start justify-between gap-3">
-        <span
-          className={cn("grid h-9 w-9 place-items-center rounded-lg", tone)}
-        >
+        <span className={cn("grid h-9 w-9 place-items-center rounded-lg", tone)}>
           <Icon className="h-4 w-4" />
         </span>
         <TeamCrest team={team} size="sm" />
       </div>
-      <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <strong className="mt-1 block font-display text-lg font-extrabold">
-        {value}
-      </strong>
-      <span className="mt-1 block text-[9px] text-muted-foreground">
-        {team.name}
-      </span>
+      <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+      <strong className="mt-1 block font-display text-lg font-extrabold">{value}</strong>
+      <span className="mt-1 block text-[9px] text-muted-foreground">{team.name}</span>
     </article>
   );
 }

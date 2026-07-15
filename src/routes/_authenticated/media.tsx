@@ -109,17 +109,11 @@ function MediaPage() {
                   <strong className="block font-display text-sm font-extrabold leading-none">
                     {item.day}
                   </strong>
-                  <span className="block text-[7px] text-muted-foreground">
-                    {item.month}
-                  </span>
+                  <span className="block text-[7px] text-muted-foreground">{item.month}</span>
                 </span>
                 <span className="min-w-0 flex-1">
-                  <strong className="block truncate text-[10px] font-semibold">
-                    {item.title}
-                  </strong>
-                  <span className="mt-0.5 block text-[8px] text-muted-foreground">
-                    {item.type}
-                  </span>
+                  <strong className="block truncate text-[10px] font-semibold">{item.title}</strong>
+                  <span className="mt-0.5 block text-[8px] text-muted-foreground">{item.type}</span>
                 </span>
                 <span className="rounded-md border border-white/[0.06] bg-white/[0.025] px-2 py-1 text-[7px] font-semibold text-muted-foreground">
                   {item.status}
@@ -129,12 +123,9 @@ function MediaPage() {
           </div>
           <div className="mt-4 rounded-xl border border-neon/15 bg-neon/[0.035] p-4">
             <Radio className="h-4 w-4 text-neon" />
-            <h3 className="mt-3 font-display text-sm font-extrabold">
-              Transmissão ao vivo
-            </h3>
+            <h3 className="mt-3 font-display text-sm font-extrabold">Transmissão ao vivo</h3>
             <p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">
-              Configure o link oficial para a final e destaque na página
-              pública.
+              Configure o link oficial para a final e destaque na página pública.
             </p>
             <Button
               variant="outline"
@@ -150,10 +141,7 @@ function MediaPage() {
         <SectionHeader title="Notícias recentes" action="Gerenciar notícias" />
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {NEWS.map((article, index) => (
-            <article
-              key={article.id}
-              className="card-arena card-interactive overflow-hidden"
-            >
+            <article key={article.id} className="card-arena card-interactive overflow-hidden">
               <div className="relative h-36 overflow-hidden bg-[radial-gradient(circle_at_50%_20%,rgba(190,245,45,.14),transparent_50%),linear-gradient(135deg,#172019,#090d0f)]">
                 {index === 0 ? (
                   <img
@@ -164,29 +152,19 @@ function MediaPage() {
                 ) : (
                   <div className="grid h-full place-items-center">
                     <span className="grid h-14 w-14 place-items-center rounded-2xl border border-white/[0.07] bg-white/[0.03] text-neon">
-                      {index === 1 ? (
-                        <Play className="h-6 w-6" />
-                      ) : (
-                        <Image className="h-6 w-6" />
-                      )}
+                      {index === 1 ? <Play className="h-6 w-6" /> : <Image className="h-6 w-6" />}
                     </span>
                   </div>
                 )}
               </div>
               <div className="p-4">
                 <span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-neon">
-                  {index === 1
-                    ? "Resultados"
-                    : index === 2
-                      ? "Tabela"
-                      : "Destaque"}
+                  {index === 1 ? "Resultados" : index === 2 ? "Tabela" : "Destaque"}
                 </span>
                 <h3 className="mt-2 line-clamp-2 text-[12px] font-bold leading-snug">
                   {article.title}
                 </h3>
-                <p className="mt-2 text-[8px] text-muted-foreground">
-                  {article.date} · IS Arena
-                </p>
+                <p className="mt-2 text-[8px] text-muted-foreground">{article.date} · IS Arena</p>
               </div>
             </article>
           ))}

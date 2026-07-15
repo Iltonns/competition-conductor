@@ -4,6 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import type {
   Championship,
   ChampionshipDependencies,
+  ChampionshipOverview,
   UpdateChampionshipDTO,
 } from "../types/championship.types";
 
@@ -41,6 +42,17 @@ type LinkTable = {
   Update: Record<string, never>;
   Relationships: [];
 };
+type StageTable = {
+  Row: {
+    id: string;
+    organization_id: string;
+    championship_id: string;
+    [key: string]: unknown;
+  };
+  Insert: { organization_id: string; championship_id: string };
+  Update: Record<string, unknown>;
+  Relationships: [];
+};
 type FeatureDatabase = {
   public: {
     Tables: ExistingTables & {
@@ -49,6 +61,7 @@ type FeatureDatabase = {
       registrations: LinkTable;
       championship_registrations: LinkTable;
       championship_teams: LinkTable;
+      competition_stages: StageTable;
     };
     Views: Database["public"]["Views"];
     Functions: Database["public"]["Functions"];
@@ -83,6 +96,85 @@ export async function fetchChampionships(organizationId: string): Promise<Champi
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
+}
+
+export async function fetchChampionship(
+  organizationId: string,
+  championshipId: string,
+): Promise<Championship> {
+  const { data, error } = await client
+    .from("championships")
+    .select(
+      "id, organization_id, name, slug, season, status, is_public, cover_url, description, starts_at, ends_at, created_at, updated_at, created_by",
+    )
+    .eq("organization_id", organizationId)
+    .eq("id", championshipId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("Campeonato não encontrado ou sem acesso para esta organização.");
+  return data;
+}
+
+function readStageLabel(stage: StageTable["Row"]): string | null {
+  for (const key of ["name", "title", "label", "stage_type", "type"]) {
+    const value = stage[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+export async function fetchChampionshipOverview(
+  organizationId: string,
+  championshipId: string,
+): Promise<ChampionshipOverview> {
+  const [teamsResult, matchesResult, stagesResult] = await Promise.all([
+    client
+      .from("teams")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .eq("championship_id", championshipId),
+    client
+      .from("matches")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .eq("championship_id", championshipId),
+    client
+      .from("competition_stages")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .eq("championship_id", championshipId),
+  ]);
+
+  if (teamsResult.error) throw teamsResult.error;
+  if (matchesResult.error) throw matchesResult.error;
+  if (stagesResult.error) throw stagesResult.error;
+
+  const teamIds = teamsResult.data.map((team) => team.id);
+  let athletes = 0;
+  if (teamIds.length > 0) {
+    const athletesResult = await client
+      .from("athletes")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .in("team_id", teamIds);
+    if (athletesResult.error) throw athletesResult.error;
+    athletes = athletesResult.count ?? 0;
+  }
+
+  const stages = stagesResult.data;
+  const currentStage =
+    stages.find((stage) =>
+      ["active", "current", "in_progress", "ongoing"].includes(
+        typeof stage.status === "string" ? stage.status.toLowerCase() : "",
+      ),
+    ) ?? stages.at(0);
+
+  return {
+    teams: teamIds.length,
+    athletes,
+    matches: matchesResult.count ?? 0,
+    currentStage: currentStage ? readStageLabel(currentStage) : null,
+  };
 }
 
 export async function insertChampionship(

@@ -7,7 +7,7 @@ export function useCreateChampionship() {
     mutationFn: createChampionship,
     onSuccess: (championship) =>
       queryClient.invalidateQueries({
-        queryKey: championshipKeys.list(championship.organization_id),
+        queryKey: championshipKeys.organization(championship.organization_id),
       }),
   });
 }

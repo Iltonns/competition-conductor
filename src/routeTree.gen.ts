@@ -26,6 +26,7 @@ import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChampionshipsRouteImport } from './routes/_authenticated/championships'
 import { Route as AuthenticatedAthletesRouteImport } from './routes/_authenticated/athletes'
+import { Route as AuthenticatedChampionshipsIdRouteImport } from './routes/_authenticated/championships_.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -112,6 +113,12 @@ const AuthenticatedAthletesRoute = AuthenticatedAthletesRouteImport.update({
   path: '/athletes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChampionshipsIdRoute =
+  AuthenticatedChampionshipsIdRouteImport.update({
+    id: '/championships_/$id',
+    path: '/championships/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/championships/$id': typeof AuthenticatedChampionshipsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/championships/$id': typeof AuthenticatedChampionshipsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/stats'
     | '/teams'
     | '/c/$slug'
+    | '/championships/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/stats'
     | '/teams'
     | '/c/$slug'
+    | '/championships/$id'
   id:
     | '__root__'
     | '/'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stats'
     | '/_authenticated/teams'
     | '/c/$slug'
+    | '/_authenticated/championships_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAthletesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/championships_/$id': {
+      id: '/_authenticated/championships_/$id'
+      path: '/championships/$id'
+      fullPath: '/championships/$id'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -372,6 +392,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStandingsRoute: typeof AuthenticatedStandingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
+  AuthenticatedChampionshipsIdRoute: typeof AuthenticatedChampionshipsIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -387,6 +408,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStandingsRoute: AuthenticatedStandingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
+  AuthenticatedChampionshipsIdRoute: AuthenticatedChampionshipsIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

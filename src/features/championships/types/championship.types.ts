@@ -29,6 +29,13 @@ export interface ChampionshipDependencies {
   teams: number;
 }
 
+export interface ChampionshipOverview {
+  teams: number;
+  athletes: number;
+  matches: number;
+  currentStage: string | null;
+}
+
 export interface ChampionshipMutationContext {
   championshipId: string;
   organizationId: string;

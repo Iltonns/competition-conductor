@@ -43,9 +43,7 @@ function StandingsPage() {
             <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-neon">
               Fase de grupos
             </p>
-            <h2 className="mt-1 font-display text-base font-extrabold">
-              Tabela de classificação
-            </h2>
+            <h2 className="mt-1 font-display text-base font-extrabold">Tabela de classificação</h2>
           </div>
           <div
             className="inline-flex w-fit rounded-lg border border-white/[0.07] bg-black/15 p-1"
@@ -136,21 +134,12 @@ function InsightCard({
   };
   return (
     <article className="card-arena flex items-center gap-3 p-4">
-      <span
-        className={cn(
-          "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
-          colors[tone],
-        )}
-      >
+      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", colors[tone])}>
         <Icon className="h-5 w-5" />
       </span>
       <span className="min-w-0">
-        <strong className="block truncate font-display text-sm font-extrabold">
-          {value}
-        </strong>
-        <span className="mt-0.5 block text-[9px] text-muted-foreground">
-          {label}
-        </span>
+        <strong className="block truncate font-display text-sm font-extrabold">{value}</strong>
+        <span className="mt-0.5 block text-[9px] text-muted-foreground">{label}</span>
       </span>
     </article>
   );
@@ -170,9 +159,7 @@ function KnockoutMatch({
   return (
     <article className="rounded-xl border border-white/[0.065] bg-black/15 p-3">
       <div className="flex items-center justify-between gap-3 py-1.5">
-        <span className="text-[8px] uppercase tracking-wider text-muted-foreground">
-          {seed}
-        </span>
+        <span className="text-[8px] uppercase tracking-wider text-muted-foreground">{seed}</span>
         <span className="flex items-center gap-2 text-[10px] font-semibold">
           <TeamCrest team={team} size="xs" />
           {team.name}

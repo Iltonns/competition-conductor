@@ -4,12 +4,9 @@ import { cn } from "@/lib/utils";
 import type { ArenaTeam, TeamTone } from "@/data/arena-demo";
 
 const CREST_TONES: Record<TeamTone, string> = {
-  amber:
-    "border-amber-300/35 bg-amber-400/15 text-amber-300 shadow-amber-300/10",
-  emerald:
-    "border-emerald-300/35 bg-emerald-400/15 text-emerald-300 shadow-emerald-300/10",
-  violet:
-    "border-violet-300/35 bg-violet-400/15 text-violet-300 shadow-violet-300/10",
+  amber: "border-amber-300/35 bg-amber-400/15 text-amber-300 shadow-amber-300/10",
+  emerald: "border-emerald-300/35 bg-emerald-400/15 text-emerald-300 shadow-emerald-300/10",
+  violet: "border-violet-300/35 bg-violet-400/15 text-violet-300 shadow-violet-300/10",
   red: "border-red-300/35 bg-red-400/15 text-red-300 shadow-red-300/10",
   blue: "border-sky-300/35 bg-sky-400/15 text-sky-300 shadow-sky-300/10",
   lime: "border-lime-300/35 bg-lime-400/15 text-lime-300 shadow-lime-300/10",
@@ -22,12 +19,7 @@ interface TeamCrestProps {
   showStars?: boolean;
 }
 
-export function TeamCrest({
-  team,
-  size = "md",
-  className,
-  showStars = false,
-}: TeamCrestProps) {
+export function TeamCrest({ team, size = "md", className, showStars = false }: TeamCrestProps) {
   const sizes = {
     xs: "h-7 w-7 text-[7px]",
     sm: "h-9 w-9 text-[8px]",
@@ -36,10 +28,7 @@ export function TeamCrest({
   };
 
   return (
-    <div
-      className={cn("relative inline-flex shrink-0", className)}
-      aria-label={team.name}
-    >
+    <div className={cn("relative inline-flex shrink-0", className)} aria-label={team.name}>
       {showStars && (
         <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[7px] tracking-[0.12em] text-foreground/75">
           • • •
@@ -151,15 +140,9 @@ export function KpiCard({
           <strong className="font-display text-[1.75rem] font-extrabold leading-none tracking-[-0.05em]">
             {value}
           </strong>
-          {delta && (
-            <span className="pb-0.5 text-[9px] font-semibold text-neon">
-              {delta}
-            </span>
-          )}
+          {delta && <span className="pb-0.5 text-[9px] font-semibold text-neon">{delta}</span>}
         </div>
-        <p className="mt-1 max-w-24 text-[10px] leading-[1.3] text-muted-foreground">
-          {label}
-        </p>
+        <p className="mt-1 max-w-24 text-[10px] leading-[1.3] text-muted-foreground">{label}</p>
       </div>
     </article>
   );
@@ -202,29 +185,17 @@ export function MatchRow({
           <span className="truncate text-right text-[11px] font-semibold sm:text-xs">
             {home.name}
           </span>
-          <TeamCrest
-            team={home}
-            size={compact ? "xs" : "sm"}
-            showStars={!compact}
-          />
+          <TeamCrest team={home} size={compact ? "xs" : "sm"} showStars={!compact} />
         </div>
         <div className="min-w-[72px] text-center">
           <p className="font-display text-[11px] font-extrabold tracking-[-0.02em] sm:text-xs">
             {date} · {time}
           </p>
-          <p className="mt-0.5 max-w-[100px] truncate text-[8px] text-muted-foreground">
-            {venue}
-          </p>
+          <p className="mt-0.5 max-w-[100px] truncate text-[8px] text-muted-foreground">{venue}</p>
         </div>
         <div className="flex min-w-0 items-center gap-2">
-          <TeamCrest
-            team={away}
-            size={compact ? "xs" : "sm"}
-            showStars={!compact}
-          />
-          <span className="truncate text-[11px] font-semibold sm:text-xs">
-            {away.name}
-          </span>
+          <TeamCrest team={away} size={compact ? "xs" : "sm"} showStars={!compact} />
+          <span className="truncate text-[11px] font-semibold sm:text-xs">{away.name}</span>
         </div>
       </div>
     </article>
@@ -256,40 +227,20 @@ export function StandingsTable({
       <table className="w-full min-w-[440px] border-separate border-spacing-0 text-[10px]">
         <thead>
           <tr className="text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
-            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">
-              Pos
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">
-              Equipe
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              Pts
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              J
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              V
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              E
-            </th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              D
-            </th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">Pos</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">Equipe</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">Pts</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">J</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">V</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">E</th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">D</th>
             {!compact && (
-              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-                GP
-              </th>
+              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">GP</th>
             )}
             {!compact && (
-              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-                GC
-              </th>
+              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">GC</th>
             )}
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">
-              SG
-            </th>
+            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">SG</th>
           </tr>
         </thead>
         <tbody>
@@ -319,12 +270,8 @@ export function StandingsTable({
               <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
                 {row.played}
               </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                {row.wins}
-              </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                {row.draws}
-              </td>
+              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">{row.wins}</td>
+              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">{row.draws}</td>
               <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
                 {row.losses}
               </td>
@@ -339,9 +286,7 @@ export function StandingsTable({
                 </td>
               )}
               <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                {row.goalDifference > 0
-                  ? `+${row.goalDifference}`
-                  : row.goalDifference}
+                {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
               </td>
             </tr>
           ))}

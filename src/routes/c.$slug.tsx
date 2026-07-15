@@ -9,13 +9,7 @@ import {
 } from "@/components/arena/arena-ui";
 import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Button } from "@/components/ui/button";
-import {
-  NEWS,
-  SCORERS,
-  STANDINGS,
-  TEAMS,
-  UPCOMING_MATCHES,
-} from "@/data/arena-demo";
+import { NEWS, SCORERS, STANDINGS, TEAMS, UPCOMING_MATCHES } from "@/data/arena-demo";
 
 export const Route = createFileRoute("/c/$slug")({
   head: ({ params }) => ({
@@ -135,23 +129,18 @@ function PublicChampionship() {
 
         <main className="space-y-4 p-3 sm:p-5 md:p-6">
           <section className="card-arena p-4" aria-labelledby="sponsors-title">
-            <p
-              id="sponsors-title"
-              className="mb-4 text-[9px] font-semibold text-muted-foreground"
-            >
+            <p id="sponsors-title" className="mb-4 text-[9px] font-semibold text-muted-foreground">
               Patrocinadores
             </p>
             <div className="grid grid-cols-2 items-center gap-3 sm:grid-cols-5">
-              {["Montanha", "Aurora", "Vertex", "Umbra", "Credisul"].map(
-                (sponsor) => (
-                  <div
-                    key={sponsor}
-                    className="grid h-10 place-items-center rounded-lg border border-white/[0.04] bg-white/[0.018] font-display text-[10px] font-extrabold uppercase tracking-[-0.02em] text-white/58"
-                  >
-                    {sponsor}
-                  </div>
-                ),
-              )}
+              {["Montanha", "Aurora", "Vertex", "Umbra", "Credisul"].map((sponsor) => (
+                <div
+                  key={sponsor}
+                  className="grid h-10 place-items-center rounded-lg border border-white/[0.04] bg-white/[0.018] font-display text-[10px] font-extrabold uppercase tracking-[-0.02em] text-white/58"
+                >
+                  {sponsor}
+                </div>
+              ))}
             </div>
           </section>
 
@@ -166,10 +155,7 @@ function PublicChampionship() {
             </div>
 
             <div id="classificacao" className="card-arena min-w-0 p-4">
-              <SectionHeader
-                title="Classificação"
-                action="Ver tabela completa"
-              />
+              <SectionHeader title="Classificação" action="Ver tabela completa" />
               <div className="mt-3">
                 <StandingsTable rows={STANDINGS} compact />
               </div>
@@ -178,10 +164,7 @@ function PublicChampionship() {
 
           <section className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
             <div id="noticias" className="card-arena overflow-hidden p-3">
-              <SectionHeader
-                title="Últimas notícias"
-                action="Todas as notícias"
-              />
+              <SectionHeader title="Últimas notícias" action="Todas as notícias" />
               <div className="mt-3 grid gap-3 md:grid-cols-[1.4fr_.6fr]">
                 <article className="group relative min-h-[260px] overflow-hidden rounded-xl border border-white/[0.06]">
                   <img
@@ -197,9 +180,7 @@ function PublicChampionship() {
                     <h2 className="mt-2 max-w-lg font-display text-xl font-extrabold leading-tight tracking-[-0.035em] sm:text-2xl">
                       {NEWS[0].title}
                     </h2>
-                    <p className="mt-2 text-[9px] text-white/58">
-                      {NEWS[0].date} · Por IS Arena
-                    </p>
+                    <p className="mt-2 text-[9px] text-white/58">{NEWS[0].date} · Por IS Arena</p>
                   </div>
                 </article>
 
@@ -212,9 +193,7 @@ function PublicChampionship() {
                       <p className="text-[8px] font-semibold uppercase tracking-[0.12em] text-neon">
                         Notícias
                       </p>
-                      <h3 className="mt-2 text-[11px] font-bold leading-snug">
-                        {article.title}
-                      </h3>
+                      <h3 className="mt-2 text-[11px] font-bold leading-snug">{article.title}</h3>
                       <p className="mt-2 text-[8px] text-muted-foreground">
                         {article.date} · IS Arena
                       </p>
@@ -245,12 +224,8 @@ function PublicChampionship() {
                   <p className="text-[8px] uppercase tracking-[0.14em] text-muted-foreground">
                     Líder
                   </p>
-                  <h3 className="mt-1 truncate text-sm font-bold">
-                    {SCORERS[0].name}
-                  </h3>
-                  <p className="text-[9px] text-muted-foreground">
-                    {SCORERS[0].team.name}
-                  </p>
+                  <h3 className="mt-1 truncate text-sm font-bold">{SCORERS[0].name}</h3>
+                  <p className="text-[9px] text-muted-foreground">{SCORERS[0].team.name}</p>
                 </div>
                 <div className="text-right">
                   <strong className="block font-display text-3xl font-extrabold text-neon">
@@ -263,10 +238,7 @@ function PublicChampionship() {
               </div>
               <ol className="mt-3 divide-y divide-white/[0.055]">
                 {SCORERS.slice(1, 5).map((scorer) => (
-                  <li
-                    key={scorer.name}
-                    className="flex items-center gap-2.5 py-2.5"
-                  >
+                  <li key={scorer.name} className="flex items-center gap-2.5 py-2.5">
                     <span className="w-4 text-center text-[9px] text-muted-foreground">
                       {scorer.position}
                     </span>
@@ -279,9 +251,7 @@ function PublicChampionship() {
                         {scorer.team.name}
                       </span>
                     </span>
-                    <strong className="font-display text-sm">
-                      {scorer.goals}
-                    </strong>
+                    <strong className="font-display text-sm">{scorer.goals}</strong>
                   </li>
                 ))}
               </ol>
@@ -306,8 +276,8 @@ function PublicChampionship() {
         </footer>
       </div>
       <div className="sr-only">
-        Equipes participantes em destaque: {TEAMS.amazonas.name} e{" "}
-        {TEAMS.guarani.name}. Símbolo do campeonato: <Trophy />
+        Equipes participantes em destaque: {TEAMS.amazonas.name} e {TEAMS.guarani.name}. Símbolo do
+        campeonato: <Trophy />
       </div>
     </div>
   );

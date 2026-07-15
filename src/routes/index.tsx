@@ -24,9 +24,15 @@ function Landing() {
       <header className="container mx-auto flex items-center justify-between px-5 py-5">
         <IsArenaLogo />
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <a href="#features" className="hover:text-foreground">Recursos</a>
-          <a href="#modules" className="hover:text-foreground">Módulos</a>
-          <Link to="/auth" className="hover:text-foreground">Entrar</Link>
+          <a href="#features" className="hover:text-foreground">
+            Recursos
+          </a>
+          <a href="#modules" className="hover:text-foreground">
+            Módulos
+          </a>
+          <Link to="/auth" className="hover:text-foreground">
+            Entrar
+          </Link>
         </nav>
         <Link to="/auth">
           <Button size="sm" className="bg-neon text-neon-foreground hover:bg-neon/90">
@@ -47,8 +53,8 @@ function Landing() {
             para grandes <span className="text-neon">competições</span>.
           </h1>
           <p className="mt-5 max-w-lg text-base text-muted-foreground md:text-lg">
-            Do cadastro à súmula digital, do financeiro à página pública do
-            campeonato — tudo em um só lugar, com estética esportiva premium.
+            Do cadastro à súmula digital, do financeiro à página pública do campeonato — tudo em um
+            só lugar, com estética esportiva premium.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/auth">
@@ -71,9 +77,7 @@ function Landing() {
             ].map((s) => (
               <div key={s.l}>
                 <div className="font-display text-3xl font-black text-neon">{s.k}</div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {s.l}
-                </div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">{s.l}</div>
               </div>
             ))}
           </div>
@@ -104,10 +108,18 @@ function Landing() {
                 <EventPill min="73'" label="Gol · M. Lima" tone="neon" />
               </div>
               <div className="mt-6 grid grid-cols-4 gap-2 border-t border-border pt-4 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
-                <div><div className="font-display text-lg text-foreground">63%</div>Posse</div>
-                <div><div className="font-display text-lg text-foreground">14</div>Chutes</div>
-                <div><div className="font-display text-lg text-foreground">6</div>Escanteios</div>
-                <div><div className="font-display text-lg text-foreground">2</div>Cartões</div>
+                <div>
+                  <div className="font-display text-lg text-foreground">63%</div>Posse
+                </div>
+                <div>
+                  <div className="font-display text-lg text-foreground">14</div>Chutes
+                </div>
+                <div>
+                  <div className="font-display text-lg text-foreground">6</div>Escanteios
+                </div>
+                <div>
+                  <div className="font-display text-lg text-foreground">2</div>Cartões
+                </div>
               </div>
             </div>
           </div>
@@ -115,7 +127,10 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section id="features" className="container mx-auto grid gap-4 px-5 pb-16 sm:grid-cols-2 lg:grid-cols-4">
+      <section
+        id="features"
+        className="container mx-auto grid gap-4 px-5 pb-16 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {[
           { i: Trophy, t: "Campeonatos", d: "Grupos, mata-mata e critérios de desempate." },
           { i: Users, t: "Equipes & Atletas", d: "Elenco, escalações e histórico." },
@@ -144,7 +159,9 @@ function TeamCrest({ label, tone }: { label: string; tone: "neon" | "info" }) {
   const bg = tone === "neon" ? "bg-neon/15 text-neon" : "bg-info/15 text-info";
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={`grid h-16 w-16 place-items-center rounded-2xl border border-border ${bg} font-display text-xl font-black`}>
+      <div
+        className={`grid h-16 w-16 place-items-center rounded-2xl border border-border ${bg} font-display text-xl font-black`}
+      >
         {label
           .split(" ")
           .map((w) => w[0])
@@ -165,4 +182,3 @@ function EventPill({ min, label, tone }: { min: string; label: string; tone: "ne
     </div>
   );
 }
-

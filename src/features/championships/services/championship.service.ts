@@ -1,7 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import {
   deleteChampionship as deleteRecord,
+  fetchChampionship,
   fetchChampionshipDependencies,
+  fetchChampionshipOverview,
   fetchChampionships,
   findOrganizationIdForUser,
   insertChampionship,
@@ -12,13 +14,20 @@ import {
 import type {
   Championship,
   ChampionshipDependencies,
+  ChampionshipOverview,
   CreateChampionshipDTO,
   UpdateChampionshipDTO,
 } from "../types/championship.types";
 
 export const championshipKeys = {
   all: ["championships"] as const,
-  list: (organizationId: string) => [...championshipKeys.all, organizationId] as const,
+  organization: (organizationId: string) => [...championshipKeys.all, organizationId] as const,
+  list: (organizationId: string) =>
+    [...championshipKeys.organization(organizationId), "list"] as const,
+  detail: (organizationId: string, championshipId: string) =>
+    [...championshipKeys.organization(organizationId), "detail", championshipId] as const,
+  overview: (organizationId: string, championshipId: string) =>
+    [...championshipKeys.detail(organizationId, championshipId), "overview"] as const,
 };
 
 export class ChampionshipHasDependenciesError extends Error {
@@ -59,6 +68,24 @@ export async function getCurrentOrganizationId(): Promise<string> {
 export async function listChampionships(organizationId: string): Promise<Championship[]> {
   if (!organizationId) throw new Error("Organização não informada.");
   return fetchChampionships(organizationId);
+}
+
+export async function getChampionship(
+  organizationId: string,
+  championshipId: string,
+): Promise<Championship> {
+  if (!organizationId) throw new Error("Organização não informada.");
+  if (!championshipId) throw new Error("Campeonato não informado.");
+  return fetchChampionship(organizationId, championshipId);
+}
+
+export async function getChampionshipOverview(
+  organizationId: string,
+  championshipId: string,
+): Promise<ChampionshipOverview> {
+  if (!organizationId) throw new Error("Organização não informada.");
+  if (!championshipId) throw new Error("Campeonato não informado.");
+  return fetchChampionshipOverview(organizationId, championshipId);
 }
 
 export async function createChampionship(input: CreateChampionshipDTO): Promise<Championship> {

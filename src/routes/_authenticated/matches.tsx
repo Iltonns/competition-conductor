@@ -15,11 +15,7 @@ import {
   Square,
   Timer,
 } from "lucide-react";
-import {
-  MatchRow,
-  SectionHeader,
-  TeamCrest,
-} from "@/components/arena/arena-ui";
+import { MatchRow, SectionHeader, TeamCrest } from "@/components/arena/arena-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MATCH_EVENTS, TEAMS, UPCOMING_MATCHES } from "@/data/arena-demo";
@@ -30,19 +26,11 @@ export const Route = createFileRoute("/_authenticated/matches")({
   component: MatchesPage,
 });
 
-const STATUS_FILTERS = [
-  "Todas",
-  "Agendadas",
-  "Em andamento",
-  "Finalizadas",
-] as const;
+const STATUS_FILTERS = ["Todas", "Agendadas", "Em andamento", "Finalizadas"] as const;
 
 function MatchesPage() {
-  const [filter, setFilter] =
-    useState<(typeof STATUS_FILTERS)[number]>("Todas");
-  const [tab, setTab] = useState<"Eventos" | "Escalações" | "Estatísticas">(
-    "Eventos",
-  );
+  const [filter, setFilter] = useState<(typeof STATUS_FILTERS)[number]>("Todas");
+  const [tab, setTab] = useState<"Eventos" | "Escalações" | "Estatísticas">("Eventos");
 
   return (
     <div className="space-y-4">
@@ -88,10 +76,7 @@ function MatchesPage() {
       <section className="grid gap-4 xl:grid-cols-[.78fr_1.22fr]">
         <div className="space-y-4">
           <div className="card-arena p-4">
-            <SectionHeader
-              title="Próximas partidas"
-              action="Calendário completo"
-            />
+            <SectionHeader title="Próximas partidas" action="Calendário completo" />
             <div className="mt-3 space-y-2">
               {UPCOMING_MATCHES.map((match) => (
                 <MatchRow key={match.id} {...match} compact />
@@ -134,8 +119,7 @@ function MatchesPage() {
           <div className="border-b border-white/[0.06] p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />{" "}
-                2º tempo
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> 2º tempo
               </span>
               <span className="text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
                 Semifinal · Jogo de ida
@@ -171,23 +155,21 @@ function MatchesPage() {
           </div>
 
           <div className="flex border-b border-white/[0.06] px-3">
-            {(["Eventos", "Escalações", "Estatísticas"] as const).map(
-              (item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setTab(item)}
-                  className={cn(
-                    "relative h-11 flex-1 text-[8px] font-semibold uppercase tracking-[0.1em] transition",
-                    tab === item
-                      ? "text-neon after:absolute after:inset-x-2 after:bottom-0 after:h-px after:bg-neon"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {item}
-                </button>
-              ),
-            )}
+            {(["Eventos", "Escalações", "Estatísticas"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setTab(item)}
+                className={cn(
+                  "relative h-11 flex-1 text-[8px] font-semibold uppercase tracking-[0.1em] transition",
+                  tab === item
+                    ? "text-neon after:absolute after:inset-x-2 after:bottom-0 after:h-px after:bg-neon"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {item}
+              </button>
+            ))}
           </div>
 
           <div className="p-4">
@@ -198,9 +180,7 @@ function MatchesPage() {
                     key={`${event.minute}-${event.player}`}
                     className="grid grid-cols-[36px_28px_1fr] items-center gap-2 py-2.5"
                   >
-                    <strong className="number-tabular text-[10px]">
-                      {event.minute}
-                    </strong>
+                    <strong className="number-tabular text-[10px]">{event.minute}</strong>
                     <EventIcon type={event.type} />
                     <span className="min-w-0">
                       <span className="block truncate text-[10px] font-semibold">
@@ -227,19 +207,16 @@ function MatchesPage() {
                       <strong className="text-[10px]">{team.name}</strong>
                     </div>
                     <ol className="mt-3 space-y-2 text-[9px] text-muted-foreground">
-                      {[
-                        "Goleiro titular",
-                        "Defensor central",
-                        "Meio-campista",
-                        "Atacante",
-                      ].map((player, index) => (
-                        <li key={player} className="flex justify-between">
-                          <span>
-                            {index + 1}. {player}
-                          </span>
-                          <span className="text-foreground/45">Titular</span>
-                        </li>
-                      ))}
+                      {["Goleiro titular", "Defensor central", "Meio-campista", "Atacante"].map(
+                        (player, index) => (
+                          <li key={player} className="flex justify-between">
+                            <span>
+                              {index + 1}. {player}
+                            </span>
+                            <span className="text-foreground/45">Titular</span>
+                          </li>
+                        ),
+                      )}
                     </ol>
                   </div>
                 ))}
@@ -296,9 +273,7 @@ function EventIcon({ type }: { type: (typeof MATCH_EVENTS)[number]["type"] }) {
     substitution: <ArrowLeftRight className="h-3.5 w-3.5" />,
   };
   return (
-    <span
-      className={cn("grid h-7 w-7 place-items-center rounded-lg", styles[type])}
-    >
+    <span className={cn("grid h-7 w-7 place-items-center rounded-lg", styles[type])}>
       {icons[type]}
     </span>
   );
@@ -320,9 +295,7 @@ function ActionCard({
       <span className={cn("grid h-8 w-8 place-items-center rounded-lg", tone)}>
         <Icon className="h-4 w-4" />
       </span>
-      <strong className="mt-3 block font-display text-xl font-extrabold">
-        {value}
-      </strong>
+      <strong className="mt-3 block font-display text-xl font-extrabold">{value}</strong>
       <span className="text-[8px] text-muted-foreground">{label}</span>
     </article>
   );

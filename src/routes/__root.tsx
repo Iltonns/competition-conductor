@@ -45,9 +45,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-screen items-center justify-center bg-arena px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Algo deu errado</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Tente novamente ou volte ao início.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Tente novamente ou volte ao início.</p>
         <div className="mt-6 flex justify-center gap-2">
           <button
             onClick={() => {
@@ -85,14 +83,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "IS Arena — Gestão premium para grandes competições" },
       {
         property: "og:description",
-        content: "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
+        content:
+          "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "IS Arena — Gestão premium para grandes competições" },
-      { name: "twitter:description", content: "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/87d4634b-f7f6-4fbf-a3d6-4e3d5b243653/id-preview-bfe945bf--01c846e0-ff99-48e7-89d2-32dc4ce0abf1.lovable.app-1784040103806.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -135,12 +146,7 @@ function RootComponent() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (
-        event !== "SIGNED_IN" &&
-        event !== "SIGNED_OUT" &&
-        event !== "USER_UPDATED"
-      )
-        return;
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
@@ -156,4 +162,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

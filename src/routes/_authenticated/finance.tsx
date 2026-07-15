@@ -145,10 +145,7 @@ function FinancePage() {
           <SectionHeader title="Movimentações recentes" action="Ver todas" />
           <div className="mt-3 divide-y divide-white/[0.055]">
             {TRANSACTIONS.map((transaction) => (
-              <div
-                key={transaction.title}
-                className="flex items-center gap-3 py-3"
-              >
+              <div key={transaction.title} className="flex items-center gap-3 py-3">
                 <span
                   className={cn(
                     "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
@@ -174,13 +171,10 @@ function FinancePage() {
                 <strong
                   className={cn(
                     "number-tabular font-display text-xs",
-                    transaction.type === "income"
-                      ? "text-emerald-300"
-                      : "text-red-300",
+                    transaction.type === "income" ? "text-emerald-300" : "text-red-300",
                   )}
                 >
-                  {transaction.type === "income" ? "+" : "-"}{" "}
-                  {formatCurrency(transaction.value)}
+                  {transaction.type === "income" ? "+" : "-"} {formatCurrency(transaction.value)}
                 </strong>
               </div>
             ))}
@@ -214,9 +208,7 @@ function FinancePage() {
               <CircleDollarSign className="h-4 w-4" />
               <span className="text-[9px] font-semibold">Saúde financeira</span>
             </div>
-            <strong className="mt-2 block font-display text-xl font-extrabold">
-              Excelente
-            </strong>
+            <strong className="mt-2 block font-display text-xl font-extrabold">Excelente</strong>
             <p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">
               56,5% das receitas permanecem disponíveis após as despesas.
             </p>
@@ -249,26 +241,14 @@ function SummaryCard({
   return (
     <article className="card-arena card-interactive p-4">
       <div className="flex items-start justify-between gap-2">
-        <span
-          className={cn(
-            "grid h-9 w-9 place-items-center rounded-lg",
-            colors[tone],
-          )}
-        >
+        <span className={cn("grid h-9 w-9 place-items-center rounded-lg", colors[tone])}>
           <Icon className="h-4 w-4" />
         </span>
-        <span
-          className={cn(
-            "rounded-md px-2 py-1 text-[8px] font-semibold",
-            colors[tone],
-          )}
-        >
+        <span className={cn("rounded-md px-2 py-1 text-[8px] font-semibold", colors[tone])}>
           {delta}
         </span>
       </div>
-      <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
+      <p className="mt-4 text-[8px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
       <strong className="number-tabular mt-1.5 block font-display text-lg font-extrabold tracking-[-0.035em]">
         {value}
       </strong>
@@ -279,33 +259,22 @@ function SummaryCard({
 function Donut({ className, label }: { className: string; label: string }) {
   return (
     <div
-      className={cn(
-        "relative mx-auto aspect-square w-full max-w-[150px] rounded-full",
-        className,
-      )}
+      className={cn("relative mx-auto aspect-square w-full max-w-[150px] rounded-full", className)}
     >
       <div className="absolute inset-[18%] grid place-items-center rounded-full bg-card text-center shadow-[0_0_24px_rgba(0,0,0,.45)]">
-        <span className="font-display text-[11px] font-extrabold sm:text-xs">
-          {label}
-        </span>
+        <span className="font-display text-[11px] font-extrabold sm:text-xs">{label}</span>
       </div>
     </div>
   );
 }
 
-function Legend({
-  items,
-}: {
-  items: Array<{ label: string; value: string; color: string }>;
-}) {
+function Legend({ items }: { items: Array<{ label: string; value: string; color: string }> }) {
   return (
     <div className="space-y-3">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-2 text-[9px]">
           <i className={cn("h-2 w-2 rounded-full", item.color)} />
-          <span className="min-w-0 flex-1 truncate text-muted-foreground">
-            {item.label}
-          </span>
+          <span className="min-w-0 flex-1 truncate text-muted-foreground">{item.label}</span>
           <strong className="font-display">{item.value}</strong>
         </div>
       ))}
@@ -326,17 +295,10 @@ function Pending({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-black/15 p-3">
-      <span
-        className={cn(
-          "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
-          tone,
-        )}
-      >
+      <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-lg", tone)}>
         <Icon className="h-4 w-4" />
       </span>
-      <span className="min-w-0 flex-1 text-[9px] text-muted-foreground">
-        {label}
-      </span>
+      <span className="min-w-0 flex-1 text-[9px] text-muted-foreground">{label}</span>
       <strong className="font-display text-lg font-extrabold">{value}</strong>
     </div>
   );

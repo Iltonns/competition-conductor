@@ -28,6 +28,7 @@ import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
@@ -127,6 +128,7 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const { user } = useAuth();
+  const { activeChampionship } = useChampionshipContext();
   const navigate = useNavigate();
   const displayName = user?.user_metadata?.display_name ?? "Lucas Oliveira";
   const initials = displayName
@@ -166,8 +168,9 @@ function SidebarContent({
 
       {!collapsed && (
         <div className="border-b border-white/[0.06] px-3 py-3">
-          <button
-            type="button"
+          <Link
+            to="/championships"
+            onClick={onNavigate}
             className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5 text-left transition hover:border-neon/20 hover:bg-white/[0.04]"
           >
             <span className="min-w-0">
@@ -175,11 +178,11 @@ function SidebarContent({
                 Campeonato ativo
               </span>
               <span className="mt-0.5 block truncate text-[11px] font-semibold">
-                Copa da Baixada 2026
+                {activeChampionship?.name ?? "Nenhum selecionado"}
               </span>
             </span>
             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          </button>
+          </Link>
         </div>
       )}
 
@@ -189,8 +192,7 @@ function SidebarContent({
       >
         <div className="space-y-0.5">
           {NAV.map((item) => {
-            const active =
-              pathname === item.to || pathname.startsWith(`${item.to}/`);
+            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
             return (
               <Link
                 key={item.to}
@@ -214,12 +216,7 @@ function SidebarContent({
         </div>
       </nav>
 
-      <div
-        className={cn(
-          "border-t border-white/[0.06]",
-          collapsed ? "p-2" : "p-3",
-        )}
-      >
+      <div className={cn("border-t border-white/[0.06]", collapsed ? "p-2" : "p-3")}>
         {!collapsed && (
           <div className="mb-2 rounded-lg border border-white/[0.055] bg-white/[0.02] px-3 py-2">
             <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
@@ -246,12 +243,8 @@ function SidebarContent({
           {!collapsed && (
             <>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[10px] font-semibold">
-                  {displayName}
-                </span>
-                <span className="block text-[8px] text-muted-foreground">
-                  Organizador
-                </span>
+                <span className="block truncate text-[10px] font-semibold">{displayName}</span>
+                <span className="block text-[8px] text-muted-foreground">Organizador</span>
               </span>
               <button
                 type="button"
@@ -274,6 +267,7 @@ function SidebarContent({
 
 function AppHeader({ pathname }: { pathname: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { activeChampionship } = useChampionshipContext();
   const segment = pathname.split("/").filter(Boolean).at(0) ?? "dashboard";
   const copy = ROUTE_COPY[segment] ?? {
     title: "IS Arena",
@@ -299,10 +293,7 @@ function AppHeader({ pathname }: { pathname: string }) {
               side="left"
               className="w-[17rem] border-r border-white/[0.07] bg-sidebar p-0"
             >
-              <SidebarContent
-                pathname={pathname}
-                onNavigate={() => setMenuOpen(false)}
-              />
+              <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} />
             </SheetContent>
           </Sheet>
 
@@ -318,13 +309,9 @@ function AppHeader({ pathname }: { pathname: string }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            className="hidden h-8 items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 text-[9px] font-semibold text-muted-foreground transition hover:border-neon/20 hover:text-foreground md:flex"
-          >
-            Temporada 2026
-            <ChevronDown className="h-3 w-3" />
-          </button>
+          <span className="hidden h-8 items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 text-[9px] font-semibold text-muted-foreground transition hover:border-neon/20 hover:text-foreground md:flex">
+            {activeChampionship?.season ?? "Sem campeonato ativo"}
+          </span>
           <button
             type="button"
             className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/20 hover:text-foreground"
@@ -333,9 +320,13 @@ function AppHeader({ pathname }: { pathname: string }) {
             <Bell className="h-3.5 w-3.5" />
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_var(--color-neon)]" />
           </button>
-          <Button className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex">
-            <Plus className="h-3.5 w-3.5" />
-            Novo Campeonato
+          <Button
+            className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex"
+            asChild
+          >
+            <Link to="/championships">
+              <Plus className="h-3.5 w-3.5" /> Campeonatos
+            </Link>
           </Button>
         </div>
       </div>
@@ -358,11 +349,7 @@ function MobileBottomNavigation({ pathname }: { pathname: string }) {
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">
         {items.slice(0, 2).map((item) => (
-          <MobileNavItem
-            key={item.to}
-            {...item}
-            active={pathname.startsWith(item.to)}
-          />
+          <MobileNavItem key={item.to} {...item} active={pathname.startsWith(item.to)} />
         ))}
         <Link
           to="/matches"
@@ -372,11 +359,7 @@ function MobileBottomNavigation({ pathname }: { pathname: string }) {
           <Plus className="h-5 w-5" />
         </Link>
         {items.slice(2).map((item) => (
-          <MobileNavItem
-            key={item.to}
-            {...item}
-            active={pathname.startsWith(item.to)}
-          />
+          <MobileNavItem key={item.to} {...item} active={pathname.startsWith(item.to)} />
         ))}
       </div>
     </nav>

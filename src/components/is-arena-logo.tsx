@@ -14,10 +14,7 @@ export function IsArenaLogo({
   markOnlyLabel = "IS Arena",
 }: LogoProps) {
   return (
-    <div
-      className={cn("inline-flex items-center gap-2.5", className)}
-      aria-label={markOnlyLabel}
-    >
+    <div className={cn("inline-flex items-center gap-2.5", className)} aria-label={markOnlyLabel}>
       <svg
         width={size}
         height={size}

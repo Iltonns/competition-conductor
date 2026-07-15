@@ -9,7 +9,7 @@ export function useDeleteChampionship() {
       deleteChampionship(organizationId, championshipId),
     onSuccess: (_data, variables) =>
       queryClient.invalidateQueries({
-        queryKey: championshipKeys.list(variables.organizationId),
+        queryKey: championshipKeys.organization(variables.organizationId),
       }),
   });
 }
