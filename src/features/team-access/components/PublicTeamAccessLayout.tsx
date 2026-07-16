@@ -9,9 +9,12 @@ import {
   type TeamAccessState,
 } from "../types/team-access.types";
 import { TeamAccessStatusBadge } from "./TeamAccessStatusBadge";
+import { TeamRegistrationPortal } from "./TeamRegistrationPortal";
 
 export function PublicTeamAccessLayout({ access }: { access: PublicTeamAccess }) {
   if (access.state !== "valid") return <TeamAccessFailureState state={access.state} />;
+  return <TeamRegistrationPortal access={access} />;
+  /* Legacy access summary kept below as a reference for failure-state styling.
   const permissions = TEAM_ACCESS_PERMISSION_KEYS.filter((key) => access.permissions[key]);
   return (
     <PublicShell>
@@ -79,7 +82,7 @@ export function PublicTeamAccessLayout({ access }: { access: PublicTeamAccess })
         Continuar cadastro — disponível na próxima etapa
       </Button>
     </PublicShell>
-  );
+  ); */
 }
 
 function PublicShell({ children }: { children: ReactNode }) {
