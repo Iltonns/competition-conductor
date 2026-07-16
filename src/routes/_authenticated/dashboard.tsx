@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   CalendarDays,
   ClipboardList,
@@ -28,27 +30,15 @@ import {
   TeamCrest,
 } from "@/components/arena/arena-ui";
 import { Button } from "@/components/ui/button";
-import { RECENT_RESULTS, SCORERS, STANDINGS, TEAMS, UPCOMING_MATCHES } from "@/data/arena-demo";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+import { fetchDashboardData, type DashboardData } from "@/features/dashboard/dashboard.service";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · IS Arena" }] }),
   component: Dashboard,
 });
-
-const PERFORMANCE = [
-  { month: "Jan", goals: 10 },
-  { month: "Fev", goals: 25 },
-  { month: "Mar", goals: 18 },
-  { month: "Abr", goals: 31 },
-  { month: "Mai", goals: 28 },
-  { month: "Jun", goals: 49 },
-  { month: "Jul", goals: 34 },
-  { month: "Ago", goals: 44 },
-  { month: "Set", goals: 31 },
-  { month: "Out", goals: 50 },
-  { month: "Nov", goals: 42 },
-  { month: "Dez", goals: 62 },
-];
 
 const QUICK_ACTIONS = [
   {
@@ -78,27 +68,76 @@ const QUICK_ACTIONS = [
 ] as const;
 
 function Dashboard() {
+  const { activeChampionship } = useChampionshipContext();
+  const { user } = useAuth();
+  const [year, setYear] = useState(new Date().getFullYear());
+  const dashboard = useQuery({
+    queryKey: ["dashboard", activeChampionship?.id ?? "all", year],
+    queryFn: () => fetchDashboardData(activeChampionship?.id, year),
+  });
+
+  if (dashboard.isLoading) {
+    return (
+      <div className="space-y-4" aria-label="Carregando dashboard">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-48 rounded-xl" />
+      </div>
+    );
+  }
+
+  if (dashboard.isError || !dashboard.data) {
+    return (
+      <div className="card-arena p-6">
+        <h2 className="font-display text-lg font-bold">Não foi possível carregar o dashboard</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Verifique sua conexão e tente novamente. Nenhum dado de demonstração foi exibido.
+        </p>
+        <Button className="mt-4" onClick={() => dashboard.refetch()}>
+          Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+
+  const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "Organizador";
   return (
     <div className="space-y-4">
-      <MobileDashboard />
-      <DesktopDashboard />
+      <MobileDashboard data={dashboard.data} displayName={displayName} />
+      <DesktopDashboard data={dashboard.data} year={year} onYearChange={setYear} />
     </div>
   );
 }
 
-function DesktopDashboard() {
+function DesktopDashboard({
+  data,
+  year,
+  onYearChange,
+}: {
+  data: DashboardData;
+  year: number;
+  onYearChange: (year: number) => void;
+}) {
   return (
     <div className="hidden space-y-4 lg:block">
       <section className="grid grid-cols-4 gap-3" aria-label="Indicadores da competição">
-        <KpiCard icon={Trophy} value={8} label="Campeonatos ativos" tone="violet" delta="+2" />
-        <KpiCard icon={Shield} value={32} label="Equipes cadastradas" tone="emerald" delta="+4" />
-        <KpiCard icon={Users} value={432} label="Atletas registrados" tone="amber" delta="+18" />
+        <KpiCard
+          icon={Trophy}
+          value={data.activeChampionships}
+          label="Campeonatos ativos"
+          tone="violet"
+        />
+        <KpiCard icon={Shield} value={data.teams} label="Equipes cadastradas" tone="emerald" />
+        <KpiCard icon={Users} value={data.athletes} label="Atletas registrados" tone="amber" />
         <KpiCard
           icon={CalendarDays}
-          value={112}
+          value={data.finishedMatches}
           label="Partidas realizadas"
           tone="blue"
-          delta="+9"
         />
       </section>
 
@@ -106,16 +145,17 @@ function DesktopDashboard() {
         <div className="card-arena col-span-8 p-4">
           <SectionHeader title="Próximas partidas" action="Ver todas" />
           <div className="mt-3 grid gap-2">
-            {UPCOMING_MATCHES.map((match) => (
+            {data.upcomingMatches.map((match) => (
               <MatchRow key={match.id} {...match} compact />
             ))}
+            {data.upcomingMatches.length === 0 && <EmptyState text="Nenhuma partida agendada." />}
           </div>
         </div>
 
         <div className="card-arena col-span-4 p-4">
           <SectionHeader title="Artilharia" action="Ver ranking" />
           <ol className="mt-2 divide-y divide-white/[0.055]">
-            {SCORERS.slice(0, 4).map((scorer) => (
+            {data.scorers.slice(0, 4).map((scorer) => (
               <li key={scorer.name} className="flex items-center gap-2.5 py-2">
                 <span className="w-3 text-center font-display text-[9px] font-bold text-muted-foreground">
                   {scorer.position}
@@ -135,6 +175,7 @@ function DesktopDashboard() {
                 </span>
               </li>
             ))}
+            {data.scorers.length === 0 && <EmptyState text="Nenhum gol registrado." />}
           </ol>
         </div>
       </section>
@@ -144,16 +185,26 @@ function DesktopDashboard() {
           <SectionHeader title="Desempenho geral" />
           <label className="flex items-center gap-2 text-[9px] text-muted-foreground">
             <span className="sr-only">Temporada do gráfico</span>
-            <select className="h-7 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2 text-[9px] text-foreground outline-none focus:border-neon/30">
-              <option>2026</option>
-              <option>2025</option>
+            <select
+              value={year}
+              onChange={(event) => onYearChange(Number(event.target.value))}
+              className="h-7 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2 text-[9px] text-foreground outline-none focus:border-neon/30"
+            >
+              {data.years.map((availableYear) => (
+                <option key={availableYear} value={availableYear}>
+                  {availableYear}
+                </option>
+              ))}
             </select>
           </label>
         </div>
         <div className="mt-3 grid grid-cols-[1fr_150px] items-stretch gap-4">
           <div className="h-[150px] min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={PERFORMANCE} margin={{ top: 8, right: 6, left: -28, bottom: 0 }}>
+              <AreaChart
+                data={data.performance}
+                margin={{ top: 8, right: 6, left: -28, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="dashboard-performance" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="oklch(0.88 0.22 128)" stopOpacity={0.34} />
@@ -194,9 +245,9 @@ function DesktopDashboard() {
           <div className="flex flex-col justify-center border-l border-white/[0.06] pl-5">
             <span className="text-[9px] text-muted-foreground">Total de gols</span>
             <strong className="number-tabular mt-1 font-display text-4xl font-extrabold tracking-[-0.06em]">
-              312
+              {data.performance.reduce((total, month) => total + month.goals, 0)}
             </strong>
-            <span className="mt-2 text-[9px] font-semibold text-neon">+12% vs 2025</span>
+            <span className="mt-2 text-[9px] text-muted-foreground">Temporada {year}</span>
           </div>
         </div>
       </section>
@@ -204,12 +255,12 @@ function DesktopDashboard() {
   );
 }
 
-function MobileDashboard() {
+function MobileDashboard({ data, displayName }: { data: DashboardData; displayName: string }) {
   return (
     <div className="space-y-4 lg:hidden">
       <section>
         <h2 className="font-display text-xl font-extrabold tracking-[-0.04em]">
-          Olá, Lucas <span aria-hidden="true">👋</span>
+          Olá, {displayName} <span aria-hidden="true">👋</span>
         </h2>
         <p className="mt-0.5 text-[10px] text-muted-foreground">Vamos fazer hoje um grande jogo.</p>
       </section>
@@ -221,19 +272,32 @@ function MobileDashboard() {
             Campeonato em destaque
           </span>
           <h3 className="mt-2 max-w-[150px] font-display text-[1.35rem] font-extrabold uppercase leading-[0.98] tracking-[-0.045em]">
-            Copa da Baixada
+            {data.featuredChampionship?.name ?? "Nenhum campeonato"}
           </h3>
-          <span className="mt-1 text-[11px] font-semibold">2026</span>
-          <Button className="mt-3 h-7 bg-white/10 px-3 text-[9px] text-white backdrop-blur hover:bg-white/15">
-            Ver campeonato
-          </Button>
+          <span className="mt-1 text-[11px] font-semibold">
+            {data.featuredChampionship?.season ?? "Cadastre seu primeiro campeonato"}
+          </span>
+          {data.featuredChampionship && (
+            <Button
+              asChild
+              className="mt-3 h-7 bg-white/10 px-3 text-[9px] text-white backdrop-blur hover:bg-white/15"
+            >
+              <Link to="/championships/$id" params={{ id: data.featuredChampionship.id }}>
+                Ver campeonato
+              </Link>
+            </Button>
+          )}
         </div>
       </section>
 
       <section>
         <SectionHeader title="Próximo jogo" action="Ver todos" />
         <div className="mt-2">
-          <MatchRow {...UPCOMING_MATCHES[0]} />
+          {data.upcomingMatches[0] ? (
+            <MatchRow {...data.upcomingMatches[0]} />
+          ) : (
+            <EmptyState text="Nenhuma partida agendada." />
+          )}
         </div>
       </section>
 
@@ -257,7 +321,7 @@ function MobileDashboard() {
       <section className="card-arena p-3.5">
         <SectionHeader title="Últimos resultados" action="Ver todos" />
         <div className="mt-2 divide-y divide-white/[0.06]">
-          {RECENT_RESULTS.map((result) => (
+          {data.recentResults.map((result) => (
             <div
               key={result.id}
               className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2 py-2.5"
@@ -276,30 +340,45 @@ function MobileDashboard() {
               <strong className="font-display text-sm font-extrabold">{result.awayScore}</strong>
             </div>
           ))}
+          {data.recentResults.length === 0 && <EmptyState text="Nenhum resultado finalizado." />}
         </div>
       </section>
 
       <section className="card-arena p-3.5">
         <SectionHeader title="Classificação" action="Tabela completa" />
         <div className="mt-2">
-          <StandingsTable rows={STANDINGS} compact />
+          {data.standings.length > 0 ? (
+            <StandingsTable rows={data.standings} compact />
+          ) : (
+            <EmptyState text="A classificação aparecerá após os primeiros jogos." />
+          )}
         </div>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
         <div className="card-arena p-3">
           <Goal className="h-4 w-4 text-neon" />
-          <strong className="mt-3 block font-display text-2xl font-extrabold">312</strong>
+          <strong className="mt-3 block font-display text-2xl font-extrabold">
+            {data.totalGoals}
+          </strong>
           <span className="text-[8px] text-muted-foreground">Gols na temporada</span>
         </div>
         <div className="card-arena p-3">
           <FilePlus2 className="h-4 w-4 text-sky-300" />
-          <strong className="mt-3 block font-display text-2xl font-extrabold">24</strong>
+          <strong className="mt-3 block font-display text-2xl font-extrabold">
+            {data.finalizedReports}
+          </strong>
           <span className="text-[8px] text-muted-foreground">Súmulas finalizadas</span>
         </div>
       </section>
-
-      <div className="sr-only">Equipe em destaque: {TEAMS.amazonas.name}</div>
     </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <p className="rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center text-[10px] text-muted-foreground">
+      {text}
+    </p>
   );
 }
