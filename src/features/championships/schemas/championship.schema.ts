@@ -14,7 +14,15 @@ export const championshipSchema = z
     starts_at: optionalDate,
     ends_at: optionalDate,
     is_public: z.boolean(),
-    status: z.enum(["draft", "active", "finished", "archived"]),
+    status: z.enum([
+      "draft",
+      "registration_open",
+      "preparing",
+      "active",
+      "suspended",
+      "finished",
+      "archived",
+    ]),
   })
   .superRefine(({ starts_at, ends_at }, context) => {
     if (starts_at && ends_at && ends_at < starts_at) {

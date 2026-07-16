@@ -43,11 +43,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.championship_teams TO authenticat
 GRANT SELECT ON public.championship_teams TO anon;
 GRANT ALL ON public.championship_teams TO service_role;
 ALTER TABLE public.championship_teams ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ct member" ON public.championship_teams;
 CREATE POLICY "ct member" ON public.championship_teams FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
+DROP POLICY IF EXISTS "ct public read" ON public.championship_teams;
 CREATE POLICY "ct public read" ON public.championship_teams FOR SELECT TO anon
   USING (EXISTS (SELECT 1 FROM public.championships c WHERE c.id = championship_id AND c.is_public));
+DROP TRIGGER IF EXISTS championship_teams_updated_at ON public.championship_teams;
 CREATE TRIGGER championship_teams_updated_at BEFORE UPDATE ON public.championship_teams
   FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
 
@@ -72,11 +75,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.championship_team_athletes TO aut
 GRANT SELECT ON public.championship_team_athletes TO anon;
 GRANT ALL ON public.championship_team_athletes TO service_role;
 ALTER TABLE public.championship_team_athletes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "cta member" ON public.championship_team_athletes;
 CREATE POLICY "cta member" ON public.championship_team_athletes FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
+DROP POLICY IF EXISTS "cta public read" ON public.championship_team_athletes;
 CREATE POLICY "cta public read" ON public.championship_team_athletes FOR SELECT TO anon
   USING (EXISTS (SELECT 1 FROM public.championships c WHERE c.id = championship_id AND c.is_public));
+DROP TRIGGER IF EXISTS cta_updated_at ON public.championship_team_athletes;
 CREATE TRIGGER cta_updated_at BEFORE UPDATE ON public.championship_team_athletes
   FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
 
@@ -97,9 +103,11 @@ CREATE TABLE IF NOT EXISTS public.team_staff (
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.team_staff TO authenticated;
 GRANT ALL ON public.team_staff TO service_role;
 ALTER TABLE public.team_staff ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "team_staff member" ON public.team_staff;
 CREATE POLICY "team_staff member" ON public.team_staff FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
+DROP TRIGGER IF EXISTS team_staff_updated_at ON public.team_staff;
 CREATE TRIGGER team_staff_updated_at BEFORE UPDATE ON public.team_staff
   FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
 
@@ -117,6 +125,7 @@ CREATE TABLE IF NOT EXISTS public.championship_team_staff (
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.championship_team_staff TO authenticated;
 GRANT ALL ON public.championship_team_staff TO service_role;
 ALTER TABLE public.championship_team_staff ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "cts member" ON public.championship_team_staff;
 CREATE POLICY "cts member" ON public.championship_team_staff FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
@@ -139,9 +148,11 @@ CREATE TABLE IF NOT EXISTS public.team_responsibles (
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.team_responsibles TO authenticated;
 GRANT ALL ON public.team_responsibles TO service_role;
 ALTER TABLE public.team_responsibles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tr member" ON public.team_responsibles;
 CREATE POLICY "tr member" ON public.team_responsibles FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
+DROP TRIGGER IF EXISTS team_responsibles_updated_at ON public.team_responsibles;
 CREATE TRIGGER team_responsibles_updated_at BEFORE UPDATE ON public.team_responsibles
   FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
 
@@ -163,9 +174,11 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.referees TO authenticated;
 GRANT SELECT ON public.referees TO anon;
 GRANT ALL ON public.referees TO service_role;
 ALTER TABLE public.referees ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "referees member" ON public.referees;
 CREATE POLICY "referees member" ON public.referees FOR ALL TO authenticated
   USING (public.is_org_member(organization_id))
   WITH CHECK (public.is_org_member(organization_id));
+DROP TRIGGER IF EXISTS referees_updated_at ON public.referees;
 CREATE TRIGGER referees_updated_at BEFORE UPDATE ON public.referees
   FOR EACH ROW EXECUTE FUNCTION public.tg_set_updated_at();
 
@@ -231,7 +244,7 @@ END; $$;
 
 CREATE OR REPLACE FUNCTION public.add_team_responsible(
   p_championship_id uuid, p_team_id uuid, p_full_name text, p_role text,
-  p_phone text, p_email text, p_is_primary boolean
+  p_phone text DEFAULT NULL, p_email text DEFAULT NULL, p_is_primary boolean DEFAULT false
 ) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE v_org uuid; v_id uuid;
 BEGIN

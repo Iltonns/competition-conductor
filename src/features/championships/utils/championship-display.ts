@@ -3,7 +3,10 @@ import type { ChampionshipStatus } from "../types/championship.types";
 
 export const CHAMPIONSHIP_STATUS_LABELS: Record<ChampionshipStatus, string> = {
   draft: "Rascunho",
+  registration_open: "Inscrições abertas",
+  preparing: "Em preparação",
   active: "Ativo",
+  suspended: "Suspenso",
   finished: "Finalizado",
   archived: "Arquivado",
 };

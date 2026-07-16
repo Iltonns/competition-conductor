@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TeamAccessPanel } from "@/features/team-access/components/TeamAccessPanel";
 import { useArchiveTeam, useRemoveTeamLink, useTeam } from "@/features/teams/hooks/useTeams";
 import { getTeamErrorMessage } from "@/features/teams/utils/team-utils";
 
@@ -151,6 +152,7 @@ function TeamDetailPage() {
           </div>
         )}
       </section>
+      <TeamAccessPanel championshipId={id} teamId={teamId} />
       <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
         <AlertDialogContent>
           <AlertDialogHeader>

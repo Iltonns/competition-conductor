@@ -7,8 +7,20 @@ export type MatchEventRow = Database["public"]["Tables"]["match_events"]["Row"];
 export type MatchEventType = MatchEventRow["type"];
 
 export interface MatchWithTeams extends MatchRow {
-  home_team: { id: string; name: string; short_name: string | null; crest_url: string | null; primary_color: string | null } | null;
-  away_team: { id: string; name: string; short_name: string | null; crest_url: string | null; primary_color: string | null } | null;
+  home_team: {
+    id: string;
+    name: string;
+    short_name: string | null;
+    crest_url: string | null;
+    primary_color: string | null;
+  } | null;
+  away_team: {
+    id: string;
+    name: string;
+    short_name: string | null;
+    crest_url: string | null;
+    primary_color: string | null;
+  } | null;
 }
 
 export interface CreateMatchInput {
@@ -234,8 +246,14 @@ export async function computeStandings(championshipId: string): Promise<Standing
         team_name: t.name,
         team_short: t.short_name,
         team_crest: t.crest_url,
-        played: 0, wins: 0, draws: 0, losses: 0,
-        goals_for: 0, goals_against: 0, goal_diff: 0, points: 0,
+        played: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goals_for: 0,
+        goals_against: 0,
+        goal_diff: 0,
+        points: 0,
       });
     }
     return table.get(t.id)!;
@@ -247,20 +265,35 @@ export async function computeStandings(championshipId: string): Promise<Standing
     if (!home || !away) continue;
     const hs = m.home_score ?? 0;
     const as = m.away_score ?? 0;
-    home.played++; away.played++;
-    home.goals_for += hs; home.goals_against += as;
-    away.goals_for += as; away.goals_against += hs;
-    if (hs > as) { home.wins++; home.points += 3; away.losses++; }
-    else if (hs < as) { away.wins++; away.points += 3; home.losses++; }
-    else { home.draws++; away.draws++; home.points++; away.points++; }
+    home.played++;
+    away.played++;
+    home.goals_for += hs;
+    home.goals_against += as;
+    away.goals_for += as;
+    away.goals_against += hs;
+    if (hs > as) {
+      home.wins++;
+      home.points += 3;
+      away.losses++;
+    } else if (hs < as) {
+      away.wins++;
+      away.points += 3;
+      home.losses++;
+    } else {
+      home.draws++;
+      away.draws++;
+      home.points++;
+      away.points++;
+    }
   }
   return Array.from(table.values())
     .map((r) => ({ ...r, goal_diff: r.goals_for - r.goals_against }))
-    .sort((a, b) =>
-      b.points - a.points ||
-      b.goal_diff - a.goal_diff ||
-      b.goals_for - a.goals_for ||
-      a.team_name.localeCompare(b.team_name),
+    .sort(
+      (a, b) =>
+        b.points - a.points ||
+        b.goal_diff - a.goal_diff ||
+        b.goals_for - a.goals_for ||
+        a.team_name.localeCompare(b.team_name),
     );
 }
 
@@ -292,28 +325,35 @@ export async function computeStats(championshipId: string): Promise<{
   }
   const { data: events, error } = await supabase
     .from("match_events")
-    .select(`
+    .select(
+      `
       id, type, athlete_id, team_id,
-      athlete:athletes(id, full_name),
-      team:teams(id, name, short_name)
-    `)
+      athlete:athletes!athlete_id(id, full_name),
+      team:teams!team_id(id, name, short_name)
+    `,
+    )
     .in("match_id", matchIds);
   if (error) throw error;
 
   const scorers = new Map<string, ScorerRow>();
   const cards = new Map<string, CardsRow>();
-  let goals = 0, yellows = 0, reds = 0;
+  let goals = 0,
+    yellows = 0,
+    reds = 0;
 
   for (const e of events ?? []) {
-    const ath = (e as any).athlete as { id: string; full_name: string } | null;
-    const tm = (e as any).team as { id: string; name: string } | null;
+    const ath = e.athlete;
+    const tm = e.team;
     if (e.type === "goal") {
       goals++;
       if (ath) {
         const key = ath.id;
         const row = scorers.get(key) ?? {
-          athlete_id: ath.id, athlete_name: ath.full_name,
-          team_id: tm?.id ?? null, team_name: tm?.name ?? null, goals: 0,
+          athlete_id: ath.id,
+          athlete_name: ath.full_name,
+          team_id: tm?.id ?? null,
+          team_name: tm?.name ?? null,
+          goals: 0,
         };
         row.goals++;
         scorers.set(key, row);
@@ -321,22 +361,31 @@ export async function computeStats(championshipId: string): Promise<{
     } else if (e.type === "own_goal") {
       goals++;
     } else if (e.type === "yellow_card" || e.type === "red_card") {
-      if (e.type === "yellow_card") yellows++; else reds++;
+      if (e.type === "yellow_card") yellows++;
+      else reds++;
       if (ath) {
         const key = ath.id;
         const row = cards.get(key) ?? {
-          athlete_id: ath.id, athlete_name: ath.full_name,
-          team_name: tm?.name ?? null, yellows: 0, reds: 0,
+          athlete_id: ath.id,
+          athlete_name: ath.full_name,
+          team_name: tm?.name ?? null,
+          yellows: 0,
+          reds: 0,
         };
-        if (e.type === "yellow_card") row.yellows++; else row.reds++;
+        if (e.type === "yellow_card") row.yellows++;
+        else row.reds++;
         cards.set(key, row);
       }
     }
   }
 
   return {
-    scorers: Array.from(scorers.values()).sort((a, b) => b.goals - a.goals).slice(0, 20),
-    cards: Array.from(cards.values()).sort((a, b) => (b.reds * 3 + b.yellows) - (a.reds * 3 + a.yellows)).slice(0, 20),
+    scorers: Array.from(scorers.values())
+      .sort((a, b) => b.goals - a.goals)
+      .slice(0, 20),
+    cards: Array.from(cards.values())
+      .sort((a, b) => b.reds * 3 + b.yellows - (a.reds * 3 + a.yellows))
+      .slice(0, 20),
     totals: { matches: matches.length, goals, yellows, reds },
   };
 }

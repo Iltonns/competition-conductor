@@ -13,6 +13,8 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamAccessSessionRouteImport } from './routes/team-access.session'
+import { Route as TeamAccessTokenRouteImport } from './routes/team-access.$token'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
@@ -58,6 +60,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamAccessSessionRoute = TeamAccessSessionRouteImport.update({
+  id: '/team-access/session',
+  path: '/team-access/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamAccessTokenRoute = TeamAccessTokenRouteImport.update({
+  id: '/team-access/$token',
+  path: '/team-access/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
@@ -228,6 +240,8 @@ export interface FileRoutesByFullPath {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/team-access/$token': typeof TeamAccessTokenRoute
+  '/team-access/session': typeof TeamAccessSessionRoute
   '/championships/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRouteWithChildren
@@ -260,6 +274,8 @@ export interface FileRoutesByTo {
   '/stats': typeof AuthenticatedStatsRoute
   '/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/team-access/$token': typeof TeamAccessTokenRoute
+  '/team-access/session': typeof TeamAccessSessionRoute
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id': typeof AuthenticatedChampionshipsIdIndexRoute
   '/championships/$id/teams/new': typeof AuthenticatedChampionshipsIdTeamsNewRoute
@@ -291,6 +307,8 @@ export interface FileRoutesById {
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/c/$slug': typeof CSlugRoute
+  '/team-access/$token': typeof TeamAccessTokenRoute
+  '/team-access/session': typeof TeamAccessSessionRoute
   '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/_authenticated/championships_/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/_authenticated/championships_/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRouteWithChildren
@@ -325,6 +343,8 @@ export interface FileRouteTypes {
     | '/stats'
     | '/teams'
     | '/c/$slug'
+    | '/team-access/$token'
+    | '/team-access/session'
     | '/championships/$id'
     | '/championships/$id/athletes'
     | '/championships/$id/teams'
@@ -357,6 +377,8 @@ export interface FileRouteTypes {
     | '/stats'
     | '/teams'
     | '/c/$slug'
+    | '/team-access/$token'
+    | '/team-access/session'
     | '/championships/$id/athletes'
     | '/championships/$id'
     | '/championships/$id/teams/new'
@@ -387,6 +409,8 @@ export interface FileRouteTypes {
     | '/_authenticated/stats'
     | '/_authenticated/teams'
     | '/c/$slug'
+    | '/team-access/$token'
+    | '/team-access/session'
     | '/_authenticated/championships_/$id'
     | '/_authenticated/championships_/$id/athletes'
     | '/_authenticated/championships_/$id/teams'
@@ -409,6 +433,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   CSlugRoute: typeof CSlugRoute
+  TeamAccessTokenRoute: typeof TeamAccessTokenRoute
+  TeamAccessSessionRoute: typeof TeamAccessSessionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -439,6 +465,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team-access/session': {
+      id: '/team-access/session'
+      path: '/team-access/session'
+      fullPath: '/team-access/session'
+      preLoaderRoute: typeof TeamAccessSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team-access/$token': {
+      id: '/team-access/$token'
+      path: '/team-access/$token'
+      fullPath: '/team-access/$token'
+      preLoaderRoute: typeof TeamAccessTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$slug': {
@@ -750,7 +790,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   CSlugRoute: CSlugRoute,
+  TeamAccessTokenRoute: TeamAccessTokenRoute,
+  TeamAccessSessionRoute: TeamAccessSessionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

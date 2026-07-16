@@ -24,11 +24,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChampionships } from "@/features/championships/hooks/useChampionships";
 import { useTeams } from "@/features/teams/hooks/useTeams";
-import type { MatchEventType, MatchStatus, MatchWithTeams } from "@/features/matches/api/matches";
+import type {
+  MatchEventType,
+  MatchStatus,
+  MatchWithTeams,
+  UpdateMatchInput,
+} from "@/features/matches/api/matches";
 import {
   useCreateMatch,
   useCreateMatchEvent,
@@ -46,17 +57,23 @@ export const Route = createFileRoute("/_authenticated/matches")({
 });
 
 const STATUS_LABEL: Record<MatchStatus, string> = {
+  preparing: "Em preparação",
   scheduled: "Agendada",
   live: "Ao vivo",
   finished: "Finalizada",
+  confirmed: "Confirmada",
+  awaiting_confirmation: "Aguardando confirmação",
   postponed: "Adiada",
   cancelled: "Cancelada",
 };
 
 const STATUS_TONE: Record<MatchStatus, string> = {
+  preparing: "border-violet-300/25 bg-violet-400/10 text-violet-300",
   scheduled: "border-sky-300/25 bg-sky-400/10 text-sky-300",
   live: "border-emerald-300/30 bg-emerald-400/15 text-emerald-300",
   finished: "border-white/10 bg-white/[0.04] text-muted-foreground",
+  confirmed: "border-neon/30 bg-neon/10 text-neon",
+  awaiting_confirmation: "border-amber-300/25 bg-amber-400/10 text-amber-300",
   postponed: "border-amber-300/25 bg-amber-400/10 text-amber-300",
   cancelled: "border-red-300/25 bg-red-400/10 text-red-300",
 };
@@ -64,11 +81,16 @@ const STATUS_TONE: Record<MatchStatus, string> = {
 const EVENT_LABEL: Record<MatchEventType, string> = {
   goal: "Gol",
   own_goal: "Gol contra",
+  penalty_goal: "Gol de pênalti",
+  penalty_missed: "Pênalti perdido",
   yellow_card: "Cartão amarelo",
   red_card: "Cartão vermelho",
   substitution: "Substituição",
   assist: "Assistência",
   injury: "Lesão",
+  period_start: "Início do período",
+  period_end: "Fim do período",
+  extra_time: "Acréscimo",
   note: "Anotação",
 };
 
@@ -190,7 +212,10 @@ function MatchesBoard({ championshipId }: { championshipId: string }) {
           {selected ? (
             <MatchPanel championshipId={championshipId} match={selected} />
           ) : (
-            <EmptyState title="Selecione uma partida" hint="Escolha uma partida à esquerda para gerenciar a súmula." />
+            <EmptyState
+              title="Selecione uma partida"
+              hint="Escolha uma partida à esquerda para gerenciar a súmula."
+            />
           )}
         </div>
       </section>
@@ -244,14 +269,18 @@ function MatchListItem({
           {match.home_team?.name ?? "—"}
         </span>
         <span className="number-tabular font-display text-base font-extrabold tracking-[-0.03em]">
-          {(match.home_score ?? 0)} - {(match.away_score ?? 0)}
+          {match.home_score ?? 0} - {match.away_score ?? 0}
         </span>
         <span className="truncate text-xs font-semibold">{match.away_team?.name ?? "—"}</span>
       </div>
       <div className="mt-2 flex items-center justify-between text-[9px] text-muted-foreground">
-        <span className="inline-flex items-center gap-1"><CalendarClock className="h-3 w-3" /> {date}</span>
+        <span className="inline-flex items-center gap-1">
+          <CalendarClock className="h-3 w-3" /> {date}
+        </span>
         {match.venue && (
-          <span className="inline-flex items-center gap-1 truncate"><MapPin className="h-3 w-3" /> {match.venue}</span>
+          <span className="inline-flex items-center gap-1 truncate">
+            <MapPin className="h-3 w-3" /> {match.venue}
+          </span>
         )}
       </div>
     </button>
@@ -285,11 +314,11 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
   };
 
   const adjustScore = async (team: "home" | "away", delta: number) => {
-    const key = team === "home" ? "home_score" : "away_score";
     const current = (team === "home" ? match.home_score : match.away_score) ?? 0;
     const next = Math.max(0, current + delta);
+    const changes: UpdateMatchInput = team === "home" ? { home_score: next } : { away_score: next };
     try {
-      await update.mutateAsync({ [key]: next } as any);
+      await update.mutateAsync(changes);
     } catch {
       toast.error("Falha ao atualizar placar.");
     }
@@ -298,20 +327,45 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <span className={cn("rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em]", STATUS_TONE[match.status])}>
+        <span
+          className={cn(
+            "rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em]",
+            STATUS_TONE[match.status],
+          )}
+        >
           {STATUS_LABEL[match.status]}
         </span>
         <div className="flex flex-wrap gap-1.5">
-          <Button size="sm" variant="outline" className="h-7 gap-1 border-white/10 text-[10px]" onClick={() => setStatus("scheduled")}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1 border-white/10 text-[10px]"
+            onClick={() => setStatus("scheduled")}
+          >
             <CalendarClock className="h-3 w-3" /> Agendar
           </Button>
-          <Button size="sm" variant="outline" className="h-7 gap-1 border-emerald-400/30 text-emerald-200 text-[10px]" onClick={() => setStatus("live")}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1 border-emerald-400/30 text-emerald-200 text-[10px]"
+            onClick={() => setStatus("live")}
+          >
             <Play className="h-3 w-3" /> Ao vivo
           </Button>
-          <Button size="sm" variant="outline" className="h-7 gap-1 border-white/10 text-[10px]" onClick={() => setStatus("finished")}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1 border-white/10 text-[10px]"
+            onClick={() => setStatus("finished")}
+          >
             <CheckCircle2 className="h-3 w-3" /> Finalizar
           </Button>
-          <Button size="sm" variant="ghost" className="h-7 gap-1 text-red-300 text-[10px] hover:bg-red-500/10 hover:text-red-200" onClick={handleDelete}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 gap-1 text-red-300 text-[10px] hover:bg-red-500/10 hover:text-red-200"
+            onClick={handleDelete}
+          >
             <Trash2 className="h-3 w-3" /> Excluir
           </Button>
         </div>
@@ -325,15 +379,20 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
           onDec={() => adjustScore("home", -1)}
         />
         <div className="text-center">
-          <p className="font-display text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Placar</p>
+          <p className="font-display text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+            Placar
+          </p>
           <p className="number-tabular font-display text-4xl font-extrabold tracking-[-0.06em]">
-            {(match.home_score ?? 0)}–{(match.away_score ?? 0)}
+            {match.home_score ?? 0}–{match.away_score ?? 0}
           </p>
           {match.scheduled_at && (
             <p className="mt-1 flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
               <Timer className="h-3 w-3" />
               {new Date(match.scheduled_at).toLocaleString("pt-BR", {
-                day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </p>
           )}
@@ -365,11 +424,13 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
           Súmula
         </h4>
         <div className="mt-2 divide-y divide-white/[0.05] rounded-xl border border-white/[0.06] bg-black/15">
-          {events.isLoading && <div className="p-4"><Skeleton className="h-6" /></div>}
+          {events.isLoading && (
+            <div className="p-4">
+              <Skeleton className="h-6" />
+            </div>
+          )}
           {!events.isLoading && (events.data?.length ?? 0) === 0 && (
-            <p className="p-6 text-center text-[10px] text-muted-foreground">
-              Sem eventos ainda.
-            </p>
+            <p className="p-6 text-center text-[10px] text-muted-foreground">Sem eventos ainda.</p>
           )}
           {(events.data ?? []).map((e) => {
             const teamName =
@@ -379,7 +440,10 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
                   ? match.away_team?.name
                   : null;
             return (
-              <div key={e.id} className="grid grid-cols-[42px_1fr_auto] items-center gap-2 px-3 py-2 text-xs">
+              <div
+                key={e.id}
+                className="grid grid-cols-[42px_1fr_auto] items-center gap-2 px-3 py-2 text-xs"
+              >
                 <strong className="number-tabular text-[11px]">
                   {e.minute != null ? `${e.minute}'` : "—"}
                 </strong>
@@ -415,15 +479,32 @@ function MatchPanel({ championshipId, match }: { championshipId: string; match: 
 }
 
 function TeamScoreCard({
-  name, score, onInc, onDec,
-}: { name: string; score: number; onInc: () => void; onDec: () => void }) {
+  name,
+  score,
+  onInc,
+  onDec,
+}: {
+  name: string;
+  score: number;
+  onInc: () => void;
+  onDec: () => void;
+}) {
   return (
     <div className="rounded-xl border border-white/[0.07] bg-black/20 p-3 text-center">
       <p className="truncate font-display text-sm font-bold">{name}</p>
       <div className="mt-2 flex items-center justify-center gap-2">
-        <Button size="sm" variant="outline" className="h-7 w-7 border-white/10 p-0" onClick={onDec}>−</Button>
+        <Button size="sm" variant="outline" className="h-7 w-7 border-white/10 p-0" onClick={onDec}>
+          −
+        </Button>
         <span className="number-tabular w-8 font-display text-xl font-extrabold">{score}</span>
-        <Button size="sm" variant="outline" className="h-7 w-7 border-neon/30 bg-neon/10 p-0 text-neon" onClick={onInc}>+</Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 w-7 border-neon/30 bg-neon/10 p-0 text-neon"
+          onClick={onInc}
+        >
+          +
+        </Button>
       </div>
     </div>
   );
@@ -433,11 +514,16 @@ function EventIcon({ type }: { type: MatchEventType }) {
   const map: Record<MatchEventType, ReactElement> = {
     goal: <Goal className="mr-1 inline h-3 w-3 text-neon" />,
     own_goal: <Goal className="mr-1 inline h-3 w-3 text-red-300" />,
+    penalty_goal: <Goal className="mr-1 inline h-3 w-3 text-neon" />,
+    penalty_missed: <Goal className="mr-1 inline h-3 w-3 text-red-300" />,
     yellow_card: <Square className="mr-1 inline h-3 w-3 fill-amber-300 text-amber-300" />,
     red_card: <Square className="mr-1 inline h-3 w-3 fill-red-400 text-red-400" />,
     substitution: <ArrowRightLeft className="mr-1 inline h-3 w-3 text-sky-300" />,
     assist: <Flag className="mr-1 inline h-3 w-3 text-violet-300" />,
     injury: <Flag className="mr-1 inline h-3 w-3 text-red-300" />,
+    period_start: <Play className="mr-1 inline h-3 w-3 text-sky-300" />,
+    period_end: <CheckCircle2 className="mr-1 inline h-3 w-3 text-muted-foreground" />,
+    extra_time: <Timer className="mr-1 inline h-3 w-3 text-amber-300" />,
     note: <Flag className="mr-1 inline h-3 w-3 text-muted-foreground" />,
   };
   return map[type];
@@ -502,7 +588,9 @@ function EventForm({
         </SelectTrigger>
         <SelectContent>
           {teamOptions.map((t) => (
-            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            <SelectItem key={t.id} value={t.id}>
+              {t.name}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -513,12 +601,19 @@ function EventForm({
         </SelectTrigger>
         <SelectContent>
           {(Object.keys(EVENT_LABEL) as MatchEventType[]).map((t) => (
-            <SelectItem key={t} value={t}>{EVENT_LABEL[t]}</SelectItem>
+            <SelectItem key={t} value={t}>
+              {EVENT_LABEL[t]}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <AthleteSelect teamId={teamId} athleteId={athleteId} onChange={setAthleteId} matchId={matchId} />
+      <AthleteSelect
+        teamId={teamId}
+        athleteId={athleteId}
+        onChange={setAthleteId}
+        matchId={matchId}
+      />
 
       <Input
         placeholder="min"
@@ -533,7 +628,11 @@ function EventForm({
         onChange={(e) => setNote(e.target.value)}
         className="h-8 border-white/10 bg-white/[0.03] text-[11px]"
       />
-      <Button type="submit" className="h-8 bg-neon text-neon-foreground hover:bg-neon/90" disabled={!teamId}>
+      <Button
+        type="submit"
+        className="h-8 bg-neon text-neon-foreground hover:bg-neon/90"
+        disabled={!teamId}
+      >
         <Plus className="h-3 w-3" /> Add
       </Button>
     </form>
@@ -541,26 +640,52 @@ function EventForm({
 }
 
 function AthleteSelect({
-  teamId, athleteId, onChange, matchId,
-}: { teamId: string; athleteId: string; onChange: (v: string) => void; matchId: string }) {
+  teamId,
+  athleteId,
+  onChange,
+  matchId,
+}: {
+  teamId: string;
+  athleteId: string;
+  onChange: (v: string) => void;
+  matchId: string;
+}) {
   // Get championshipId via match record — accessible via team via URL context not always,
   // but we already scoped the roster call by championship. Retrieve championshipId from parent via context is complex.
   // Simpler: derive championshipId by asking parent — but we have match_id and no direct access.
   // We use a lightweight lookup: reuse the existing useRoster if we know championshipId; here we
   // fetch a shallow athletes list scoped to team_id via useTeamAthletes helper.
   return (
-    <AthleteSelectImpl teamId={teamId} athleteId={athleteId} onChange={onChange} matchId={matchId} />
+    <AthleteSelectImpl
+      teamId={teamId}
+      athleteId={athleteId}
+      onChange={onChange}
+      matchId={matchId}
+    />
   );
 }
 
 function AthleteSelectImpl({
-  teamId, athleteId, onChange, matchId,
-}: { teamId: string; athleteId: string; onChange: (v: string) => void; matchId: string }) {
-  const [athletes, setAthletes] = useState<{ id: string; full_name: string; jersey_number: number | null }[]>([]);
+  teamId,
+  athleteId,
+  onChange,
+  matchId,
+}: {
+  teamId: string;
+  athleteId: string;
+  onChange: (v: string) => void;
+  matchId: string;
+}) {
+  const [athletes, setAthletes] = useState<
+    { id: string; full_name: string; jersey_number: number | null }[]
+  >([]);
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!teamId) { setAthletes([]); return; }
+      if (!teamId) {
+        setAthletes([]);
+        return;
+      }
       const { supabase } = await import("@/integrations/supabase/client");
       const { data } = await supabase
         .from("athletes")
@@ -571,7 +696,9 @@ function AthleteSelectImpl({
       if (!cancelled) setAthletes(data ?? []);
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [teamId, matchId]);
 
   return (
@@ -582,7 +709,8 @@ function AthleteSelectImpl({
       <SelectContent>
         {athletes.map((a) => (
           <SelectItem key={a.id} value={a.id}>
-            {a.jersey_number != null ? `#${a.jersey_number} ` : ""}{a.full_name}
+            {a.jersey_number != null ? `#${a.jersey_number} ` : ""}
+            {a.full_name}
           </SelectItem>
         ))}
       </SelectContent>
@@ -591,7 +719,10 @@ function AthleteSelectImpl({
 }
 
 function CreateMatchDialog({
-  open, onOpenChange, championshipId, teams,
+  open,
+  onOpenChange,
+  championshipId,
+  teams,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -607,7 +738,11 @@ function CreateMatchDialog({
 
   useEffect(() => {
     if (open) {
-      setHomeId(""); setAwayId(""); setScheduledAt(""); setVenue(""); setPhase("");
+      setHomeId("");
+      setAwayId("");
+      setScheduledAt("");
+      setVenue("");
+      setPhase("");
     }
   }, [open]);
 
@@ -641,42 +776,85 @@ function CreateMatchDialog({
         <div className="grid gap-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Mandante</Label>
+              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Mandante
+              </Label>
               <Select value={homeId} onValueChange={setHomeId}>
-                <SelectTrigger className="mt-1 h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectTrigger className="mt-1 h-9">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
                 <SelectContent>
-                  {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
+                  {teams.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.full_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Visitante</Label>
+              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Visitante
+              </Label>
               <Select value={awayId} onValueChange={setAwayId}>
-                <SelectTrigger className="mt-1 h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectTrigger className="mt-1 h-9">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
                 <SelectContent>
-                  {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}
+                  {teams.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.full_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Data e hora</Label>
-              <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="mt-1 h-9" />
+              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Data e hora
+              </Label>
+              <Input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="mt-1 h-9"
+              />
             </div>
             <div>
-              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Fase / Rodada</Label>
-              <Input value={phase} onChange={(e) => setPhase(e.target.value)} placeholder="Ex.: Rodada 3" className="mt-1 h-9" />
+              <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Fase / Rodada
+              </Label>
+              <Input
+                value={phase}
+                onChange={(e) => setPhase(e.target.value)}
+                placeholder="Ex.: Rodada 3"
+                className="mt-1 h-9"
+              />
             </div>
           </div>
           <div>
-            <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Local</Label>
-            <Input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Estádio / Arena" className="mt-1 h-9" />
+            <Label className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              Local
+            </Label>
+            <Input
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
+              placeholder="Estádio / Arena"
+              className="mt-1 h-9"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button className="bg-neon text-neon-foreground hover:bg-neon/90" onClick={handleCreate} disabled={create.isPending}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button
+            className="bg-neon text-neon-foreground hover:bg-neon/90"
+            onClick={handleCreate}
+            disabled={create.isPending}
+          >
             Criar partida
           </Button>
         </DialogFooter>

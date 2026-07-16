@@ -71,7 +71,9 @@ async function upsertRegistration(
 async function loadRegistration(championshipId: string, teamId: string) {
   const { data } = await supabase
     .from("championship_teams")
-    .select("id, championship_id, team_id, organization_id, status, registration_number, created_at, updated_at")
+    .select(
+      "id, championship_id, team_id, organization_id, status, registration_number, created_at, updated_at",
+    )
     .eq("championship_id", championshipId)
     .eq("team_id", teamId)
     .maybeSingle();

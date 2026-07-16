@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChampionships } from "@/features/championships/hooks/useChampionships";
 import { useStandings } from "@/features/matches/hooks/useMatches";
@@ -36,14 +42,18 @@ function StandingsPage() {
           </p>
         </div>
         <div className="min-w-[220px]">
-          <Label className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Campeonato</Label>
+          <Label className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+            Campeonato
+          </Label>
           <Select value={championshipId} onValueChange={setChampionshipId}>
             <SelectTrigger className="mt-1 h-9 border-white/[0.08] bg-white/[0.03] text-xs">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
               {(championships.data ?? []).map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -51,7 +61,11 @@ function StandingsPage() {
       </header>
 
       <div className="card-arena overflow-hidden">
-        {standings.isLoading && <div className="p-6"><Skeleton className="h-40" /></div>}
+        {standings.isLoading && (
+          <div className="p-6">
+            <Skeleton className="h-40" />
+          </div>
+        )}
         {!standings.isLoading && rows.length === 0 && (
           <div className="grid place-items-center gap-2 p-12 text-center">
             <Trophy className="h-8 w-8 text-muted-foreground" />
@@ -80,26 +94,37 @@ function StandingsPage() {
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={r.team_id} className="border-b border-white/[0.04] transition hover:bg-white/[0.03]">
+                  <tr
+                    key={r.team_id}
+                    className="border-b border-white/[0.04] transition hover:bg-white/[0.03]"
+                  >
                     <td className="py-2.5 pl-4">
-                      <span className={cn(
-                        "grid h-6 w-6 place-items-center rounded-full font-display text-[10px] font-bold",
-                        i < 4 ? "bg-neon/15 text-neon" : i >= rows.length - 2 ? "bg-red-500/10 text-red-300" : "bg-white/5 text-muted-foreground",
-                      )}>
+                      <span
+                        className={cn(
+                          "grid h-6 w-6 place-items-center rounded-full font-display text-[10px] font-bold",
+                          i < 4
+                            ? "bg-neon/15 text-neon"
+                            : i >= rows.length - 2
+                              ? "bg-red-500/10 text-red-300"
+                              : "bg-white/5 text-muted-foreground",
+                        )}
+                      >
                         {i + 1}
                       </span>
                     </td>
-                    <td className="py-2.5 font-semibold">
-                      {r.team_short || r.team_name}
+                    <td className="py-2.5 font-semibold">{r.team_short || r.team_name}</td>
+                    <td className="number-tabular py-2.5 text-center font-display text-sm font-extrabold text-neon">
+                      {r.points}
                     </td>
-                    <td className="number-tabular py-2.5 text-center font-display text-sm font-extrabold text-neon">{r.points}</td>
                     <td className="number-tabular py-2.5 text-center">{r.played}</td>
                     <td className="number-tabular py-2.5 text-center">{r.wins}</td>
                     <td className="number-tabular py-2.5 text-center">{r.draws}</td>
                     <td className="number-tabular py-2.5 text-center">{r.losses}</td>
                     <td className="number-tabular py-2.5 text-center">{r.goals_for}</td>
                     <td className="number-tabular py-2.5 text-center">{r.goals_against}</td>
-                    <td className="number-tabular py-2.5 pr-4 text-center">{r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff}</td>
+                    <td className="number-tabular py-2.5 pr-4 text-center">
+                      {r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff}
+                    </td>
                   </tr>
                 ))}
               </tbody>

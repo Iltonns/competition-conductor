@@ -78,7 +78,10 @@ function useInvalidateAll(championshipId: string, matchId?: string) {
 
 export function useCreateMatch(championshipId: string) {
   const refresh = useInvalidateAll(championshipId);
-  return useMutation({ mutationFn: (input: CreateMatchInput) => createMatch(input), onSuccess: refresh });
+  return useMutation({
+    mutationFn: (input: CreateMatchInput) => createMatch(input),
+    onSuccess: refresh,
+  });
 }
 
 export function useUpdateMatch(championshipId: string, matchId: string) {
@@ -104,5 +107,8 @@ export function useCreateMatchEvent(championshipId: string, matchId: string) {
 
 export function useDeleteMatchEvent(championshipId: string, matchId: string) {
   const refresh = useInvalidateAll(championshipId, matchId);
-  return useMutation({ mutationFn: (eventId: string) => deleteMatchEvent(eventId), onSuccess: refresh });
+  return useMutation({
+    mutationFn: (eventId: string) => deleteMatchEvent(eventId),
+    onSuccess: refresh,
+  });
 }

@@ -44,12 +44,29 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function withTeamAccessSecurityHeaders(request: Request, response: Response): Response {
+  const pathname = new URL(request.url).pathname;
+  if (!pathname.startsWith("/team-access")) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  headers.set("Referrer-Policy", "no-referrer");
+  headers.set("X-Robots-Tag", "noindex, nofollow");
+  headers.set("X-Content-Type-Options", "nosniff");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return withTeamAccessSecurityHeaders(request, normalized);
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

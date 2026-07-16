@@ -7,8 +7,7 @@ import type {
   UpdateChampionshipDTO,
 } from "../types/championship.types";
 
-const CHAMPIONSHIP_SELECT =
-  "id, organization_id, name, slug, season, status, is_public, cover_url, description, starts_at, ends_at, created_at, updated_at, created_by" as const;
+const CHAMPIONSHIP_SELECT = "*" as const;
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
