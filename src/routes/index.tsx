@@ -123,7 +123,9 @@ function Landing() {
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="border-white/12 bg-black/20">
-                  <Link to="/c/copa-da-baixada-2026">Ver portal público</Link>
+                  <Link to="/c/$slug" params={{ slug: "copa-da-baixada-2026" }}>
+                    Ver portal público
+                  </Link>
                 </Button>
               </div>
 
