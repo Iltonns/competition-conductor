@@ -155,7 +155,9 @@ function PublicChampionship() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#050706] via-transparent to-[#050706]/40" />
           <div
             className="pointer-events-none absolute -right-32 top-10 h-[420px] w-[420px] rounded-full opacity-40 blur-3xl"
-            style={{ background: "radial-gradient(circle, oklch(0.9 0.24 128 / 0.35), transparent 65%)" }}
+            style={{
+              background: "radial-gradient(circle, oklch(0.9 0.24 128 / 0.35), transparent 65%)",
+            }}
           />
 
           <div className="relative grid gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.15fr_.85fr] md:px-12 md:py-20 lg:py-24">
@@ -172,9 +174,9 @@ function PublicChampionship() {
                 </span>
               </h1>
               <p className="mt-5 max-w-lg text-sm leading-relaxed text-white/70 sm:text-[15px]">
-                Acompanhe em tempo real a maior competição amadora da região.
-                Jogos, súmulas digitais, classificação atualizada e cobertura
-                completa das oito equipes que disputam o título.
+                Acompanhe em tempo real a maior competição amadora da região. Jogos, súmulas
+                digitais, classificação atualizada e cobertura completa das oito equipes que
+                disputam o título.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button className="h-11 bg-neon px-5 text-[12px] font-semibold uppercase tracking-[0.14em] text-neon-foreground hover:bg-neon/90">
@@ -254,7 +256,10 @@ function PublicChampionship() {
         </section>
 
         {/* Sponsors marquee */}
-        <section aria-labelledby="sponsors-title" className="border-y border-white/[0.05] bg-black/40">
+        <section
+          aria-labelledby="sponsors-title"
+          className="border-y border-white/[0.05] bg-black/40"
+        >
           <div className="flex flex-col items-center gap-4 px-5 py-6 sm:flex-row sm:gap-8 sm:px-8">
             <p
               id="sponsors-title"
@@ -357,11 +362,7 @@ function PublicChampionship() {
             </div>
 
             <div id="classificacao" className="card-arena min-w-0 p-5">
-              <SectionHeader
-                eyebrow="Grupo A"
-                title="Classificação"
-                action="Ver tabela completa"
-              />
+              <SectionHeader eyebrow="Grupo A" title="Classificação" action="Ver tabela completa" />
               <div className="mt-4">
                 <StandingsTable rows={STANDINGS} compact />
               </div>
@@ -379,7 +380,11 @@ function PublicChampionship() {
           {/* News + top scorer */}
           <section className="grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
             <div id="noticias" className="card-arena overflow-hidden p-5">
-              <SectionHeader eyebrow="Cobertura" title="Últimas notícias" action="Todas as notícias" />
+              <SectionHeader
+                eyebrow="Cobertura"
+                title="Últimas notícias"
+                action="Todas as notícias"
+              />
               <div className="mt-4 grid gap-4 md:grid-cols-[1.35fr_.65fr]">
                 <article className="group relative min-h-[320px] overflow-hidden rounded-2xl border border-white/[0.06]">
                   <img
@@ -477,7 +482,9 @@ function PublicChampionship() {
           <section className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-gradient-to-br from-neon/[0.14] via-black/40 to-black p-8 md:p-12">
             <div
               className="pointer-events-none absolute -left-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full opacity-40 blur-3xl"
-              style={{ background: "radial-gradient(circle, oklch(0.9 0.24 128 / 0.4), transparent 65%)" }}
+              style={{
+                background: "radial-gradient(circle, oklch(0.9 0.24 128 / 0.4), transparent 65%)",
+              }}
             />
             <div className="relative grid gap-6 md:grid-cols-[1.4fr_.6fr] md:items-center">
               <div>
@@ -488,8 +495,8 @@ function PublicChampionship() {
                   Gerencie seu próprio campeonato com a plataforma IS Arena.
                 </h3>
                 <p className="mt-3 max-w-lg text-sm text-white/65">
-                  Súmula digital, classificação automática, financeiro, notícias
-                  e página pública em um só lugar. Comece grátis em minutos.
+                  Súmula digital, classificação automática, financeiro, notícias e página pública em
+                  um só lugar. Comece grátis em minutos.
                 </p>
               </div>
               <div className="flex flex-col gap-3 md:items-end">
@@ -516,14 +523,17 @@ function PublicChampionship() {
             <div>
               <IsArenaLogo size={28} />
               <p className="mt-4 max-w-xs text-[11px] leading-relaxed text-white/50">
-                Portal oficial da Copa da Baixada 2026, mantido pela organização
-                em parceria com a plataforma IS Arena.
+                Portal oficial da Copa da Baixada 2026, mantido pela organização em parceria com a
+                plataforma IS Arena.
               </p>
             </div>
             {[
               { title: "Competição", items: ["Jogos", "Classificação", "Equipes", "Artilharia"] },
               { title: "Conteúdo", items: ["Notícias", "Galeria", "Transmissões", "Súmulas"] },
-              { title: "Organização", items: ["Regulamento", "Arbitragem", "Contato", "Área do organizador"] },
+              {
+                title: "Organização",
+                items: ["Regulamento", "Arbitragem", "Contato", "Área do organizador"],
+              },
             ].map((col) => (
               <div key={col.title}>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
