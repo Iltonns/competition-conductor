@@ -1,7 +1,39 @@
 import type { Database } from "@/integrations/supabase/types";
 
-export type Team = Database["public"]["Tables"]["teams"]["Row"];
-export type ChampionshipTeam = Database["public"]["Tables"]["championship_teams"]["Row"];
+type TeamRow = Database["public"]["Tables"]["teams"]["Row"];
+
+export type Team = TeamRow & {
+  abbreviation?: string | null;
+  slug?: string | null;
+  cover_url?: string | null;
+  secondary_color?: string | null;
+  state?: string | null;
+  neighborhood?: string | null;
+  foundation_year?: number | null;
+  category?: string | null;
+  gender?: string | null;
+  description?: string | null;
+  history?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  website?: string | null;
+  registration_number?: string | null;
+  internal_notes?: string | null;
+};
+
+export interface ChampionshipTeam {
+  id: string;
+  championship_id: string;
+  team_id: string;
+  organization_id: string;
+  status: string;
+  registration_number: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface TeamInChampionship {
   team: Team;
