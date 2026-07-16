@@ -48,7 +48,7 @@ ALTER TABLE public.championship_settings
 CREATE UNIQUE INDEX IF NOT EXISTS championship_teams_2c_identity_idx
   ON public.championship_teams(id, championship_id, team_id, organization_id);
 
-CREATE TABLE public.championship_team_athletes (
+CREATE TABLE IF NOT EXISTS public.championship_team_athletes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL REFERENCES public.organizations(id),
   championship_id uuid NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE public.championship_team_athletes (
     REFERENCES public.championship_teams(id, championship_id, team_id, organization_id)
 );
 
-CREATE TABLE public.team_staff (
+CREATE TABLE IF NOT EXISTS public.team_staff (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES public.organizations(id),
   team_id uuid NOT NULL, full_name text NOT NULL, photo_url text, role text NOT NULL,
   custom_role text, document_type text, document_number text, document_number_normalized text,
@@ -97,14 +97,59 @@ CREATE TABLE public.team_staff (
   created_by uuid REFERENCES auth.users(id), updated_by uuid REFERENCES auth.users(id),
   archived_at timestamptz, archived_by uuid REFERENCES auth.users(id),
   CONSTRAINT team_staff_team_fk FOREIGN KEY (team_id, organization_id) REFERENCES public.teams(id, organization_id),
-  CONSTRAINT team_staff_role_check CHECK (role IN ('coach','assistant_coach','fitness_coach','goalkeeper_coach','masseur','physiotherapist','doctor','kit_manager','supervisor','director','president','other')),
+  CONSTRAINT team_staff_role_required_check CHECK (nullif(btrim(role),'') IS NOT NULL),
   CONSTRAINT team_staff_status_check CHECK (status IN ('active','inactive','archived')),
   CONSTRAINT team_staff_custom_role_check CHECK (role <> 'other' OR nullif(btrim(custom_role),'') IS NOT NULL)
 );
 
-CREATE UNIQUE INDEX team_staff_id_organization_idx ON public.team_staff(id, organization_id);
+-- `team_staff` ja existe em alguns ambientes Lovable, mas nao estava no baseline
+-- local. Reconciliamos somente as colunas ausentes, sem recriar ou apagar dados.
+ALTER TABLE public.team_staff
+  ADD COLUMN IF NOT EXISTS custom_role text,
+  ADD COLUMN IF NOT EXISTS document_type text,
+  ADD COLUMN IF NOT EXISTS document_number_normalized text,
+  ADD COLUMN IF NOT EXISTS birth_date date,
+  ADD COLUMN IF NOT EXISTS whatsapp text,
+  ADD COLUMN IF NOT EXISTS internal_notes text,
+  ADD COLUMN IF NOT EXISTS archived_at timestamptz,
+  ADD COLUMN IF NOT EXISTS archived_by uuid REFERENCES auth.users(id);
 
-CREATE TABLE public.championship_team_staff (
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM public.team_staff s
+    LEFT JOIN public.teams t ON t.id = s.team_id
+    WHERE t.id IS NULL OR t.organization_id <> s.organization_id
+  ) THEN
+    RAISE EXCEPTION '2C bloqueada: team_staff possui equipe inexistente ou de outra organizacao';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.team_staff WHERE status NOT IN ('active','inactive','archived')) THEN
+    RAISE EXCEPTION '2C bloqueada: team_staff possui status fora do dominio suportado';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'team_staff_team_fk' AND conrelid = 'public.team_staff'::regclass) THEN
+    ALTER TABLE public.team_staff ADD CONSTRAINT team_staff_team_fk
+      FOREIGN KEY (team_id, organization_id) REFERENCES public.teams(id, organization_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'team_staff_role_required_check' AND conrelid = 'public.team_staff'::regclass) THEN
+    ALTER TABLE public.team_staff ADD CONSTRAINT team_staff_role_required_check
+      CHECK (nullif(btrim(role),'') IS NOT NULL);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'team_staff_status_check' AND conrelid = 'public.team_staff'::regclass) THEN
+    ALTER TABLE public.team_staff ADD CONSTRAINT team_staff_status_check
+      CHECK (status IN ('active','inactive','archived'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'team_staff_custom_role_check' AND conrelid = 'public.team_staff'::regclass) THEN
+    ALTER TABLE public.team_staff ADD CONSTRAINT team_staff_custom_role_check
+      CHECK (role <> 'other' OR nullif(btrim(custom_role),'') IS NOT NULL);
+  END IF;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS team_staff_id_organization_idx ON public.team_staff(id, organization_id);
+
+CREATE TABLE IF NOT EXISTS public.championship_team_staff (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES public.organizations(id),
   championship_id uuid NOT NULL, championship_team_id uuid NOT NULL, team_id uuid NOT NULL,
   staff_id uuid NOT NULL, role text NOT NULL, registration_status text NOT NULL DEFAULT 'registered',
@@ -116,7 +161,7 @@ CREATE TABLE public.championship_team_staff (
     REFERENCES public.championship_teams(id, championship_id, team_id, organization_id)
 );
 
-CREATE TABLE public.team_responsibles (
+CREATE TABLE IF NOT EXISTS public.team_responsibles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES public.organizations(id),
   team_id uuid NOT NULL, full_name text NOT NULL, role text NOT NULL, photo_url text,
   document_type text, document_number text, document_number_normalized text, phone text, whatsapp text, email text,
@@ -128,14 +173,14 @@ CREATE TABLE public.team_responsibles (
   CONSTRAINT team_responsibles_status_check CHECK (status IN ('active','inactive','archived'))
 );
 
-CREATE UNIQUE INDEX team_responsibles_one_primary_idx ON public.team_responsibles(team_id)
+CREATE UNIQUE INDEX IF NOT EXISTS team_responsibles_one_primary_idx ON public.team_responsibles(team_id)
   WHERE is_primary AND status = 'active' AND archived_at IS NULL;
-CREATE INDEX championship_team_athletes_roster_idx ON public.championship_team_athletes(championship_team_id, active);
-CREATE INDEX championship_team_athletes_athlete_idx ON public.championship_team_athletes(athlete_id);
-CREATE INDEX team_staff_team_idx ON public.team_staff(team_id, status);
-CREATE INDEX championship_team_staff_roster_idx ON public.championship_team_staff(championship_team_id, active);
-CREATE INDEX team_responsibles_team_idx ON public.team_responsibles(team_id, status);
-CREATE UNIQUE INDEX athletes_document_org_idx ON public.athletes(organization_id, document_number_normalized)
+CREATE INDEX IF NOT EXISTS championship_team_athletes_roster_idx ON public.championship_team_athletes(championship_team_id, active);
+CREATE INDEX IF NOT EXISTS championship_team_athletes_athlete_idx ON public.championship_team_athletes(athlete_id);
+CREATE INDEX IF NOT EXISTS team_staff_team_idx ON public.team_staff(team_id, status);
+CREATE INDEX IF NOT EXISTS championship_team_staff_roster_idx ON public.championship_team_staff(championship_team_id, active);
+CREATE INDEX IF NOT EXISTS team_responsibles_team_idx ON public.team_responsibles(team_id, status);
+CREATE UNIQUE INDEX IF NOT EXISTS athletes_document_org_idx ON public.athletes(organization_id, document_number_normalized)
   WHERE document_number_normalized IS NOT NULL AND archived_at IS NULL;
 
 CREATE OR REPLACE FUNCTION public.tg_roster_audit_fields() RETURNS trigger
@@ -150,9 +195,14 @@ BEGIN
   RETURN NEW;
 END $$;
 
+DROP TRIGGER IF EXISTS athletes_2c_audit ON public.athletes;
+DROP TRIGGER IF EXISTS championship_team_athletes_audit ON public.championship_team_athletes;
+DROP TRIGGER IF EXISTS team_staff_2c_audit ON public.team_staff;
+DROP TRIGGER IF EXISTS championship_team_staff_audit ON public.championship_team_staff;
+DROP TRIGGER IF EXISTS team_responsibles_audit ON public.team_responsibles;
 CREATE TRIGGER athletes_2c_audit BEFORE INSERT OR UPDATE ON public.athletes FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
 CREATE TRIGGER championship_team_athletes_audit BEFORE INSERT OR UPDATE ON public.championship_team_athletes FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
-CREATE TRIGGER team_staff_audit BEFORE INSERT OR UPDATE ON public.team_staff FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
+CREATE TRIGGER team_staff_2c_audit BEFORE INSERT OR UPDATE ON public.team_staff FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
 CREATE TRIGGER championship_team_staff_audit BEFORE INSERT OR UPDATE ON public.championship_team_staff FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
 CREATE TRIGGER team_responsibles_audit BEFORE INSERT OR UPDATE ON public.team_responsibles FOR EACH ROW EXECUTE FUNCTION public.tg_roster_audit_fields();
 
@@ -163,6 +213,9 @@ ALTER TABLE public.team_responsibles ENABLE ROW LEVEL SECURITY;
 
 DO $$ DECLARE t text; BEGIN
   FOREACH t IN ARRAY ARRAY['championship_team_athletes','team_staff','championship_team_staff','team_responsibles'] LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_member_select', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_admin_insert', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_admin_update', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (public.is_org_member(organization_id))', t || '_member_select', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (public.can_edit_org(organization_id))', t || '_admin_insert', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (public.can_edit_org(organization_id)) WITH CHECK (public.can_edit_org(organization_id))', t || '_admin_update', t);
