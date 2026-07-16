@@ -8,7 +8,7 @@ import type {
 } from "../types/championship.types";
 
 const CHAMPIONSHIP_SELECT =
-  "id, organization_id, name, slug, season, status, is_public, cover_url, description, starts_at, ends_at, created_at, updated_at, created_by, updated_by" as const;
+  "id, organization_id, name, slug, season, status, is_public, cover_url, description, starts_at, ends_at, created_at, updated_at, created_by" as const;
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -44,9 +44,11 @@ export async function fetchChampionships(organizationIds: string[]): Promise<Cha
 }
 
 export async function fetchChampionship(championshipId: string): Promise<Championship> {
-  const { data, error } = await supabase.rpc("get_championship_context", {
-    p_championship_id: championshipId,
-  });
+  const { data, error } = await supabase
+    .from("championships")
+    .select(CHAMPIONSHIP_SELECT)
+    .eq("id", championshipId)
+    .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error("championship:not_found");
   return data;
@@ -56,10 +58,10 @@ export async function fetchChampionshipOverview(
   organizationId: string,
   championshipId: string,
 ): Promise<ChampionshipOverview> {
-  const [teamsResult, matchesResult, stagesResult] = await Promise.all([
+  const [teamsResult, matchesResult] = await Promise.all([
     supabase
       .from("teams")
-      .select("id")
+      .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("championship_id", championshipId),
     supabase
@@ -67,38 +69,22 @@ export async function fetchChampionshipOverview(
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("championship_id", championshipId),
-    supabase
-      .from("competition_stages")
-      .select("name, status, sequence")
-      .eq("organization_id", organizationId)
-      .eq("championship_id", championshipId)
-      .order("sequence", { ascending: true }),
   ]);
 
   if (teamsResult.error) throw teamsResult.error;
   if (matchesResult.error) throw matchesResult.error;
-  if (stagesResult.error) throw stagesResult.error;
 
-  const teamIds = teamsResult.data.map((team) => team.id);
-  let athletes = 0;
-  if (teamIds.length > 0) {
-    const athletesResult = await supabase
-      .from("athletes")
-      .select("id", { count: "exact", head: true })
-      .eq("organization_id", organizationId)
-      .in("team_id", teamIds);
-    if (athletesResult.error) throw athletesResult.error;
-    athletes = athletesResult.count ?? 0;
-  }
-
-  const currentStage =
-    stagesResult.data.find(({ status }) => status === "active") ?? stagesResult.data.at(0);
+  const athletesResult = await supabase
+    .from("athletes")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId);
+  if (athletesResult.error) throw athletesResult.error;
 
   return {
-    teams: teamIds.length,
-    athletes,
+    teams: teamsResult.count ?? 0,
+    athletes: athletesResult.count ?? 0,
     matches: matchesResult.count ?? 0,
-    currentStage: currentStage?.name ?? null,
+    currentStage: "Fase principal",
   };
 }
 
@@ -107,18 +93,22 @@ export async function createChampionshipAtomic(
   slug: string,
   input: CreateChampionshipDTO,
 ): Promise<Championship> {
-  const { data, error } = await supabase.rpc("create_championship", {
-    p_organization_id: organizationId,
-    p_name: input.name,
-    p_slug: slug,
-    p_season: input.season ?? undefined,
-    p_description: input.description ?? undefined,
-    p_starts_at: input.starts_at ?? undefined,
-    p_ends_at: input.ends_at ?? undefined,
-    p_is_public: input.is_public,
-    p_category_name: input.category_name ?? "Categoria Principal",
-    p_create_initial_stage: true,
-  });
+  const { data: userData } = await supabase.auth.getUser();
+  const { data, error } = await supabase
+    .from("championships")
+    .insert({
+      organization_id: organizationId,
+      name: input.name,
+      slug,
+      season: input.season,
+      description: input.description,
+      starts_at: input.starts_at,
+      ends_at: input.ends_at,
+      is_public: input.is_public,
+      created_by: userData.user?.id ?? null,
+    })
+    .select(CHAMPIONSHIP_SELECT)
+    .single();
   if (error) throw error;
   if (!data) throw new Error("championship:transaction_failed");
   return data;
@@ -141,8 +131,6 @@ export async function updateChampionship(
 }
 
 export async function deleteChampionship(championshipId: string): Promise<void> {
-  const { error } = await supabase.rpc("delete_championship", {
-    p_championship_id: championshipId,
-  });
+  const { error } = await supabase.from("championships").delete().eq("id", championshipId);
   if (error) throw error;
 }
