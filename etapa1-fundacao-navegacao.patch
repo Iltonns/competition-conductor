@@ -1,0 +1,1821 @@
+diff --git a/src/components/app-shell.tsx b/src/components/app-shell.tsx
+deleted file mode 100644
+index 1ca995a..0000000
+--- a/src/components/app-shell.tsx
++++ /dev/null
+@@ -1,393 +0,0 @@
+-import { type ReactNode, useState } from "react";
+-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+-import {
+-  BarChart3,
+-  Bell,
+-  CalendarDays,
+-  ChevronDown,
+-  ChevronLeft,
+-  ChevronRight,
+-  CircleDollarSign,
+-  Flag,
+-  Handshake,
+-  Home,
+-  Image as ImageIcon,
+-  LayoutDashboard,
+-  ListOrdered,
+-  LogOut,
+-  Menu,
+-  MoreHorizontal,
+-  Plus,
+-  Settings,
+-  Shield,
+-  TableProperties,
+-  Trophy,
+-  Users,
+-} from "lucide-react";
+-import { IsArenaLogo } from "@/components/is-arena-logo";
+-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+-import { Button } from "@/components/ui/button";
+-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+-import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+-import { supabase } from "@/integrations/supabase/client";
+-import { useAuth } from "@/lib/auth-context";
+-import { cn } from "@/lib/utils";
+-
+-const NAV = [
+-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+-  { to: "/championships", label: "Campeonatos", icon: Trophy },
+-  { to: "/teams", label: "Equipes", icon: Shield },
+-  { to: "/athletes", label: "Atletas", icon: Users },
+-  { to: "/matches", label: "Partidas", icon: CalendarDays },
+-  { to: "/standings", label: "Classificação", icon: ListOrdered },
+-  { to: "/stats", label: "Estatísticas", icon: BarChart3 },
+-  { to: "/finance", label: "Financeiro", icon: CircleDollarSign },
+-  { to: "/media", label: "Mídia", icon: ImageIcon },
+-  { to: "/referees", label: "Arbitragem", icon: Flag },
+-  { to: "/sponsors", label: "Patrocinadores", icon: Handshake },
+-  { to: "/settings", label: "Configurações", icon: Settings },
+-] as const;
+-
+-const ROUTE_COPY: Record<string, { title: string; subtitle: string }> = {
+-  dashboard: { title: "Dashboard", subtitle: "Bem-vindo de volta, Lucas!" },
+-  championships: {
+-    title: "Campeonatos",
+-    subtitle: "Temporadas, formatos e publicação",
+-  },
+-  teams: { title: "Equipes", subtitle: "Clubes participantes e seus elencos" },
+-  athletes: {
+-    title: "Atletas",
+-    subtitle: "Inscrições, documentos e desempenho",
+-  },
+-  matches: { title: "Partidas", subtitle: "Agenda, resultados e súmulas" },
+-  standings: {
+-    title: "Classificação",
+-    subtitle: "Grupos e desempenho da competição",
+-  },
+-  stats: { title: "Estatísticas", subtitle: "Artilharia, cartões e destaques" },
+-  finance: { title: "Financeiro", subtitle: "Receitas, despesas e pagamentos" },
+-  media: {
+-    title: "Notícias e mídia",
+-    subtitle: "Conteúdo oficial da competição",
+-  },
+-  referees: { title: "Arbitragem", subtitle: "Oficiais, escalas e pagamentos" },
+-  sponsors: {
+-    title: "Patrocinadores",
+-    subtitle: "Cotas e exposição de marcas",
+-  },
+-  settings: { title: "Configurações", subtitle: "Preferências da organização" },
+-};
+-
+-export function AppShell({ children }: { children: ReactNode }) {
+-  const pathname = useRouterState({
+-    select: (state) => state.location.pathname,
+-  });
+-  const [collapsed, setCollapsed] = useState(false);
+-
+-  return (
+-    <div className="min-h-screen bg-arena text-foreground">
+-      <div className="pointer-events-none fixed inset-0 arena-grid opacity-35" />
+-      <div className="relative flex min-h-screen">
+-        <aside
+-          className={cn(
+-            "sticky top-0 hidden h-screen shrink-0 border-r border-white/[0.07] bg-sidebar/94 shadow-[18px_0_50px_-38px_rgba(0,0,0,.9)] backdrop-blur-xl transition-[width] duration-200 lg:flex",
+-            collapsed ? "w-[76px]" : "w-[var(--sidebar-desktop-width)]",
+-          )}
+-        >
+-          <SidebarContent
+-            pathname={pathname}
+-            collapsed={collapsed}
+-            onToggle={() => setCollapsed((value) => !value)}
+-          />
+-        </aside>
+-
+-        <div className="min-w-0 flex-1">
+-          <AppHeader pathname={pathname} />
+-          <main
+-            id="main-content"
+-            className="mx-auto w-full max-w-[var(--layout-max-width)] px-[var(--content-padding-x)] pb-28 pt-[var(--content-padding-y)] lg:pb-8"
+-          >
+-            {children}
+-          </main>
+-        </div>
+-      </div>
+-      <MobileBottomNavigation pathname={pathname} />
+-    </div>
+-  );
+-}
+-
+-function SidebarContent({
+-  pathname,
+-  collapsed = false,
+-  onToggle,
+-  onNavigate,
+-}: {
+-  pathname: string;
+-  collapsed?: boolean;
+-  onToggle?: () => void;
+-  onNavigate?: () => void;
+-}) {
+-  const { user } = useAuth();
+-  const { activeChampionship } = useChampionshipContext();
+-  const navigate = useNavigate();
+-  const displayName = user?.user_metadata?.display_name ?? "Lucas Oliveira";
+-  const initials = displayName
+-    .split(" ")
+-    .slice(0, 2)
+-    .map((part: string) => part[0])
+-    .join("")
+-    .toUpperCase();
+-
+-  return (
+-    <div className="flex h-full min-w-0 flex-1 flex-col">
+-      <div
+-        className={cn(
+-          "flex h-16 items-center border-b border-white/[0.06]",
+-          collapsed ? "justify-center px-2" : "justify-between px-4",
+-        )}
+-      >
+-        <IsArenaLogo size={32} showWordmark={!collapsed} />
+-        {onToggle && (
+-          <button
+-            type="button"
+-            onClick={onToggle}
+-            className={cn(
+-              "grid h-7 w-7 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/25 hover:text-neon",
+-              collapsed && "absolute left-[62px] bg-sidebar",
+-            )}
+-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+-          >
+-            {collapsed ? (
+-              <ChevronRight className="h-3.5 w-3.5" />
+-            ) : (
+-              <ChevronLeft className="h-3.5 w-3.5" />
+-            )}
+-          </button>
+-        )}
+-      </div>
+-
+-      {!collapsed && (
+-        <div className="border-b border-white/[0.06] px-3 py-3">
+-          <Link
+-            to="/championships"
+-            onClick={onNavigate}
+-            className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5 text-left transition hover:border-neon/20 hover:bg-white/[0.04]"
+-          >
+-            <span className="min-w-0">
+-              <span className="block text-[8px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+-                Campeonato ativo
+-              </span>
+-              <span className="mt-0.5 block truncate text-[11px] font-semibold">
+-                {activeChampionship?.name ?? "Nenhum selecionado"}
+-              </span>
+-            </span>
+-            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+-          </Link>
+-        </div>
+-      )}
+-
+-      <nav
+-        className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3"
+-        aria-label="Navegação principal"
+-      >
+-        <div className="space-y-0.5">
+-          {NAV.map((item) => {
+-            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+-            return (
+-              <Link
+-                key={item.to}
+-                to={item.to}
+-                onClick={onNavigate}
+-                title={collapsed ? item.label : undefined}
+-                aria-current={active ? "page" : undefined}
+-                className={cn(
+-                  "group flex h-9 items-center rounded-lg text-[11px] font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
+-                  collapsed ? "justify-center px-2" : "gap-3 px-3",
+-                  active
+-                    ? "bg-neon text-neon-foreground shadow-[0_9px_24px_-14px_var(--color-neon)]"
+-                    : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
+-                )}
+-              >
+-                <item.icon className="h-3.5 w-3.5 shrink-0" />
+-                {!collapsed && <span className="truncate">{item.label}</span>}
+-              </Link>
+-            );
+-          })}
+-        </div>
+-      </nav>
+-
+-      <div className={cn("border-t border-white/[0.06]", collapsed ? "p-2" : "p-3")}>
+-        {!collapsed && (
+-          <div className="mb-2 rounded-lg border border-white/[0.055] bg-white/[0.02] px-3 py-2">
+-            <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
+-              <span className="text-neon">Plano Pro</span>
+-              <span className="text-muted-foreground">62%</span>
+-            </div>
+-            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+-              <div className="h-full w-[62%] rounded-full bg-neon" />
+-            </div>
+-          </div>
+-        )}
+-
+-        <div
+-          className={cn(
+-            "flex items-center rounded-xl border border-transparent",
+-            collapsed ? "justify-center py-1" : "gap-2 px-1 py-1",
+-          )}
+-        >
+-          <Avatar className="h-8 w-8 shrink-0 border border-neon/20">
+-            <AvatarFallback className="bg-neon/10 text-[9px] font-bold text-neon">
+-              {initials || "LO"}
+-            </AvatarFallback>
+-          </Avatar>
+-          {!collapsed && (
+-            <>
+-              <span className="min-w-0 flex-1">
+-                <span className="block truncate text-[10px] font-semibold">{displayName}</span>
+-                <span className="block text-[8px] text-muted-foreground">Organizador</span>
+-              </span>
+-              <button
+-                type="button"
+-                onClick={async () => {
+-                  await supabase.auth.signOut();
+-                  navigate({ to: "/auth", replace: true });
+-                }}
+-                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+-                aria-label="Sair"
+-              >
+-                <LogOut className="h-3.5 w-3.5" />
+-              </button>
+-            </>
+-          )}
+-        </div>
+-      </div>
+-    </div>
+-  );
+-}
+-
+-function AppHeader({ pathname }: { pathname: string }) {
+-  const [menuOpen, setMenuOpen] = useState(false);
+-  const { activeChampionship } = useChampionshipContext();
+-  const segment = pathname.split("/").filter(Boolean).at(0) ?? "dashboard";
+-  const copy = ROUTE_COPY[segment] ?? {
+-    title: "IS Arena",
+-    subtitle: "Gestão completa para grandes competições",
+-  };
+-
+-  return (
+-    <header className="sticky top-0 z-30 border-b border-white/[0.065] bg-background/80 backdrop-blur-xl">
+-      <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--content-padding-x)]">
+-        <div className="flex min-w-0 items-center gap-3">
+-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+-            <SheetTrigger asChild>
+-              <Button
+-                variant="ghost"
+-                size="icon"
+-                className="h-9 w-9 lg:hidden"
+-                aria-label="Abrir menu"
+-              >
+-                <Menu className="h-4 w-4" />
+-              </Button>
+-            </SheetTrigger>
+-            <SheetContent
+-              side="left"
+-              className="w-[17rem] border-r border-white/[0.07] bg-sidebar p-0"
+-            >
+-              <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} />
+-            </SheetContent>
+-          </Sheet>
+-
+-          <IsArenaLogo size={27} showWordmark={false} className="lg:hidden" />
+-          <div className="min-w-0">
+-            <h1 className="truncate font-display text-base font-extrabold tracking-[-0.025em] sm:text-lg">
+-              {copy.title}
+-            </h1>
+-            <p className="hidden truncate text-[10px] text-muted-foreground sm:block">
+-              {copy.subtitle}
+-            </p>
+-          </div>
+-        </div>
+-
+-        <div className="flex shrink-0 items-center gap-2">
+-          <span className="hidden h-8 items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 text-[9px] font-semibold text-muted-foreground transition hover:border-neon/20 hover:text-foreground md:flex">
+-            {activeChampionship?.season ?? "Sem campeonato ativo"}
+-          </span>
+-          <button
+-            type="button"
+-            className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/20 hover:text-foreground"
+-            aria-label="Notificações"
+-          >
+-            <Bell className="h-3.5 w-3.5" />
+-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_var(--color-neon)]" />
+-          </button>
+-          <Button
+-            className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex"
+-            asChild
+-          >
+-            <Link to="/championships">
+-              <Plus className="h-3.5 w-3.5" /> Campeonatos
+-            </Link>
+-          </Button>
+-        </div>
+-      </div>
+-    </header>
+-  );
+-}
+-
+-function MobileBottomNavigation({ pathname }: { pathname: string }) {
+-  const items = [
+-    { to: "/dashboard", label: "Início", icon: Home },
+-    { to: "/matches", label: "Jogos", icon: CalendarDays },
+-    { to: "/standings", label: "Tabela", icon: TableProperties },
+-    { to: "/settings", label: "Mais", icon: MoreHorizontal },
+-  ] as const;
+-
+-  return (
+-    <nav
+-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.075] bg-background/94 px-2 pt-1.5 backdrop-blur-xl lg:hidden"
+-      aria-label="Navegação inferior"
+-    >
+-      <div className="mx-auto grid max-w-md grid-cols-5 items-end">
+-        {items.slice(0, 2).map((item) => (
+-          <MobileNavItem key={item.to} {...item} active={pathname.startsWith(item.to)} />
+-        ))}
+-        <Link
+-          to="/matches"
+-          className="mx-auto -mt-5 grid h-12 w-12 place-items-center rounded-2xl border border-neon/40 bg-neon text-neon-foreground shadow-[0_10px_28px_-10px_var(--color-neon)] transition active:scale-95"
+-          aria-label="Criar nova partida"
+-        >
+-          <Plus className="h-5 w-5" />
+-        </Link>
+-        {items.slice(2).map((item) => (
+-          <MobileNavItem key={item.to} {...item} active={pathname.startsWith(item.to)} />
+-        ))}
+-      </div>
+-    </nav>
+-  );
+-}
+-
+-function MobileNavItem({
+-  to,
+-  label,
+-  icon: Icon,
+-  active,
+-}: {
+-  to: string;
+-  label: string;
+-  icon: typeof Home;
+-  active: boolean;
+-}) {
+-  return (
+-    <Link
+-      to={to}
+-      aria-current={active ? "page" : undefined}
+-      className={cn(
+-        "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg text-[8px] font-semibold transition",
+-        active ? "text-neon" : "text-muted-foreground active:text-foreground",
+-      )}
+-    >
+-      <Icon className="h-[18px] w-[18px]" />
+-      <span>{label}</span>
+-    </Link>
+-  );
+-}
+diff --git a/src/components/layouts/championship-header.tsx b/src/components/layouts/championship-header.tsx
+new file mode 100644
+index 0000000..7510f63
+--- /dev/null
++++ b/src/components/layouts/championship-header.tsx
+@@ -0,0 +1,72 @@
++import { Link } from "@tanstack/react-router";
++import { ArrowLeft, ExternalLink, Globe2, Lock, Trophy } from "lucide-react";
++import { Badge } from "@/components/ui/badge";
++import { Button } from "@/components/ui/button";
++import { ChampionshipSwitcher } from "@/components/layouts/championship-switcher";
++import type { Championship } from "@/features/championships/types/championship.types";
++import { CHAMPIONSHIP_STATUS_LABELS } from "@/features/championships/utils/championship-display";
++
++/**
++ * Cabeçalho persistente do cockpit (plano seção 3.3):
++ * voltar aos campeonatos, logo/nome, temporada/status, seletor,
++ * indicador de publicação e ação "ver página pública".
++ */
++export function ChampionshipHeader({ championship }: { championship: Championship }) {
++  return (
++    <header className="sticky top-0 z-30 border-b border-white/[0.065] bg-background/85 backdrop-blur-xl">
++      <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-3 px-[var(--content-padding-x)]">
++        <div className="flex min-w-0 items-center gap-3">
++          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
++            <Link to="/championships" aria-label="Voltar aos campeonatos">
++              <ArrowLeft className="h-4 w-4" />
++            </Link>
++          </Button>
++
++          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-neon">
++            <Trophy className="h-4 w-4" />
++          </span>
++
++          <div className="min-w-0">
++            <h1 className="truncate font-display text-sm font-extrabold tracking-[-0.02em] sm:text-base">
++              {championship.name}
++            </h1>
++            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
++              <span className="truncate">{championship.season || "Sem temporada"}</span>
++              <span aria-hidden>·</span>
++              <Badge variant="secondary" className="h-4 px-1.5 py-0 text-[8px]">
++                {CHAMPIONSHIP_STATUS_LABELS[championship.status]}
++              </Badge>
++            </div>
++          </div>
++        </div>
++
++        <div className="flex shrink-0 items-center gap-2">
++          <span
++            className="hidden h-8 items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 text-[9px] font-semibold text-muted-foreground sm:flex"
++            title={championship.is_public ? "Publicado" : "Não publicado"}
++          >
++            {championship.is_public ? (
++              <>
++                <Globe2 className="h-3 w-3 text-neon" /> Publicado
++              </>
++            ) : (
++              <>
++                <Lock className="h-3 w-3" /> Privado
++              </>
++            )}
++          </span>
++
++          <ChampionshipSwitcher currentId={championship.id} />
++
++          {championship.is_public && (
++            <Button variant="outline" size="sm" className="hidden h-8 sm:inline-flex" asChild>
++              <a href={`/c/${championship.slug}`} target="_blank" rel="noreferrer">
++                <ExternalLink className="h-3.5 w-3.5" /> Página pública
++              </a>
++            </Button>
++          )}
++        </div>
++      </div>
++    </header>
++  );
++}
+diff --git a/src/components/layouts/championship-shell.tsx b/src/components/layouts/championship-shell.tsx
+new file mode 100644
+index 0000000..09f3b3b
+--- /dev/null
++++ b/src/components/layouts/championship-shell.tsx
+@@ -0,0 +1,53 @@
++import type { ReactNode } from "react";
++import { Home, Shield, Users } from "lucide-react";
++import { ChampionshipHeader } from "@/components/layouts/championship-header";
++import { MobileBottomNav } from "@/components/layouts/mobile-bottom-nav";
++import { ChampionshipSidebar } from "@/features/championships/components/ChampionshipSidebar";
++import type { Championship } from "@/features/championships/types/championship.types";
++
++/**
++ * Championship Shell — "Cockpit do Campeonato" (plano seção 3.3).
++ *
++ * Renderizado no lugar do Organizer Shell (nunca junto) enquanto o usuário
++ * navega em `/championships/$id/**`. Fornece o cabeçalho persistente, o
++ * menu único do campeonato e a navegação inferior contextual do mobile.
++ */
++export function ChampionshipShell({
++  championship,
++  children,
++}: {
++  championship: Championship;
++  children: ReactNode;
++}) {
++  return (
++    <div className="min-h-screen bg-arena text-foreground">
++      <div className="pointer-events-none fixed inset-0 arena-grid opacity-35" />
++      <div className="relative flex min-h-screen flex-col">
++        <ChampionshipHeader championship={championship} />
++
++        <div className="mx-auto flex w-full max-w-[var(--layout-max-width)] flex-1 items-start gap-4 px-[var(--content-padding-x)] pb-28 pt-[var(--content-padding-y)] lg:pb-8">
++          <ChampionshipSidebar championshipId={championship.id} />
++          <main id="main-content" className="min-w-0 flex-1">
++            {children}
++          </main>
++        </div>
++      </div>
++
++      {/*
++        Alvo final do plano (seção 6): Início / Jogos / Tabela / Equipes / Mais.
++        "Partidas", "Classificação" e o item "Mais" (para os demais módulos)
++        dependem de rotas ainda não conectadas ao `championshipId` (Etapa 4).
++        Até lá, o acesso aos módulos "Em breve" no mobile é feito pelo botão
++        "Mais" já embutido no `ChampionshipSidebar` (chips + sheet no topo do
++        conteúdo), evitando linkar a navegação inferior para rotas 404.
++      */}
++      <MobileBottomNav
++        items={[
++          { to: `/championships/${championship.id}`, label: "Início", icon: Home },
++          { to: `/championships/${championship.id}/teams`, label: "Equipes", icon: Shield },
++          { to: `/championships/${championship.id}/athletes`, label: "Atletas", icon: Users },
++        ]}
++      />
++    </div>
++  );
++}
+diff --git a/src/components/layouts/championship-switcher.tsx b/src/components/layouts/championship-switcher.tsx
+new file mode 100644
+index 0000000..c2f246b
+--- /dev/null
++++ b/src/components/layouts/championship-switcher.tsx
+@@ -0,0 +1,77 @@
++import { useState } from "react";
++import { Link } from "@tanstack/react-router";
++import { Check, ChevronDown, Trophy } from "lucide-react";
++import {
++  DropdownMenu,
++  DropdownMenuContent,
++  DropdownMenuItem,
++  DropdownMenuLabel,
++  DropdownMenuSeparator,
++  DropdownMenuTrigger,
++} from "@/components/ui/dropdown-menu";
++import { useChampionships } from "@/features/championships/hooks/useChampionships";
++import { CHAMPIONSHIP_STATUS_LABELS } from "@/features/championships/utils/championship-display";
++import { cn } from "@/lib/utils";
++
++/**
++ * O seletor NUNCA guarda "campeonato ativo" em estado global — ele apenas
++ * navega para `/championships/$id`. A URL continua sendo a única fonte de
++ * verdade do campeonato em uso (evita mutations no campeonato errado).
++ */
++export function ChampionshipSwitcher({ currentId }: { currentId: string }) {
++  const [open, setOpen] = useState(false);
++  const championships = useChampionships();
++
++  return (
++    <DropdownMenu open={open} onOpenChange={setOpen}>
++      <DropdownMenuTrigger asChild>
++        <button
++          type="button"
++          className="flex h-8 items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 text-[10px] font-semibold text-muted-foreground transition hover:border-neon/25 hover:text-foreground"
++          aria-label="Trocar de campeonato"
++        >
++          <Trophy className="h-3.5 w-3.5" />
++          <span className="hidden sm:inline">Trocar</span>
++          <ChevronDown className="h-3 w-3" />
++        </button>
++      </DropdownMenuTrigger>
++      <DropdownMenuContent align="end" className="w-64">
++        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
++          Meus campeonatos
++        </DropdownMenuLabel>
++        <DropdownMenuSeparator />
++        {championships.isLoading && (
++          <div className="px-2 py-3 text-center text-[10px] text-muted-foreground">
++            Carregando...
++          </div>
++        )}
++        {championships.data?.length === 0 && (
++          <div className="px-2 py-3 text-center text-[10px] text-muted-foreground">
++            Nenhum campeonato encontrado.
++          </div>
++        )}
++        {championships.data?.map((item) => (
++          <DropdownMenuItem key={item.id} asChild className="cursor-pointer">
++            <Link
++              to="/championships/$id"
++              params={{ id: item.id }}
++              className="flex items-center justify-between gap-2"
++            >
++              <span className="min-w-0 flex-1">
++                <span className="block truncate text-xs font-semibold">{item.name}</span>
++                <span className="block truncate text-[10px] text-muted-foreground">
++                  {item.season || CHAMPIONSHIP_STATUS_LABELS[item.status]}
++                </span>
++              </span>
++              {item.id === currentId && <Check className="h-3.5 w-3.5 shrink-0 text-neon" />}
++            </Link>
++          </DropdownMenuItem>
++        ))}
++        <DropdownMenuSeparator />
++        <DropdownMenuItem asChild className={cn("cursor-pointer text-xs")}>
++          <Link to="/championships">Ver todos os campeonatos</Link>
++        </DropdownMenuItem>
++      </DropdownMenuContent>
++    </DropdownMenu>
++  );
++}
+diff --git a/src/components/layouts/mobile-bottom-nav.tsx b/src/components/layouts/mobile-bottom-nav.tsx
+new file mode 100644
+index 0000000..2a6ec72
+--- /dev/null
++++ b/src/components/layouts/mobile-bottom-nav.tsx
+@@ -0,0 +1,79 @@
++import { Link, useRouterState } from "@tanstack/react-router";
++import { cn } from "@/lib/utils";
++import type { LucideIcon } from "lucide-react";
++
++export interface MobileNavEntry {
++  to: string;
++  label: string;
++  icon: LucideIcon;
++  /** Torna este item o botão de destaque central (ação principal). */
++  primary?: boolean;
++  onClick?: () => void;
++}
++
++/**
++ * Navegação inferior mobile, reutilizada pelo OrganizerShell e pelo ChampionshipShell.
++ * Cada shell decide os itens (contexto), este componente só cuida do layout/estado ativo.
++ *
++ * Regra do plano (seção 6): no organizador, os itens são
++ * Campeonatos / Equipes / Atletas / Mais; dentro do campeonato,
++ * Início / Jogos / Tabela / Equipes / Mais.
++ */
++export function MobileBottomNav({ items }: { items: MobileNavEntry[] }) {
++  const pathname = useRouterState({ select: (state) => state.location.pathname });
++
++  return (
++    <nav
++      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.075] bg-background/94 px-2 pt-1.5 backdrop-blur-xl lg:hidden"
++      aria-label="Navegação inferior"
++    >
++      <div
++        className="mx-auto grid items-end"
++        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`, maxWidth: `${items.length * 6}rem` }}
++      >
++        {items.map((item) =>
++          item.primary ? (
++            <Link
++              key={item.to}
++              to={item.to}
++              onClick={item.onClick}
++              className="mx-auto -mt-5 grid h-12 w-12 place-items-center rounded-2xl border border-neon/40 bg-neon text-neon-foreground shadow-[0_10px_28px_-10px_var(--color-neon)] transition active:scale-95"
++              aria-label={item.label}
++            >
++              <item.icon className="h-5 w-5" />
++            </Link>
++          ) : (
++            <MobileNavItem
++              key={item.to}
++              {...item}
++              active={pathname === item.to || pathname.startsWith(`${item.to}/`)}
++            />
++          ),
++        )}
++      </div>
++    </nav>
++  );
++}
++
++function MobileNavItem({
++  to,
++  label,
++  icon: Icon,
++  active,
++  onClick,
++}: MobileNavEntry & { active: boolean }) {
++  return (
++    <Link
++      to={to}
++      onClick={onClick}
++      aria-current={active ? "page" : undefined}
++      className={cn(
++        "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg text-[8px] font-semibold transition",
++        active ? "text-neon" : "text-muted-foreground active:text-foreground",
++      )}
++    >
++      <Icon className="h-[18px] w-[18px]" />
++      <span>{label}</span>
++    </Link>
++  );
++}
+diff --git a/src/components/layouts/organizer-shell.tsx b/src/components/layouts/organizer-shell.tsx
+new file mode 100644
+index 0000000..068f8dd
+--- /dev/null
++++ b/src/components/layouts/organizer-shell.tsx
+@@ -0,0 +1,133 @@
++import { type ReactNode, useState } from "react";
++import { Link, useRouterState } from "@tanstack/react-router";
++import { Bell, CalendarDays, Menu, MoreHorizontal, Plus, Shield, Trophy } from "lucide-react";
++import { IsArenaLogo } from "@/components/is-arena-logo";
++import { Button } from "@/components/ui/button";
++import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
++import { OrganizerSidebar } from "@/components/layouts/organizer-sidebar";
++import { MobileBottomNav } from "@/components/layouts/mobile-bottom-nav";
++import { cn } from "@/lib/utils";
++
++const ROUTE_COPY: Record<string, { title: string; subtitle: string }> = {
++  championships: {
++    title: "Meus campeonatos",
++    subtitle: "Temporadas, formatos e publicação",
++  },
++  teams: { title: "Equipes", subtitle: "Cadastro base de equipes da organização" },
++  athletes: { title: "Atletas", subtitle: "Cadastro base de atletas da organização" },
++  settings: { title: "Organização e configurações", subtitle: "Usuários, plano e preferências" },
++};
++
++/**
++ * Organizer Shell (plano seção 3.2 e 7).
++ *
++ * Este shell só deve envolver rotas que existem FORA de um campeonato
++ * específico (Meus campeonatos, Equipes, Atletas, Organização, Assinatura,
++ * Perfil). Rotas de dentro de um campeonato (`/championships/$id/**`) usam o
++ * `ChampionshipShell`, nunca este componente — os dois nunca devem renderizar
++ * ao mesmo tempo, para eliminar a navegação duplicada descrita no plano.
++ */
++export function OrganizerShell({ children }: { children: ReactNode }) {
++  const pathname = useRouterState({ select: (state) => state.location.pathname });
++  const [collapsed, setCollapsed] = useState(false);
++
++  return (
++    <div className="min-h-screen bg-arena text-foreground">
++      <div className="pointer-events-none fixed inset-0 arena-grid opacity-35" />
++      <div className="relative flex min-h-screen">
++        <aside
++          className={cn(
++            "sticky top-0 hidden h-screen shrink-0 border-r border-white/[0.07] bg-sidebar/94 shadow-[18px_0_50px_-38px_rgba(0,0,0,.9)] backdrop-blur-xl transition-[width] duration-200 lg:flex",
++            collapsed ? "w-[76px]" : "w-[var(--sidebar-desktop-width)]",
++          )}
++        >
++          <OrganizerSidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
++        </aside>
++
++        <div className="min-w-0 flex-1">
++          <OrganizerHeader pathname={pathname} />
++          <main
++            id="main-content"
++            className="mx-auto w-full max-w-[var(--layout-max-width)] px-[var(--content-padding-x)] pb-28 pt-[var(--content-padding-y)] lg:pb-8"
++          >
++            {children}
++          </main>
++        </div>
++      </div>
++
++      <MobileBottomNav
++        items={[
++          { to: "/championships", label: "Campeonatos", icon: Trophy },
++          { to: "/teams", label: "Equipes", icon: Shield },
++          { to: "/athletes", label: "Atletas", icon: CalendarDays },
++          { to: "/settings", label: "Mais", icon: MoreHorizontal },
++        ]}
++      />
++    </div>
++  );
++}
++
++function OrganizerHeader({ pathname }: { pathname: string }) {
++  const [menuOpen, setMenuOpen] = useState(false);
++  const segment = pathname.split("/").filter(Boolean).at(0) ?? "championships";
++  const copy = ROUTE_COPY[segment] ?? {
++    title: "IS Arena",
++    subtitle: "Portal do organizador",
++  };
++
++  return (
++    <header className="sticky top-0 z-30 border-b border-white/[0.065] bg-background/80 backdrop-blur-xl">
++      <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--content-padding-x)]">
++        <div className="flex min-w-0 items-center gap-3">
++          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
++            <SheetTrigger asChild>
++              <Button
++                variant="ghost"
++                size="icon"
++                className="h-9 w-9 lg:hidden"
++                aria-label="Abrir menu"
++              >
++                <Menu className="h-4 w-4" />
++              </Button>
++            </SheetTrigger>
++            <SheetContent
++              side="left"
++              className="w-[17rem] border-r border-white/[0.07] bg-sidebar p-0"
++            >
++              <OrganizerSidebar onNavigate={() => setMenuOpen(false)} />
++            </SheetContent>
++          </Sheet>
++
++          <IsArenaLogo size={27} showWordmark={false} className="lg:hidden" />
++          <div className="min-w-0">
++            <h1 className="truncate font-display text-base font-extrabold tracking-[-0.025em] sm:text-lg">
++              {copy.title}
++            </h1>
++            <p className="hidden truncate text-[10px] text-muted-foreground sm:block">
++              {copy.subtitle}
++            </p>
++          </div>
++        </div>
++
++        <div className="flex shrink-0 items-center gap-2">
++          <button
++            type="button"
++            className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/20 hover:text-foreground"
++            aria-label="Notificações"
++          >
++            <Bell className="h-3.5 w-3.5" />
++            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_var(--color-neon)]" />
++          </button>
++          <Button
++            className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex"
++            asChild
++          >
++            <Link to="/championships">
++              <Plus className="h-3.5 w-3.5" /> Novo campeonato
++            </Link>
++          </Button>
++        </div>
++      </div>
++    </header>
++  );
++}
+diff --git a/src/components/layouts/organizer-sidebar.tsx b/src/components/layouts/organizer-sidebar.tsx
+new file mode 100644
+index 0000000..79dc2f5
+--- /dev/null
++++ b/src/components/layouts/organizer-sidebar.tsx
+@@ -0,0 +1,190 @@
++import { useState } from "react";
++import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
++import {
++  Building2,
++  ChevronLeft,
++  ChevronRight,
++  CreditCard,
++  Globe2,
++  LogOut,
++  Shield,
++  Trophy,
++  Users,
++} from "lucide-react";
++import { IsArenaLogo } from "@/components/is-arena-logo";
++import { Avatar, AvatarFallback } from "@/components/ui/avatar";
++import { Badge } from "@/components/ui/badge";
++import { supabase } from "@/integrations/supabase/client";
++import { useAuth } from "@/lib/auth-context";
++import { cn } from "@/lib/utils";
++
++/**
++ * Itens do menu global do organizador.
++ *
++ * IMPORTANTE (plano seção 3.2): "Partidas", "Classificação", "Estatísticas",
++ * "Súmula", "Arbitragem", "Financeiro", "Mídia" e "Patrocinadores" NÃO podem
++ * aparecer aqui — são módulos do Championship Shell, não do Organizer Shell.
++ * Adicionar qualquer um deles de volta a esta lista reintroduz a navegação
++ * duplicada que este plano elimina.
++ */
++const ORGANIZER_NAV = [
++  { to: "/championships", label: "Meus campeonatos", icon: Trophy, available: true },
++  { to: "/teams", label: "Equipes", icon: Shield, available: true },
++  { to: "/athletes", label: "Atletas", icon: Users, available: true },
++  { to: "/settings", label: "Organização e usuários", icon: Building2, available: true },
++  { to: "/settings", label: "Assinatura e limites", icon: CreditCard, available: false },
++  { to: "/settings", label: "Página do organizador", icon: Globe2, available: false },
++] as const;
++
++export function OrganizerSidebar({
++  collapsed = false,
++  onToggle,
++  onNavigate,
++}: {
++  collapsed?: boolean;
++  onToggle?: () => void;
++  onNavigate?: () => void;
++}) {
++  const pathname = useRouterState({ select: (state) => state.location.pathname });
++  const { user } = useAuth();
++  const navigate = useNavigate();
++  const displayName = user?.user_metadata?.display_name ?? user?.email ?? "Organizador";
++  const initials = displayName
++    .split(" ")
++    .slice(0, 2)
++    .map((part: string) => part[0])
++    .join("")
++    .toUpperCase();
++
++  return (
++    <div className="flex h-full min-w-0 flex-1 flex-col">
++      <div
++        className={cn(
++          "flex h-16 items-center border-b border-white/[0.06]",
++          collapsed ? "justify-center px-2" : "justify-between px-4",
++        )}
++      >
++        <IsArenaLogo size={32} showWordmark={!collapsed} />
++        {onToggle && (
++          <button
++            type="button"
++            onClick={onToggle}
++            className={cn(
++              "grid h-7 w-7 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/25 hover:text-neon",
++              collapsed && "absolute left-[62px] bg-sidebar",
++            )}
++            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
++          >
++            {collapsed ? (
++              <ChevronRight className="h-3.5 w-3.5" />
++            ) : (
++              <ChevronLeft className="h-3.5 w-3.5" />
++            )}
++          </button>
++        )}
++      </div>
++
++      <nav
++        className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3"
++        aria-label="Navegação do organizador"
++      >
++        <div className="space-y-0.5">
++          {ORGANIZER_NAV.map((item) => {
++            if (!item.available) {
++              return (
++                <div
++                  key={item.label}
++                  className={cn(
++                    "flex h-9 items-center rounded-lg px-3 text-[11px] font-semibold text-sidebar-foreground/35",
++                    collapsed ? "justify-center px-2" : "gap-3",
++                  )}
++                  title={collapsed ? `${item.label} — em breve` : undefined}
++                  aria-disabled="true"
++                >
++                  <item.icon className="h-3.5 w-3.5 shrink-0" />
++                  {!collapsed && (
++                    <>
++                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
++                      <Badge variant="outline" className="px-1 text-[7px]">
++                        Em breve
++                      </Badge>
++                    </>
++                  )}
++                </div>
++              );
++            }
++
++            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
++            return (
++              <Link
++                key={item.label}
++                to={item.to}
++                onClick={onNavigate}
++                title={collapsed ? item.label : undefined}
++                aria-current={active ? "page" : undefined}
++                className={cn(
++                  "group flex h-9 items-center rounded-lg text-[11px] font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
++                  collapsed ? "justify-center px-2" : "gap-3 px-3",
++                  active
++                    ? "bg-neon text-neon-foreground shadow-[0_9px_24px_-14px_var(--color-neon)]"
++                    : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
++                )}
++              >
++                <item.icon className="h-3.5 w-3.5 shrink-0" />
++                {!collapsed && <span className="truncate">{item.label}</span>}
++              </Link>
++            );
++          })}
++        </div>
++      </nav>
++
++      <div className={cn("border-t border-white/[0.06]", collapsed ? "p-2" : "p-3")}>
++        {!collapsed && (
++          <div className="mb-2 rounded-lg border border-white/[0.055] bg-white/[0.02] px-3 py-2">
++            <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
++              <span className="text-neon">Plano</span>
++              <span className="text-muted-foreground">—</span>
++            </div>
++            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
++              <div className="h-full w-0 rounded-full bg-neon" />
++            </div>
++          </div>
++        )}
++
++        <div
++          className={cn(
++            "flex items-center rounded-xl border border-transparent",
++            collapsed ? "justify-center py-1" : "gap-2 px-1 py-1",
++          )}
++        >
++          <Avatar className="h-8 w-8 shrink-0 border border-neon/20">
++            <AvatarFallback className="bg-neon/10 text-[9px] font-bold text-neon">
++              {initials || "OR"}
++            </AvatarFallback>
++          </Avatar>
++          {!collapsed && (
++            <>
++              <span className="min-w-0 flex-1">
++                <span className="block truncate text-[10px] font-semibold">{displayName}</span>
++                <span className="block text-[8px] text-muted-foreground">Organizador</span>
++              </span>
++              <button
++                type="button"
++                onClick={async () => {
++                  await supabase.auth.signOut();
++                  navigate({ to: "/auth", replace: true });
++                }}
++                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
++                aria-label="Sair"
++              >
++                <LogOut className="h-3.5 w-3.5" />
++              </button>
++            </>
++          )}
++        </div>
++      </div>
++    </div>
++  );
++}
++
++export { ORGANIZER_NAV };
+diff --git a/src/components/layouts/system-admin/system-admin-shell.tsx b/src/components/layouts/system-admin/system-admin-shell.tsx
+new file mode 100644
+index 0000000..fa256b1
+--- /dev/null
++++ b/src/components/layouts/system-admin/system-admin-shell.tsx
+@@ -0,0 +1,37 @@
++import type { ReactNode } from "react";
++import { SystemAdminSidebar } from "@/components/layouts/system-admin/system-admin-sidebar";
++
++/**
++ * System Admin Shell (plano seção 3.6).
++ *
++ * Não reutiliza OrganizerShell nem ChampionshipShell — layout, rotas e
++ * autorização próprios. Faixa âmbar no topo reforça visualmente que esta
++ * é uma área de plataforma, não de um cliente.
++ */
++export function SystemAdminShell({ children }: { children: ReactNode }) {
++  return (
++    <div className="min-h-screen bg-arena text-foreground">
++      <div className="pointer-events-none fixed inset-0 arena-grid opacity-20" />
++      <div className="pointer-events-none fixed inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/70 to-amber-400/0" />
++      <div className="relative flex min-h-screen">
++        <aside className="sticky top-0 hidden h-screen w-[var(--sidebar-desktop-width-wide)] shrink-0 border-r border-amber-400/[0.12] bg-sidebar/94 backdrop-blur-xl lg:flex">
++          <SystemAdminSidebar />
++        </aside>
++
++        <div className="min-w-0 flex-1">
++          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-amber-400/[0.12] bg-background/85 px-[var(--content-padding-x)] backdrop-blur-xl">
++            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300">
++              Administração do sistema
++            </p>
++          </header>
++          <main
++            id="main-content"
++            className="mx-auto w-full max-w-[var(--layout-max-width)] px-[var(--content-padding-x)] py-[var(--content-padding-y)]"
++          >
++            {children}
++          </main>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/layouts/system-admin/system-admin-sidebar.tsx b/src/components/layouts/system-admin/system-admin-sidebar.tsx
+new file mode 100644
+index 0000000..c516983
+--- /dev/null
++++ b/src/components/layouts/system-admin/system-admin-sidebar.tsx
+@@ -0,0 +1,89 @@
++import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
++import {
++  Building2,
++  CreditCard,
++  Flag,
++  History,
++  LayoutDashboard,
++  LifeBuoy,
++  LogOut,
++  Settings,
++  Trophy,
++  Users,
++} from "lucide-react";
++import { IsArenaLogo } from "@/components/is-arena-logo";
++import { supabase } from "@/integrations/supabase/client";
++import { cn } from "@/lib/utils";
++
++/**
++ * Menu do painel do administrador do sistema (plano seção 3.6 e 4).
++ * Nunca compartilha rota, layout ou papel com `organization_members` —
++ * ver `src/lib/system-admin.ts` para a checagem de autorização.
++ */
++const SYSTEM_ADMIN_NAV = [
++  { to: "/system-admin", label: "Dashboard global", icon: LayoutDashboard },
++  { to: "/system-admin/organizacoes", label: "Organizações e clientes", icon: Building2 },
++  { to: "/system-admin/usuarios", label: "Usuários", icon: Users },
++  { to: "/system-admin/campeonatos", label: "Campeonatos e conteúdo", icon: Trophy },
++  { to: "/system-admin/assinaturas", label: "Planos e assinaturas", icon: CreditCard },
++  { to: "/system-admin/suporte", label: "Modo suporte", icon: LifeBuoy },
++  { to: "/system-admin/auditoria", label: "Auditoria", icon: History },
++  { to: "/system-admin/configuracoes", label: "Configuração da plataforma", icon: Settings },
++] as const;
++
++export function SystemAdminSidebar() {
++  const pathname = useRouterState({ select: (state) => state.location.pathname });
++  const navigate = useNavigate();
++
++  return (
++    <div className="flex h-full min-w-0 flex-1 flex-col">
++      <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-4">
++        <IsArenaLogo size={30} showWordmark />
++        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-amber-300">
++          Admin
++        </span>
++      </div>
++
++      <nav className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3" aria-label="Navegação administrativa">
++        <div className="space-y-0.5">
++          {SYSTEM_ADMIN_NAV.map((item) => {
++            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
++            return (
++              <Link
++                key={item.to}
++                to={item.to}
++                aria-current={active ? "page" : undefined}
++                className={cn(
++                  "group flex h-9 items-center gap-3 rounded-lg px-3 text-[11px] font-semibold transition",
++                  active
++                    ? "bg-amber-400/15 text-amber-200"
++                    : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
++                )}
++              >
++                <item.icon className="h-3.5 w-3.5 shrink-0" />
++                <span className="truncate">{item.label}</span>
++              </Link>
++            );
++          })}
++        </div>
++      </nav>
++
++      <div className="border-t border-white/[0.06] p-3">
++        <div className="mb-2 flex items-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2 text-[9px] font-semibold text-amber-200">
++          <Flag className="h-3.5 w-3.5 shrink-0" />
++          Papel de plataforma — separado das organizações
++        </div>
++        <button
++          type="button"
++          onClick={async () => {
++            await supabase.auth.signOut();
++            navigate({ to: "/auth", replace: true });
++          }}
++          className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-[10px] font-semibold text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
++        >
++          <LogOut className="h-3.5 w-3.5" /> Sair
++        </button>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/features/championships/components/ChampionshipSidebar.tsx b/src/features/championships/components/ChampionshipSidebar.tsx
+index f329532..2688dc9 100644
+--- a/src/features/championships/components/ChampionshipSidebar.tsx
++++ b/src/features/championships/components/ChampionshipSidebar.tsx
+@@ -10,11 +10,14 @@ import {
+   Flag,
+   Globe2,
+   Handshake,
++  History,
++  LayoutGrid,
+   ListOrdered,
+   Menu,
+   Newspaper,
+   Settings,
+   Shield,
++  SlidersHorizontal,
+   Trophy,
+   Users,
+ } from "lucide-react";
+@@ -23,23 +26,37 @@ import { Button } from "@/components/ui/button";
+ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+ import { cn } from "@/lib/utils";
+ 
++/**
++ * Menu único do Cockpit do Campeonato (plano seção 3.3).
++ *
++ * Esta é a ÚNICA navegação exibida quando o usuário está dentro de um
++ * campeonato — o Organizer Shell não é renderizado nesse contexto, então
++ * não há duplicidade de menus. A ordem segue o plano; itens sem página
++ * implementada ficam com `available: false` (badge "Em breve") em vez de
++ * serem omitidos, para deixar claro o que ainda falta conectar ao backend.
++ */
+ const AVAILABLE_ITEMS = [
+   { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
+   { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
+-  { label: "Atletas", icon: Users, to: "/championships/$id/athletes", available: true },
++  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
+ ] as const;
+ 
+ const ITEMS = [
+-  ...AVAILABLE_ITEMS,
++  { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
++  { label: "Configuração da competição", icon: SlidersHorizontal, available: false },
++  { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
++  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
++  { label: "Fases, grupos e rodadas", icon: LayoutGrid, available: false },
+   { label: "Partidas", icon: CalendarDays, available: false },
+   { label: "Classificação", icon: ListOrdered, available: false },
++  { label: "Súmulas", icon: ClipboardList, available: false },
+   { label: "Estatísticas", icon: BarChart3, available: false },
+-  { label: "Súmula", icon: ClipboardList, available: false },
+   { label: "Arbitragem", icon: Flag, available: false },
+   { label: "Financeiro", icon: CircleDollarSign, available: false },
+   { label: "Notícias e mídia", icon: Newspaper, available: false },
+   { label: "Patrocinadores", icon: Handshake, available: false },
+   { label: "Página pública", icon: Globe2, available: false },
++  { label: "Auditoria", icon: History, available: false },
+   { label: "Configurações", icon: Settings, available: false },
+ ] as const;
+ 
+diff --git a/src/lib/system-admin.ts b/src/lib/system-admin.ts
+new file mode 100644
+index 0000000..f2fce0a
+--- /dev/null
++++ b/src/lib/system-admin.ts
+@@ -0,0 +1,30 @@
++import { supabase } from "@/integrations/supabase/client";
++
++/**
++ * Verifica se o usuário autenticado é administrador da plataforma.
++ *
++ * REQUISITO DE BACKEND (plano seção 3.6, "Requisitos de backend do painel
++ * administrativo"): isto depende de uma função/claim `is_system_admin`
++ * verificável no servidor, separada de `organization_members`. Enquanto essa
++ * função não existir no Supabase, este helper falha fechado (nega acesso)
++ * em vez de assumir que o usuário é administrador.
++ *
++ * Nunca substitua esta checagem por um papel guardado no frontend
++ * (ex.: metadata do usuário) — autorização de plataforma tem que ser
++ * validada no backend a cada chamada, conforme a seção 5.4 do plano.
++ */
++export async function checkIsSystemAdmin(): Promise<boolean> {
++  try {
++    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC ainda não existe
++    // nos tipos gerados do Supabase; ver requisito de backend no comentário acima.
++    const { data, error } = await (supabase.rpc as any)("is_system_admin");
++    if (error) {
++      console.warn("is_system_admin RPC indisponível ainda:", error.message);
++      return false;
++    }
++    return data === true;
++  } catch (error) {
++    console.warn("Falha ao verificar is_system_admin:", error);
++    return false;
++  }
++}
+diff --git a/src/routes/_authenticated/athletes.tsx b/src/routes/_authenticated/_organizer/athletes.tsx
+similarity index 79%
+rename from src/routes/_authenticated/athletes.tsx
+rename to src/routes/_authenticated/_organizer/athletes.tsx
+index 797f07e..4c2d956 100644
+--- a/src/routes/_authenticated/athletes.tsx
++++ b/src/routes/_authenticated/_organizer/athletes.tsx
+@@ -1,7 +1,7 @@
+ import { createFileRoute } from "@tanstack/react-router";
+ import { ComingSoon } from "@/components/coming-soon";
+ 
+-export const Route = createFileRoute("/_authenticated/athletes")({
++export const Route = createFileRoute("/_authenticated/_organizer/athletes")({
+   component: () => (
+     <ComingSoon
+       title="Atletas"
+diff --git a/src/routes/_authenticated/championships.tsx b/src/routes/_authenticated/_organizer/championships.tsx
+similarity index 98%
+rename from src/routes/_authenticated/championships.tsx
+rename to src/routes/_authenticated/_organizer/championships.tsx
+index fb7f8ed..ee036d3 100644
+--- a/src/routes/_authenticated/championships.tsx
++++ b/src/routes/_authenticated/_organizer/championships.tsx
+@@ -21,7 +21,7 @@ import { useDeleteChampionship } from "@/features/championships/hooks/useDeleteC
+ import type { Championship } from "@/features/championships/types/championship.types";
+ import { getChampionshipErrorMessage } from "@/features/championships/utils/championship-display";
+ 
+-export const Route = createFileRoute("/_authenticated/championships")({
++export const Route = createFileRoute("/_authenticated/_organizer/championships")({
+   head: () => ({ meta: [{ title: "Campeonatos · IS Arena" }] }),
+   component: ChampionshipsPage,
+ });
+diff --git a/src/routes/_authenticated/dashboard.tsx b/src/routes/_authenticated/_organizer/dashboard.tsx
+similarity index 99%
+rename from src/routes/_authenticated/dashboard.tsx
+rename to src/routes/_authenticated/_organizer/dashboard.tsx
+index 4910ef7..b11aeed 100644
+--- a/src/routes/_authenticated/dashboard.tsx
++++ b/src/routes/_authenticated/_organizer/dashboard.tsx
+@@ -35,7 +35,7 @@ import { useChampionshipContext } from "@/features/championships/context/use-cha
+ import { fetchDashboardData, type DashboardData } from "@/features/dashboard/dashboard.service";
+ import { useAuth } from "@/lib/auth-context";
+ 
+-export const Route = createFileRoute("/_authenticated/dashboard")({
++export const Route = createFileRoute("/_authenticated/_organizer/dashboard")({
+   head: () => ({ meta: [{ title: "Dashboard · IS Arena" }] }),
+   component: Dashboard,
+ });
+diff --git a/src/routes/_authenticated/finance.tsx b/src/routes/_authenticated/_organizer/finance.tsx
+similarity index 99%
+rename from src/routes/_authenticated/finance.tsx
+rename to src/routes/_authenticated/_organizer/finance.tsx
+index d6677d0..fe76e6e 100644
+--- a/src/routes/_authenticated/finance.tsx
++++ b/src/routes/_authenticated/_organizer/finance.tsx
+@@ -14,7 +14,7 @@ import { SectionHeader } from "@/components/arena/arena-ui";
+ import { Button } from "@/components/ui/button";
+ import { cn } from "@/lib/utils";
+ 
+-export const Route = createFileRoute("/_authenticated/finance")({
++export const Route = createFileRoute("/_authenticated/_organizer/finance")({
+   head: () => ({ meta: [{ title: "Financeiro · IS Arena" }] }),
+   component: FinancePage,
+ });
+diff --git a/src/routes/_authenticated/matches.tsx b/src/routes/_authenticated/_organizer/matches.tsx
+similarity index 99%
+rename from src/routes/_authenticated/matches.tsx
+rename to src/routes/_authenticated/_organizer/matches.tsx
+index 1c894eb..2e3779b 100644
+--- a/src/routes/_authenticated/matches.tsx
++++ b/src/routes/_authenticated/_organizer/matches.tsx
+@@ -51,7 +51,7 @@ import {
+ } from "@/features/matches/hooks/useMatches";
+ import { cn } from "@/lib/utils";
+ 
+-export const Route = createFileRoute("/_authenticated/matches")({
++export const Route = createFileRoute("/_authenticated/_organizer/matches")({
+   head: () => ({ meta: [{ title: "Partidas · IS Arena" }] }),
+   component: MatchesPage,
+ });
+diff --git a/src/routes/_authenticated/media.tsx b/src/routes/_authenticated/_organizer/media.tsx
+similarity index 99%
+rename from src/routes/_authenticated/media.tsx
+rename to src/routes/_authenticated/_organizer/media.tsx
+index 4cde89e..bfe415b 100644
+--- a/src/routes/_authenticated/media.tsx
++++ b/src/routes/_authenticated/_organizer/media.tsx
+@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { NEWS } from "@/data/arena-demo";
+ 
+-export const Route = createFileRoute("/_authenticated/media")({
++export const Route = createFileRoute("/_authenticated/_organizer/media")({
+   head: () => ({ meta: [{ title: "Notícias e mídia · IS Arena" }] }),
+   component: MediaPage,
+ });
+diff --git a/src/routes/_authenticated/referees.tsx b/src/routes/_authenticated/_organizer/referees.tsx
+similarity index 78%
+rename from src/routes/_authenticated/referees.tsx
+rename to src/routes/_authenticated/_organizer/referees.tsx
+index eb88ac3..c56f84a 100644
+--- a/src/routes/_authenticated/referees.tsx
++++ b/src/routes/_authenticated/_organizer/referees.tsx
+@@ -1,7 +1,7 @@
+ import { createFileRoute } from "@tanstack/react-router";
+ import { ComingSoon } from "@/components/coming-soon";
+ 
+-export const Route = createFileRoute("/_authenticated/referees")({
++export const Route = createFileRoute("/_authenticated/_organizer/referees")({
+   component: () => (
+     <ComingSoon
+       title="Arbitragem"
+diff --git a/src/routes/_authenticated/_organizer/route.tsx b/src/routes/_authenticated/_organizer/route.tsx
+new file mode 100644
+index 0000000..4e047f7
+--- /dev/null
++++ b/src/routes/_authenticated/_organizer/route.tsx
+@@ -0,0 +1,18 @@
++import { createFileRoute, Outlet } from "@tanstack/react-router";
++import { OrganizerShell } from "@/components/layouts/organizer-shell";
++
++/**
++ * Layout pathless do Organizer Shell (plano seções 3.2 e 8, Etapa 1).
++ *
++ * Todo arquivo dentro de `_organizer/` (campeonatos, equipes, atletas,
++ * organização/configurações) recebe o menu global do organizador. Rotas
++ * de dentro de um campeonato (`championships_.$id.*`) ficam FORA desta
++ * pasta de propósito — elas usam o `ChampionshipShell`, não este layout.
++ */
++export const Route = createFileRoute("/_authenticated/_organizer")({
++  component: () => (
++    <OrganizerShell>
++      <Outlet />
++    </OrganizerShell>
++  ),
++});
+diff --git a/src/routes/_authenticated/settings.tsx b/src/routes/_authenticated/_organizer/settings.tsx
+similarity index 79%
+rename from src/routes/_authenticated/settings.tsx
+rename to src/routes/_authenticated/_organizer/settings.tsx
+index f453ef9..12f0835 100644
+--- a/src/routes/_authenticated/settings.tsx
++++ b/src/routes/_authenticated/_organizer/settings.tsx
+@@ -1,7 +1,7 @@
+ import { createFileRoute } from "@tanstack/react-router";
+ import { ComingSoon } from "@/components/coming-soon";
+ 
+-export const Route = createFileRoute("/_authenticated/settings")({
++export const Route = createFileRoute("/_authenticated/_organizer/settings")({
+   component: () => (
+     <ComingSoon
+       title="Configurações"
+diff --git a/src/routes/_authenticated/sponsors.tsx b/src/routes/_authenticated/_organizer/sponsors.tsx
+similarity index 79%
+rename from src/routes/_authenticated/sponsors.tsx
+rename to src/routes/_authenticated/_organizer/sponsors.tsx
+index 7433208..a4a90f1 100644
+--- a/src/routes/_authenticated/sponsors.tsx
++++ b/src/routes/_authenticated/_organizer/sponsors.tsx
+@@ -1,7 +1,7 @@
+ import { createFileRoute } from "@tanstack/react-router";
+ import { ComingSoon } from "@/components/coming-soon";
+ 
+-export const Route = createFileRoute("/_authenticated/sponsors")({
++export const Route = createFileRoute("/_authenticated/_organizer/sponsors")({
+   component: () => (
+     <ComingSoon
+       title="Patrocinadores"
+diff --git a/src/routes/_authenticated/standings.tsx b/src/routes/_authenticated/_organizer/standings.tsx
+similarity index 98%
+rename from src/routes/_authenticated/standings.tsx
+rename to src/routes/_authenticated/_organizer/standings.tsx
+index 1c2487b..8180bd3 100644
+--- a/src/routes/_authenticated/standings.tsx
++++ b/src/routes/_authenticated/_organizer/standings.tsx
+@@ -14,7 +14,7 @@ import { useChampionships } from "@/features/championships/hooks/useChampionship
+ import { useStandings } from "@/features/matches/hooks/useMatches";
+ import { cn } from "@/lib/utils";
+ 
+-export const Route = createFileRoute("/_authenticated/standings")({
++export const Route = createFileRoute("/_authenticated/_organizer/standings")({
+   head: () => ({ meta: [{ title: "Classificação · IS Arena" }] }),
+   component: StandingsPage,
+ });
+diff --git a/src/routes/_authenticated/stats.tsx b/src/routes/_authenticated/_organizer/stats.tsx
+similarity index 98%
+rename from src/routes/_authenticated/stats.tsx
+rename to src/routes/_authenticated/_organizer/stats.tsx
+index 4d97f85..3fad22a 100644
+--- a/src/routes/_authenticated/stats.tsx
++++ b/src/routes/_authenticated/_organizer/stats.tsx
+@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
+ import { useChampionships } from "@/features/championships/hooks/useChampionships";
+ import { useChampionshipStats } from "@/features/matches/hooks/useMatches";
+ 
+-export const Route = createFileRoute("/_authenticated/stats")({
++export const Route = createFileRoute("/_authenticated/_organizer/stats")({
+   head: () => ({ meta: [{ title: "Estatísticas · IS Arena" }] }),
+   component: StatsPage,
+ });
+diff --git a/src/routes/_authenticated/teams.tsx b/src/routes/_authenticated/_organizer/teams.tsx
+similarity index 80%
+rename from src/routes/_authenticated/teams.tsx
+rename to src/routes/_authenticated/_organizer/teams.tsx
+index 220bbe1..6a414fc 100644
+--- a/src/routes/_authenticated/teams.tsx
++++ b/src/routes/_authenticated/_organizer/teams.tsx
+@@ -1,7 +1,7 @@
+ import { createFileRoute } from "@tanstack/react-router";
+ import { ComingSoon } from "@/components/coming-soon";
+ 
+-export const Route = createFileRoute("/_authenticated/teams")({
++export const Route = createFileRoute("/_authenticated/_organizer/teams")({
+   component: () => (
+     <ComingSoon
+       title="Equipes"
+diff --git a/src/routes/_authenticated/championships_.$id.index.tsx b/src/routes/_authenticated/championships_.$id.index.tsx
+index b78d198..2d4024c 100644
+--- a/src/routes/_authenticated/championships_.$id.index.tsx
++++ b/src/routes/_authenticated/championships_.$id.index.tsx
+@@ -1,10 +1,12 @@
+ import { createFileRoute } from "@tanstack/react-router";
+-import { CalendarDays, Shield, UserRound, Users } from "lucide-react";
++import { CalendarDays, Shield, Trophy, UserRound, Users } from "lucide-react";
++import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Skeleton } from "@/components/ui/skeleton";
+ import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+ import { useChampionshipOverview } from "@/features/championships/hooks/useChampionship";
+ import {
++  CHAMPIONSHIP_STATUS_LABELS,
+   formatChampionshipDate,
+   formatChampionshipDateTime,
+   getChampionshipErrorMessage,
+@@ -22,6 +24,44 @@ function ChampionshipOverviewPage() {
+ 
+   return (
+     <div className="space-y-4">
++      {/*
++        Capa do campeonato. Antes vivia no layout do cockpit (repetida em
++        toda tela); agora é conteúdo só da Visão geral, para o cabeçalho
++        persistente do ChampionshipShell ficar enxuto (plano seção 3.3).
++      */}
++      <section className="card-arena overflow-hidden">
++        <div className="relative min-h-32 bg-gradient-to-br from-neon/15 via-sky-400/5 to-violet-400/10">
++          {activeChampionship.cover_url ? (
++            <img
++              src={activeChampionship.cover_url}
++              alt={`Capa de ${activeChampionship.name}`}
++              className="absolute inset-0 h-full w-full object-cover"
++            />
++          ) : (
++            <Trophy className="absolute right-8 top-1/2 h-20 w-20 -translate-y-1/2 text-white/[0.06]" />
++          )}
++          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/35 to-transparent" />
++          <div className="relative flex min-h-32 items-end gap-4 p-5">
++            <div className="min-w-0 flex-1">
++              <div className="mb-2 flex flex-wrap gap-2">
++                <Badge variant="secondary">
++                  {CHAMPIONSHIP_STATUS_LABELS[activeChampionship.status]}
++                </Badge>
++                <Badge variant="outline">
++                  {activeChampionship.is_public ? "Público" : "Privado"}
++                </Badge>
++              </div>
++              <h2 className="truncate font-display text-lg font-black sm:text-xl">
++                {activeChampionship.name}
++              </h2>
++              <p className="mt-1 text-xs text-muted-foreground">
++                {activeChampionship.season || "Temporada não informada"}
++              </p>
++            </div>
++          </div>
++        </div>
++      </section>
++
+       {overview.isLoading && (
+         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+           {[0, 1, 2, 3].map((item) => (
+diff --git a/src/routes/_authenticated/championships_.$id.tsx b/src/routes/_authenticated/championships_.$id.tsx
+index e006621..618a211 100644
+--- a/src/routes/_authenticated/championships_.$id.tsx
++++ b/src/routes/_authenticated/championships_.$id.tsx
+@@ -1,23 +1,27 @@
+ import { useEffect } from "react";
+ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+-import { ArrowLeft, Trophy } from "lucide-react";
+-import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Skeleton } from "@/components/ui/skeleton";
+-import { ChampionshipSidebar } from "@/features/championships/components/ChampionshipSidebar";
++import { ChampionshipShell } from "@/components/layouts/championship-shell";
+ import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+ import { ChampionshipDomainError } from "@/features/championships/errors/championship-errors";
+ import { useChampionship } from "@/features/championships/hooks/useChampionship";
+-import {
+-  CHAMPIONSHIP_STATUS_LABELS,
+-  getChampionshipErrorMessage,
+-} from "@/features/championships/utils/championship-display";
++import { getChampionshipErrorMessage } from "@/features/championships/utils/championship-display";
+ 
+ export const Route = createFileRoute("/_authenticated/championships_/$id")({
+-  head: () => ({ meta: [{ title: "Campeonato · IS Arena" }] }),
++  head: () => ({ meta: [{ title: "Campeonato - IS Arena" }] }),
+   component: ChampionshipLayout,
+ });
+ 
++/**
++ * Cockpit do Campeonato (plano secao 3.3, Etapa 1 e 3).
++ *
++ * Esta rota e o unico lugar que decide o championshipId - o
++ * ChampionshipShell recebe os dados ja carregados e monta o cabecalho
++ * persistente e o menu unico da competicao. Nenhuma tela abaixo dela
++ * (Outlet) deve manter um segundo estado de "campeonato ativo": a URL
++ * ($id) e a fonte de verdade (secao 4, "Regra de contexto").
++ */
+ function ChampionshipLayout() {
+   const { id } = Route.useParams();
+   const championship = useChampionship(id);
+@@ -35,82 +39,41 @@ function ChampionshipLayout() {
+       championship.error instanceof ChampionshipDomainError &&
+       championship.error.code === "FORBIDDEN";
+     return (
+-      <div className="card-arena p-8 text-center" role="alert">
+-        <h2 className="font-display text-lg font-bold">
+-          {forbidden ? "Acesso negado" : "Campeonato não encontrado"}
+-        </h2>
+-        <p className="mt-2 text-xs text-muted-foreground">
+-          {getChampionshipErrorMessage(championship.error)}
+-        </p>
+-        <div className="mt-4 flex justify-center gap-2">
+-          <Button variant="outline" onClick={() => championship.refetch()}>
+-            Tentar novamente
+-          </Button>
+-          <Button variant="outline" asChild>
+-            <Link to="/championships">Voltar</Link>
+-          </Button>
++      <div className="flex min-h-screen items-center justify-center bg-arena px-4">
++        <div className="card-arena max-w-md p-8 text-center" role="alert">
++          <h2 className="font-display text-lg font-bold">
++            {forbidden ? "Acesso negado" : "Campeonato não encontrado"}
++          </h2>
++          <p className="mt-2 text-xs text-muted-foreground">
++            {getChampionshipErrorMessage(championship.error)}
++          </p>
++          <div className="mt-4 flex justify-center gap-2">
++            <Button variant="outline" onClick={() => championship.refetch()}>
++              Tentar novamente
++            </Button>
++            <Button variant="outline" asChild>
++              <Link to="/championships">Voltar</Link>
++            </Button>
++          </div>
+         </div>
+       </div>
+     );
+   }
+ 
+-  const data = championship.data;
+   return (
+-    <div className="space-y-4">
+-      <Button variant="ghost" size="sm" asChild>
+-        <Link to="/championships">
+-          <ArrowLeft className="h-3.5 w-3.5" /> Campeonatos
+-        </Link>
+-      </Button>
+-
+-      <section className="card-arena overflow-hidden">
+-        <div className="relative min-h-40 bg-gradient-to-br from-neon/15 via-sky-400/5 to-violet-400/10">
+-          {data.cover_url ? (
+-            <img
+-              src={data.cover_url}
+-              alt={`Capa de ${data.name}`}
+-              className="absolute inset-0 h-full w-full object-cover"
+-            />
+-          ) : (
+-            <Trophy className="absolute right-8 top-1/2 h-24 w-24 -translate-y-1/2 text-white/[0.06]" />
+-          )}
+-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/35 to-transparent" />
+-          <div className="relative flex min-h-40 items-end gap-4 p-5">
+-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-white/10 bg-black/25 text-neon backdrop-blur">
+-              <Trophy className="h-6 w-6" />
+-            </span>
+-            <div className="min-w-0 flex-1">
+-              <div className="mb-2 flex flex-wrap gap-2">
+-                <Badge variant="secondary">{CHAMPIONSHIP_STATUS_LABELS[data.status]}</Badge>
+-                <Badge variant="outline">{data.is_public ? "Público" : "Privado"}</Badge>
+-              </div>
+-              <h2 className="truncate font-display text-xl font-black sm:text-2xl">{data.name}</h2>
+-              <p className="mt-1 text-xs text-muted-foreground">
+-                {data.season || "Temporada não informada"}
+-              </p>
+-            </div>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <div className="lg:flex lg:items-start lg:gap-4">
+-        <ChampionshipSidebar championshipId={data.id} />
+-        <div className="min-w-0 flex-1">
+-          <Outlet />
+-        </div>
+-      </div>
+-    </div>
++    <ChampionshipShell championship={championship.data}>
++      <Outlet />
++    </ChampionshipShell>
+   );
+ }
+ 
+ function ChampionshipLayoutSkeleton() {
+   return (
+-    <div className="space-y-4" aria-label="Carregando campeonato">
+-      <Skeleton className="h-8 w-36" />
+-      <Skeleton className="h-40 rounded-xl" />
+-      <div className="flex gap-4">
+-        <Skeleton className="hidden h-96 w-52 lg:block" />
+-        <Skeleton className="h-72 flex-1" />
++    <div className="flex min-h-screen bg-arena" aria-label="Carregando campeonato">
++      <Skeleton className="hidden h-screen w-[var(--sidebar-desktop-width)] shrink-0 lg:block" />
++      <div className="min-w-0 flex-1 space-y-4 p-6">
++        <Skeleton className="h-16 w-full" />
++        <Skeleton className="h-72 w-full" />
+       </div>
+     </div>
+   );
+diff --git a/src/routes/_authenticated/route.tsx b/src/routes/_authenticated/route.tsx
+index 98f10b8..dbba005 100644
+--- a/src/routes/_authenticated/route.tsx
++++ b/src/routes/_authenticated/route.tsx
+@@ -1,8 +1,22 @@
+ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+ import { supabase } from "@/integrations/supabase/client";
+-import { AppShell } from "@/components/app-shell";
+ import { ChampionshipProvider } from "@/features/championships/context/championship-context";
+ 
++/**
++ * Guard de autenticação compartilhado por todas as áreas do cliente
++ * (Organizer Shell e Championship Shell).
++ *
++ * IMPORTANTE: esta rota NÃO renderiza mais um shell visual (o antigo
++ * `AppShell`). Isso é intencional — era a causa raiz da navegação
++ * duplicada descrita no plano de reformulação (seção 2): o menu global
++ * aparecia por cima de qualquer página, inclusive dentro de um
++ * campeonato, que já tinha o próprio menu.
++ *
++ * Agora cada grupo de rotas filho decide seu próprio shell:
++ * - `_organizer/route.tsx`      -> OrganizerShell (fora de um campeonato)
++ * - `championships_.$id.tsx`    -> ChampionshipShell (dentro de um campeonato)
++ * Os dois nunca renderizam ao mesmo tempo.
++ */
+ export const Route = createFileRoute("/_authenticated")({
+   ssr: false,
+   beforeLoad: async () => {
+@@ -12,9 +26,7 @@ export const Route = createFileRoute("/_authenticated")({
+   },
+   component: () => (
+     <ChampionshipProvider>
+-      <AppShell>
+-        <Outlet />
+-      </AppShell>
++      <Outlet />
+     </ChampionshipProvider>
+   ),
+ });
+diff --git a/src/routes/system-admin/index.tsx b/src/routes/system-admin/index.tsx
+new file mode 100644
+index 0000000..f57135b
+--- /dev/null
++++ b/src/routes/system-admin/index.tsx
+@@ -0,0 +1,40 @@
++import { createFileRoute } from "@tanstack/react-router";
++import { AlertTriangle } from "lucide-react";
++
++export const Route = createFileRoute("/system-admin/")({
++  head: () => ({ meta: [{ title: "Administração do sistema · IS Arena" }] }),
++  component: SystemAdminDashboard,
++});
++
++/**
++ * Placeholder do dashboard global (plano seção 3.6, "Dashboard global").
++ * Os cartões reais (organizações, usuários, campeonatos, MRR, storage,
++ * alertas) dependem das views/RPCs administrativas listadas na seção
++ * "Requisitos de backend do painel administrativo" — ainda não existem.
++ */
++function SystemAdminDashboard() {
++  return (
++    <div className="space-y-4">
++      <div>
++        <h1 className="font-display text-xl font-black">Dashboard global</h1>
++        <p className="mt-1 text-xs text-muted-foreground">
++          Visão consolidada de organizações, usuários, campeonatos e assinaturas da plataforma.
++        </p>
++      </div>
++
++      <div className="card-arena flex items-start gap-3 border-amber-400/20 bg-amber-400/[0.05] p-4">
++        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
++        <div className="text-xs text-amber-100/90">
++          <p className="font-semibold">Aguardando gate de backend</p>
++          <p className="mt-1 text-amber-100/70">
++            Este painel está isolado e protegido pelo guard de{" "}
++            <code className="rounded bg-black/30 px-1">is_system_admin</code>, mas as métricas
++            reais só devem ser conectadas depois que as views/RPCs administrativas e o
++            <code className="rounded bg-black/30 px-1">admin_audit_logs</code> existirem no
++            backend, conforme o gate de prontidão do plano de reformulação.
++          </p>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/routes/system-admin/route.tsx b/src/routes/system-admin/route.tsx
+new file mode 100644
+index 0000000..1ee1e86
+--- /dev/null
++++ b/src/routes/system-admin/route.tsx
+@@ -0,0 +1,31 @@
++import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
++import { supabase } from "@/integrations/supabase/client";
++import { checkIsSystemAdmin } from "@/lib/system-admin";
++import { SystemAdminShell } from "@/components/layouts/system-admin/system-admin-shell";
++
++/**
++ * Guard da área de plataforma (plano seções 3.6 e 5.4):
++ * - autenticação exigida, igual às demais áreas;
++ * - papel de administrador da plataforma checado no backend a cada carga
++ *   de rota, nunca inferido de um valor guardado no frontend;
++ * - qualquer falha (RPC ausente, erro de rede, usuário sem o papel) nega
++ *   acesso e volta para o Portal do Organizador — nunca abre o painel
++ *   "no escuro" assumindo que está tudo certo.
++ */
++export const Route = createFileRoute("/system-admin")({
++  ssr: false,
++  beforeLoad: async () => {
++    const { data, error } = await supabase.auth.getUser();
++    if (error || !data.user) throw redirect({ to: "/auth" });
++
++    const isSystemAdmin = await checkIsSystemAdmin();
++    if (!isSystemAdmin) throw redirect({ to: "/championships" });
++
++    return { user: data.user };
++  },
++  component: () => (
++    <SystemAdminShell>
++      <Outlet />
++    </SystemAdminShell>
++  ),
++});
