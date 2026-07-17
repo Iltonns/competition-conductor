@@ -51,7 +51,7 @@ import {
 } from "@/features/matches/hooks/useMatches";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/matches")({
+export const Route = createFileRoute("/_authenticated/_organizer/matches")({
   head: () => ({ meta: [{ title: "Partidas · IS Arena" }] }),
   component: MatchesPage,
 });

@@ -21,7 +21,7 @@ import { useDeleteChampionship } from "@/features/championships/hooks/useDeleteC
 import type { Championship } from "@/features/championships/types/championship.types";
 import { getChampionshipErrorMessage } from "@/features/championships/utils/championship-display";
 
-export const Route = createFileRoute("/_authenticated/championships")({
+export const Route = createFileRoute("/_authenticated/_organizer/championships")({
   head: () => ({ meta: [{ title: "Campeonatos · IS Arena" }] }),
   component: ChampionshipsPage,
 });

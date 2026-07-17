@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NEWS } from "@/data/arena-demo";
 
-export const Route = createFileRoute("/_authenticated/media")({
+export const Route = createFileRoute("/_authenticated/_organizer/media")({
   head: () => ({ meta: [{ title: "Notícias e mídia · IS Arena" }] }),
   component: MediaPage,
 });

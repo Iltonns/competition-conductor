@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarDays, Shield, UserRound, Users } from "lucide-react";
+import { CalendarDays, Shield, Trophy, UserRound, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
 import { useChampionshipOverview } from "@/features/championships/hooks/useChampionship";
 import {
+  CHAMPIONSHIP_STATUS_LABELS,
   formatChampionshipDate,
   formatChampionshipDateTime,
   getChampionshipErrorMessage,
@@ -22,6 +24,44 @@ function ChampionshipOverviewPage() {
 
   return (
     <div className="space-y-4">
+      {/*
+        Capa do campeonato. Antes vivia no layout do cockpit (repetida em
+        toda tela); agora é conteúdo só da Visão geral, para o cabeçalho
+        persistente do ChampionshipShell ficar enxuto (plano seção 3.3).
+      */}
+      <section className="card-arena overflow-hidden">
+        <div className="relative min-h-32 bg-gradient-to-br from-neon/15 via-sky-400/5 to-violet-400/10">
+          {activeChampionship.cover_url ? (
+            <img
+              src={activeChampionship.cover_url}
+              alt={`Capa de ${activeChampionship.name}`}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <Trophy className="absolute right-8 top-1/2 h-20 w-20 -translate-y-1/2 text-white/[0.06]" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/35 to-transparent" />
+          <div className="relative flex min-h-32 items-end gap-4 p-5">
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex flex-wrap gap-2">
+                <Badge variant="secondary">
+                  {CHAMPIONSHIP_STATUS_LABELS[activeChampionship.status]}
+                </Badge>
+                <Badge variant="outline">
+                  {activeChampionship.is_public ? "Público" : "Privado"}
+                </Badge>
+              </div>
+              <h2 className="truncate font-display text-lg font-black sm:text-xl">
+                {activeChampionship.name}
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {activeChampionship.season || "Temporada não informada"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {overview.isLoading && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[0, 1, 2, 3].map((item) => (

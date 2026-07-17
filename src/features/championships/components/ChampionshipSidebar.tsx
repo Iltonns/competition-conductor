@@ -10,11 +10,14 @@ import {
   Flag,
   Globe2,
   Handshake,
+  History,
+  LayoutGrid,
   ListOrdered,
   Menu,
   Newspaper,
   Settings,
   Shield,
+  SlidersHorizontal,
   Trophy,
   Users,
 } from "lucide-react";
@@ -23,23 +26,37 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
+/**
+ * Menu único do Cockpit do Campeonato (plano seção 3.3).
+ *
+ * Esta é a ÚNICA navegação exibida quando o usuário está dentro de um
+ * campeonato — o Organizer Shell não é renderizado nesse contexto, então
+ * não há duplicidade de menus. A ordem segue o plano; itens sem página
+ * implementada ficam com `available: false` (badge "Em breve") em vez de
+ * serem omitidos, para deixar claro o que ainda falta conectar ao backend.
+ */
 const AVAILABLE_ITEMS = [
   { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
   { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
-  { label: "Atletas", icon: Users, to: "/championships/$id/athletes", available: true },
+  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
 ] as const;
 
 const ITEMS = [
-  ...AVAILABLE_ITEMS,
+  { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
+  { label: "Configuração da competição", icon: SlidersHorizontal, available: false },
+  { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
+  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
+  { label: "Fases, grupos e rodadas", icon: LayoutGrid, available: false },
   { label: "Partidas", icon: CalendarDays, available: false },
   { label: "Classificação", icon: ListOrdered, available: false },
+  { label: "Súmulas", icon: ClipboardList, available: false },
   { label: "Estatísticas", icon: BarChart3, available: false },
-  { label: "Súmula", icon: ClipboardList, available: false },
   { label: "Arbitragem", icon: Flag, available: false },
   { label: "Financeiro", icon: CircleDollarSign, available: false },
   { label: "Notícias e mídia", icon: Newspaper, available: false },
   { label: "Patrocinadores", icon: Handshake, available: false },
   { label: "Página pública", icon: Globe2, available: false },
+  { label: "Auditoria", icon: History, available: false },
   { label: "Configurações", icon: Settings, available: false },
 ] as const;
 

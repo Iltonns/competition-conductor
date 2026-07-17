@@ -14,7 +14,7 @@ import { SectionHeader } from "@/components/arena/arena-ui";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/finance")({
+export const Route = createFileRoute("/_authenticated/_organizer/finance")({
   head: () => ({ meta: [{ title: "Financeiro · IS Arena" }] }),
   component: FinancePage,
 });

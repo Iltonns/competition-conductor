@@ -1,0 +1,190 @@
+import { useState } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Globe2,
+  LogOut,
+  Shield,
+  Trophy,
+  Users,
+} from "lucide-react";
+import { IsArenaLogo } from "@/components/is-arena-logo";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { cn } from "@/lib/utils";
+
+/**
+ * Itens do menu global do organizador.
+ *
+ * IMPORTANTE (plano seção 3.2): "Partidas", "Classificação", "Estatísticas",
+ * "Súmula", "Arbitragem", "Financeiro", "Mídia" e "Patrocinadores" NÃO podem
+ * aparecer aqui — são módulos do Championship Shell, não do Organizer Shell.
+ * Adicionar qualquer um deles de volta a esta lista reintroduz a navegação
+ * duplicada que este plano elimina.
+ */
+const ORGANIZER_NAV = [
+  { to: "/championships", label: "Meus campeonatos", icon: Trophy, available: true },
+  { to: "/teams", label: "Equipes", icon: Shield, available: true },
+  { to: "/athletes", label: "Atletas", icon: Users, available: true },
+  { to: "/settings", label: "Organização e usuários", icon: Building2, available: true },
+  { to: "/settings", label: "Assinatura e limites", icon: CreditCard, available: false },
+  { to: "/settings", label: "Página do organizador", icon: Globe2, available: false },
+] as const;
+
+export function OrganizerSidebar({
+  collapsed = false,
+  onToggle,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onToggle?: () => void;
+  onNavigate?: () => void;
+}) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const displayName = user?.user_metadata?.display_name ?? user?.email ?? "Organizador";
+  const initials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((part: string) => part[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="flex h-full min-w-0 flex-1 flex-col">
+      <div
+        className={cn(
+          "flex h-16 items-center border-b border-white/[0.06]",
+          collapsed ? "justify-center px-2" : "justify-between px-4",
+        )}
+      >
+        <IsArenaLogo size={32} showWordmark={!collapsed} />
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/25 hover:text-neon",
+              collapsed && "absolute left-[62px] bg-sidebar",
+            )}
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            )}
+          </button>
+        )}
+      </div>
+
+      <nav
+        className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3"
+        aria-label="Navegação do organizador"
+      >
+        <div className="space-y-0.5">
+          {ORGANIZER_NAV.map((item) => {
+            if (!item.available) {
+              return (
+                <div
+                  key={item.label}
+                  className={cn(
+                    "flex h-9 items-center rounded-lg px-3 text-[11px] font-semibold text-sidebar-foreground/35",
+                    collapsed ? "justify-center px-2" : "gap-3",
+                  )}
+                  title={collapsed ? `${item.label} — em breve` : undefined}
+                  aria-disabled="true"
+                >
+                  <item.icon className="h-3.5 w-3.5 shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      <Badge variant="outline" className="px-1 text-[7px]">
+                        Em breve
+                      </Badge>
+                    </>
+                  )}
+                </div>
+              );
+            }
+
+            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+            return (
+              <Link
+                key={item.label}
+                to={item.to}
+                onClick={onNavigate}
+                title={collapsed ? item.label : undefined}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "group flex h-9 items-center rounded-lg text-[11px] font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
+                  collapsed ? "justify-center px-2" : "gap-3 px-3",
+                  active
+                    ? "bg-neon text-neon-foreground shadow-[0_9px_24px_-14px_var(--color-neon)]"
+                    : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
+                )}
+              >
+                <item.icon className="h-3.5 w-3.5 shrink-0" />
+                {!collapsed && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className={cn("border-t border-white/[0.06]", collapsed ? "p-2" : "p-3")}>
+        {!collapsed && (
+          <div className="mb-2 rounded-lg border border-white/[0.055] bg-white/[0.02] px-3 py-2">
+            <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
+              <span className="text-neon">Plano</span>
+              <span className="text-muted-foreground">—</span>
+            </div>
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="h-full w-0 rounded-full bg-neon" />
+            </div>
+          </div>
+        )}
+
+        <div
+          className={cn(
+            "flex items-center rounded-xl border border-transparent",
+            collapsed ? "justify-center py-1" : "gap-2 px-1 py-1",
+          )}
+        >
+          <Avatar className="h-8 w-8 shrink-0 border border-neon/20">
+            <AvatarFallback className="bg-neon/10 text-[9px] font-bold text-neon">
+              {initials || "OR"}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[10px] font-semibold">{displayName}</span>
+                <span className="block text-[8px] text-muted-foreground">Organizador</span>
+              </span>
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  navigate({ to: "/auth", replace: true });
+                }}
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                aria-label="Sair"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export { ORGANIZER_NAV };

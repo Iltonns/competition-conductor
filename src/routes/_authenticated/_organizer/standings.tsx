@@ -14,7 +14,7 @@ import { useChampionships } from "@/features/championships/hooks/useChampionship
 import { useStandings } from "@/features/matches/hooks/useMatches";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/standings")({
+export const Route = createFileRoute("/_authenticated/_organizer/standings")({
   head: () => ({ meta: [{ title: "Classificação · IS Arena" }] }),
   component: StandingsPage,
 });

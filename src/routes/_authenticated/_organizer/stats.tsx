@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useChampionships } from "@/features/championships/hooks/useChampionships";
 import { useChampionshipStats } from "@/features/matches/hooks/useMatches";
 
-export const Route = createFileRoute("/_authenticated/stats")({
+export const Route = createFileRoute("/_authenticated/_organizer/stats")({
   head: () => ({ meta: [{ title: "Estatísticas · IS Arena" }] }),
   component: StatsPage,
 });

@@ -35,7 +35,7 @@ import { useChampionshipContext } from "@/features/championships/context/use-cha
 import { fetchDashboardData, type DashboardData } from "@/features/dashboard/dashboard.service";
 import { useAuth } from "@/lib/auth-context";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/_authenticated/_organizer/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · IS Arena" }] }),
   component: Dashboard,
 });
