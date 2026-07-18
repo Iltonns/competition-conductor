@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { athleteSchema } from "../schemas/athlete.schema";
 import { useRegisterAthlete, useRoster, useRosterAthlete } from "../hooks/useRoster";
 
@@ -20,7 +21,8 @@ export function RosterPage({ championshipId, teamId }: { championshipId: string;
     );
   if (query.error)
     return (
-      <State
+      <EmptyState
+        variant="error"
         title="Não foi possível carregar o elenco"
         action={<Button onClick={() => query.refetch()}>Tentar novamente</Button>}
       />
@@ -65,7 +67,8 @@ export function RosterPage({ championshipId, teamId }: { championshipId: string;
           ))}
         </div>
       ) : (
-        <State
+        <EmptyState
+          icon={UserRound}
           title="Nenhum atleta inscrito"
           action={
             <Button asChild>
@@ -204,7 +207,7 @@ export function AthleteDetailPage({
 }) {
   const q = useRosterAthlete(championshipId, teamId, athleteId);
   if (q.isLoading) return <Skeleton className="h-56 rounded-xl" />;
-  if (!q.data) return <State title="Atleta não encontrado nesta equipe" />;
+  if (!q.data) return <EmptyState icon={UserRound} title="Atleta não encontrado nesta equipe" />;
   const a = q.data;
   return (
     <div className="space-y-4">
@@ -234,16 +237,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span>{label}</span>
       {children}
     </label>
-  );
-}
-function State({ title, action }: { title: string; action?: React.ReactNode }) {
-  return (
-    <section className="card-arena grid min-h-52 place-items-center p-6 text-center">
-      <div>
-        <UserRound className="mx-auto h-8 w-8 text-neon" />
-        <h2 className="mt-3 font-bold">{title}</h2>
-        {action && <div className="mt-4">{action}</div>}
-      </div>
-    </section>
   );
 }

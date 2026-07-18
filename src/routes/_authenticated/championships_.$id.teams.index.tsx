@@ -4,6 +4,7 @@ import { Plus, Search, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { TeamCard } from "@/features/teams/components/TeamCard";
 import { useTeams } from "@/features/teams/hooks/useTeams";
 import { getTeamErrorMessage } from "@/features/teams/utils/team-utils";
@@ -42,7 +43,8 @@ function TeamsListPage() {
     );
   if (query.error)
     return (
-      <State
+      <EmptyState
+        variant="error"
         title="Não foi possível carregar as equipes"
         description={getTeamErrorMessage(query.error)}
         action={
@@ -106,14 +108,14 @@ function TeamsListPage() {
           )}
         </>
       ) : (
-        <State
+        <EmptyState
+          icon={Shield}
           title={query.data?.length ? "Nenhuma equipe encontrada" : "Nenhuma equipe cadastrada"}
           description={
             query.data?.length
               ? "Ajuste a busca ou os filtros."
               : "Cadastre a primeira equipe deste campeonato."
           }
-          icon
           action={
             !query.data?.length ? (
               <Button asChild>
@@ -126,33 +128,5 @@ function TeamsListPage() {
         />
       )}
     </div>
-  );
-}
-
-function State({
-  title,
-  description,
-  icon,
-  action,
-}: {
-  title: string;
-  description: string;
-  icon?: boolean;
-  action?: React.ReactNode;
-}) {
-  return (
-    <section
-      className="card-arena flex min-h-64 flex-col items-center justify-center p-6 text-center"
-      role="status"
-    >
-      {icon && (
-        <span className="grid h-12 w-12 place-items-center rounded-xl bg-neon/10 text-neon">
-          <Shield className="h-6 w-6" />
-        </span>
-      )}
-      <h2 className="mt-4 font-display text-sm font-bold">{title}</h2>
-      <p className="mt-1 max-w-sm text-[10px] text-muted-foreground">{description}</p>
-      {action && <div className="mt-4">{action}</div>}
-    </section>
   );
 }

@@ -2,18 +2,10 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { ChampionshipCard } from "@/features/championships/components/ChampionshipCard";
 import { ChampionshipDialog } from "@/features/championships/components/ChampionshipDialog";
 import { useChampionships } from "@/features/championships/hooks/useChampionships";
@@ -71,30 +63,25 @@ function ChampionshipsPage() {
       {championships.isLoading && <ChampionshipsSkeleton />}
 
       {championships.error && !championships.isLoading && (
-        <div className="card-arena p-6 text-center" role="alert">
-          <p className="text-sm font-semibold">Não foi possível carregar os campeonatos.</p>
-          <p className="mt-1 text-[10px] text-muted-foreground">
-            {getChampionshipErrorMessage(championships.error)}
-          </p>
-          <Button variant="outline" className="mt-4" onClick={() => championships.refetch()}>
-            Tentar novamente
-          </Button>
-        </div>
+        <EmptyState
+          variant="error"
+          title="Não foi possível carregar os campeonatos."
+          description={getChampionshipErrorMessage(championships.error)}
+          action={
+            <Button variant="outline" onClick={() => championships.refetch()}>
+              Tentar novamente
+            </Button>
+          }
+        />
       )}
 
       {!championships.isLoading && !championships.error && championships.data?.length === 0 && (
-        <div className="card-arena flex min-h-56 flex-col items-center justify-center p-6 text-center">
-          <span className="grid h-12 w-12 place-items-center rounded-xl bg-neon/10 text-neon">
-            <Trophy className="h-6 w-6" />
-          </span>
-          <h3 className="mt-4 font-display text-sm font-bold">Nenhum campeonato criado</h3>
-          <p className="mt-1 max-w-sm text-[10px] text-muted-foreground">
-            Crie a primeira competição para começar a configurar categorias e regulamento.
-          </p>
-          <Button className="mt-4" onClick={openCreate}>
-            Criar primeiro campeonato
-          </Button>
-        </div>
+        <EmptyState
+          icon={Trophy}
+          title="Nenhum campeonato criado"
+          description="Crie a primeira competição para começar a configurar categorias e regulamento."
+          action={<Button onClick={openCreate}>Criar primeiro campeonato</Button>}
+        />
       )}
 
       {championships.data && championships.data.length > 0 && (
@@ -118,30 +105,22 @@ function ChampionshipsPage() {
 
       <ChampionshipDialog open={formOpen} championship={editing} onOpenChange={setFormOpen} />
 
-      <AlertDialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir campeonato?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleting?.name} será excluído permanentemente. A exclusão será bloqueada se houver
-              partidas, inscrições ou equipes vinculadas.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleteMutation.isPending}
-              onClick={(event) => {
-                event.preventDefault();
-                void confirmDelete();
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? "Verificando..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmActionDialog
+        open={Boolean(deleting)}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title="Excluir campeonato?"
+        description={
+          <>
+            {deleting?.name} será excluído permanentemente. A exclusão será bloqueada se houver
+            partidas, inscrições ou equipes vinculadas.
+          </>
+        }
+        confirmLabel="Excluir"
+        pendingLabel="Verificando..."
+        destructive
+        isPending={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

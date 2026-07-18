@@ -2,19 +2,11 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Archive, ArrowLeft, Edit3, MapPin, RotateCcw, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { TeamAccessPanel } from "@/features/team-access/components/TeamAccessPanel";
 import { useArchiveTeam, useRemoveTeamLink, useTeam } from "@/features/teams/hooks/useTeams";
 import { getTeamErrorMessage } from "@/features/teams/utils/team-utils";
@@ -41,20 +33,23 @@ function TeamDetailPage() {
     );
   if (query.error || !query.data)
     return (
-      <section className="card-arena p-8 text-center" role="alert">
-        <h1 className="font-display text-lg font-bold">Equipe não encontrada</h1>
-        <p className="mt-2 text-xs text-muted-foreground">{getTeamErrorMessage(query.error)}</p>
-        <div className="mt-4 flex justify-center gap-2">
-          <Button variant="outline" onClick={() => query.refetch()}>
-            Tentar novamente
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/championships/$id/teams" params={{ id }}>
-              Voltar
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <EmptyState
+        variant="error"
+        title="Equipe não encontrada"
+        description={getTeamErrorMessage(query.error)}
+        action={
+          <>
+            <Button variant="outline" onClick={() => query.refetch()}>
+              Tentar novamente
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/championships/$id/teams" params={{ id }}>
+                Voltar
+              </Link>
+            </Button>
+          </>
+        }
+      />
     );
   const { team, registration } = query.data;
   const archived = registration.status === "archived";
@@ -153,29 +148,16 @@ function TeamDetailPage() {
         )}
       </section>
       <TeamAccessPanel championshipId={id} teamId={teamId} />
-      <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remover vínculo com o campeonato?</AlertDialogTitle>
-            <AlertDialogDescription>
-              A operação só será permitida se não houver partidas ou histórico esportivo. O cadastro
-              da equipe será preservado.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(event) => {
-                event.preventDefault();
-                void removeLink();
-              }}
-              disabled={pending}
-            >
-              {pending ? "Removendo..." : "Remover vínculo"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmActionDialog
+        open={confirmRemove}
+        onOpenChange={setConfirmRemove}
+        title="Remover vínculo com o campeonato?"
+        description="A operação só será permitida se não houver partidas ou histórico esportivo. O cadastro da equipe será preservado."
+        confirmLabel="Remover vínculo"
+        pendingLabel="Removendo..."
+        isPending={pending}
+        onConfirm={removeLink}
+      />
     </div>
   );
 }
