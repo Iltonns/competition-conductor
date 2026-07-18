@@ -2869,6 +2869,7 @@ export type Database = {
           points_adjustment: number;
           position: number;
           stage_id: string | null;
+          status: string;
           team_id: string;
           updated_at: string;
           wins: number;
@@ -2893,6 +2894,7 @@ export type Database = {
           points_adjustment?: number;
           position?: number;
           stage_id?: string | null;
+          status?: string;
           team_id: string;
           updated_at?: string;
           wins?: number;
@@ -2917,6 +2919,7 @@ export type Database = {
           points_adjustment?: number;
           position?: number;
           stage_id?: string | null;
+          status?: string;
           team_id?: string;
           updated_at?: string;
           wins?: number;
@@ -4400,6 +4403,7 @@ export type Database = {
       app_role: "owner" | "admin" | "editor" | "viewer" | "manager" | "team_manager" | "referee";
       championship_status:
         | "draft"
+        | "published"
         | "active"
         | "finished"
         | "archived"
@@ -4553,6 +4557,7 @@ export const Constants = {
       app_role: ["owner", "admin", "editor", "viewer", "manager", "team_manager", "referee"],
       championship_status: [
         "draft",
+        "published",
         "active",
         "finished",
         "archived",

@@ -328,7 +328,9 @@ export async function fetchDashboardData(
   );
 
   return {
-    activeChampionships: championships.filter(({ status }) => status === "active").length,
+    activeChampionships: championships.filter(
+      ({ status }) => status === "active" || status === "published",
+    ).length,
     teams: new Set(registrations.map(({ team_id }) => team_id).filter(Boolean)).size,
     athletes: new Set(roster.map(({ athlete_id }) => athlete_id).filter(Boolean)).size,
     finishedMatches: finished.length,
@@ -344,6 +346,8 @@ export async function fetchDashboardData(
     performance,
     years,
     featuredChampionship:
-      championships.find(({ status }) => status === "active") ?? championships[0] ?? null,
+      championships.find(({ status }) => status === "active" || status === "published") ??
+      championships[0] ??
+      null,
   };
 }

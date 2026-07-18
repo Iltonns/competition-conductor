@@ -16,6 +16,7 @@ export const championshipSchema = z
     is_public: z.boolean(),
     status: z.enum([
       "draft",
+      "published",
       "registration_open",
       "preparing",
       "active",

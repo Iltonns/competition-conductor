@@ -24,7 +24,8 @@ export const matchKeys = {
     ["matches", "detail", championshipId, matchId] as const,
   events: (championshipId: string, matchId: string) =>
     ["matches", "events", championshipId, matchId] as const,
-  standings: (championshipId: string) => ["matches", "standings", championshipId] as const,
+  standings: (championshipId: string, stageId?: string | null, groupId?: string | null) =>
+    ["matches", "standings", championshipId, stageId ?? null, groupId ?? null] as const,
   stats: (championshipId: string) => ["matches", "stats", championshipId] as const,
 };
 
@@ -52,10 +53,14 @@ export function useMatchEvents(championshipId: string, matchId: string) {
   });
 }
 
-export function useStandings(championshipId: string) {
+export function useStandings(
+  championshipId: string,
+  stageId?: string | null,
+  groupId?: string | null,
+) {
   return useQuery({
-    queryKey: matchKeys.standings(championshipId),
-    queryFn: () => listStandings(championshipId),
+    queryKey: matchKeys.standings(championshipId, stageId, groupId),
+    queryFn: () => listStandings(championshipId, stageId ?? null, groupId ?? null),
     enabled: Boolean(championshipId),
   });
 }
@@ -72,7 +77,7 @@ function useInvalidateAll(championshipId: string, matchId?: string) {
   const qc = useQueryClient();
   return async () => {
     await qc.invalidateQueries({ queryKey: ["matches", "list", championshipId] });
-    await qc.invalidateQueries({ queryKey: matchKeys.standings(championshipId) });
+    await qc.invalidateQueries({ queryKey: ["matches", "standings", championshipId] });
     await qc.invalidateQueries({ queryKey: matchKeys.stats(championshipId) });
     if (matchId) {
       await qc.invalidateQueries({ queryKey: matchKeys.detail(championshipId, matchId) });

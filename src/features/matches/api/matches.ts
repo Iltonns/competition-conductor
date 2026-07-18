@@ -232,19 +232,24 @@ export interface StandingRow {
   goal_diff: number;
   points: number;
   position: number;
+  status: string;
 }
 
-export async function listStandings(championshipId: string): Promise<StandingRow[]> {
-  const { data, error } = await supabase
+export async function listStandings(
+  championshipId: string,
+  stageId: string | null = null,
+  groupId: string | null = null,
+): Promise<StandingRow[]> {
+  let query = supabase
     .from("standings")
     .select(
-      "team_id, position, played, wins, draws, losses, goals_for, goals_against, goal_difference, points, team:teams!standings_team_id_fkey(name, short_name, crest_url)",
+      "team_id, position, played, wins, draws, losses, goals_for, goals_against, goal_difference, points, status, team:teams!standings_team_id_fkey(name, short_name, crest_url)",
     )
     .eq("championship_id", championshipId)
-    .is("stage_id", null)
-    .is("group_id", null)
-    .is("category_id", null)
-    .order("position");
+    .is("category_id", null);
+  query = stageId ? query.eq("stage_id", stageId) : query.is("stage_id", null);
+  query = groupId ? query.eq("group_id", groupId) : query.is("group_id", null);
+  const { data, error } = await query.order("position");
   if (error) throw error;
   return (data ?? []).map((row) => {
     const team = row.team as unknown as {
@@ -266,6 +271,7 @@ export async function listStandings(championshipId: string): Promise<StandingRow
       goal_diff: row.goal_difference,
       points: row.points,
       position: row.position,
+      status: row.status,
     };
   });
 }

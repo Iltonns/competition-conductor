@@ -30,7 +30,12 @@ import type { NavItem } from "@/features/navigation/types";
  */
 export const CHAMPIONSHIP_NAV = [
   { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
-  { label: "Configuração da competição", icon: SlidersHorizontal, available: false },
+  {
+    label: "Configuração da competição",
+    icon: SlidersHorizontal,
+    to: "/championships/$id/configuration",
+    available: true,
+  },
   { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
   {
     label: "Inscrições e atletas",
@@ -38,7 +43,12 @@ export const CHAMPIONSHIP_NAV = [
     to: "/championships/$id/athletes",
     available: true,
   },
-  { label: "Fases, grupos e rodadas", icon: LayoutGrid, available: false },
+  {
+    label: "Fases, grupos e rodadas",
+    icon: LayoutGrid,
+    to: "/championships/$id/structure",
+    available: true,
+  },
   { label: "Partidas", icon: CalendarDays, to: "/championships/$id/matches", available: true },
   {
     label: "Classificação",
