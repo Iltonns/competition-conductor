@@ -29,7 +29,10 @@ export function MobileBottomNav({ items }: { items: MobileNavEntry[] }) {
     >
       <div
         className="mx-auto grid items-end"
-        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`, maxWidth: `${items.length * 6}rem` }}
+        style={{
+          gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
+          maxWidth: `${items.length * 6}rem`,
+        }}
       >
         {items.map((item) =>
           item.primary ? (

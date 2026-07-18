@@ -1,5 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
+type SystemAdminRpcClient = {
+  rpc: (name: "is_system_admin") => PromiseLike<{
+    data: boolean | null;
+    error: { message: string } | null;
+  }>;
+};
+
 /**
  * Verifica se o usuário autenticado é administrador da plataforma.
  *
@@ -15,9 +22,10 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export async function checkIsSystemAdmin(): Promise<boolean> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC ainda não existe
-    // nos tipos gerados do Supabase; ver requisito de backend no comentário acima.
-    const { data, error } = await (supabase.rpc as any)("is_system_admin");
+    // Contrato local e restrito enquanto a RPC fail-closed ainda não faz parte dos
+    // tipos oficiais. Remover este adapter quando a Fase 6 entregar a função real.
+    const systemAdminClient = supabase as unknown as SystemAdminRpcClient;
+    const { data, error } = await systemAdminClient.rpc("is_system_admin");
     if (error) {
       console.warn("is_system_admin RPC indisponível ainda:", error.message);
       return false;

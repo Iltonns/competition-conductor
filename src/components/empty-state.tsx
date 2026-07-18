@@ -59,7 +59,9 @@ export function EmptyState({
       {description && (
         <p className="mt-1 max-w-sm text-[10px] leading-4 text-muted-foreground">{description}</p>
       )}
-      {action && <div className="mt-4 flex flex-wrap items-center justify-center gap-2">{action}</div>}
+      {action && (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">{action}</div>
+      )}
     </section>
   );
 }

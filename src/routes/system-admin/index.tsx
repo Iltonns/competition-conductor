@@ -28,10 +28,10 @@ function SystemAdminDashboard() {
           <p className="font-semibold">Aguardando gate de backend</p>
           <p className="mt-1 text-amber-100/70">
             Este painel está isolado e protegido pelo guard de{" "}
-            <code className="rounded bg-black/30 px-1">is_system_admin</code>, mas as métricas
-            reais só devem ser conectadas depois que as views/RPCs administrativas e o
-            <code className="rounded bg-black/30 px-1">admin_audit_logs</code> existirem no
-            backend, conforme o gate de prontidão do plano de reformulação.
+            <code className="rounded bg-black/30 px-1">is_system_admin</code>, mas as métricas reais
+            só devem ser conectadas depois que as views/RPCs administrativas e o
+            <code className="rounded bg-black/30 px-1">admin_audit_logs</code> existirem no backend,
+            conforme o gate de prontidão do plano de reformulação.
           </p>
         </div>
       </div>

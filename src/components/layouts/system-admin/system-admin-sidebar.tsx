@@ -29,7 +29,10 @@ export function SystemAdminSidebar() {
         </span>
       </div>
 
-      <nav className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3" aria-label="Navegação administrativa">
+      <nav
+        className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3"
+        aria-label="Navegação administrativa"
+      >
         <div className="space-y-0.5">
           {SYSTEM_ADMIN_NAV.map((item) => {
             if (!item.available) {

@@ -32,7 +32,12 @@ export const CHAMPIONSHIP_NAV = [
   { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
   { label: "Configuração da competição", icon: SlidersHorizontal, available: false },
   { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
-  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
+  {
+    label: "Inscrições e atletas",
+    icon: Users,
+    to: "/championships/$id/athletes",
+    available: true,
+  },
   { label: "Fases, grupos e rodadas", icon: LayoutGrid, available: false },
   { label: "Partidas", icon: CalendarDays, available: false },
   { label: "Classificação", icon: ListOrdered, available: false },
@@ -51,5 +56,10 @@ export const CHAMPIONSHIP_NAV = [
 export const CHAMPIONSHIP_QUICK_NAV = [
   { label: "Visão geral", icon: Trophy, to: "/championships/$id", available: true },
   { label: "Equipes", icon: Shield, to: "/championships/$id/teams", available: true },
-  { label: "Inscrições e atletas", icon: Users, to: "/championships/$id/athletes", available: true },
+  {
+    label: "Inscrições e atletas",
+    icon: Users,
+    to: "/championships/$id/athletes",
+    available: true,
+  },
 ] as const satisfies NavItem[];

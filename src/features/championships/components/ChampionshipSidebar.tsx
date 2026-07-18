@@ -4,7 +4,10 @@ import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { CHAMPIONSHIP_NAV, CHAMPIONSHIP_QUICK_NAV } from "@/features/navigation/championship-nav.config";
+import {
+  CHAMPIONSHIP_NAV,
+  CHAMPIONSHIP_QUICK_NAV,
+} from "@/features/navigation/championship-nav.config";
 import { NavRowContent, navRowClassName } from "@/features/navigation/nav-row";
 
 /**

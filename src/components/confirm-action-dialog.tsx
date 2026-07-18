@@ -66,7 +66,9 @@ export function ConfirmActionDialog({
               event.preventDefault();
               void onConfirm();
             }}
-            className={cn(destructive && "bg-destructive text-destructive-foreground hover:bg-destructive/90")}
+            className={cn(
+              destructive && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+            )}
           >
             {isPending ? (pendingLabel ?? `${confirmLabel}...`) : confirmLabel}
           </AlertDialogAction>
