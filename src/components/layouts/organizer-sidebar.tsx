@@ -1,40 +1,12 @@
-import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
-  Globe2,
-  LogOut,
-  Shield,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
-
-/**
- * Itens do menu global do organizador.
- *
- * IMPORTANTE (plano seção 3.2): "Partidas", "Classificação", "Estatísticas",
- * "Súmula", "Arbitragem", "Financeiro", "Mídia" e "Patrocinadores" NÃO podem
- * aparecer aqui — são módulos do Championship Shell, não do Organizer Shell.
- * Adicionar qualquer um deles de volta a esta lista reintroduz a navegação
- * duplicada que este plano elimina.
- */
-const ORGANIZER_NAV = [
-  { to: "/championships", label: "Meus campeonatos", icon: Trophy, available: true },
-  { to: "/teams", label: "Equipes", icon: Shield, available: true },
-  { to: "/athletes", label: "Atletas", icon: Users, available: true },
-  { to: "/settings", label: "Organização e usuários", icon: Building2, available: true },
-  { to: "/settings", label: "Assinatura e limites", icon: CreditCard, available: false },
-  { to: "/settings", label: "Página do organizador", icon: Globe2, available: false },
-] as const;
+import { ORGANIZER_NAV } from "@/features/navigation/organizer-nav.config";
+import { NavRowContent, navRowClassName } from "@/features/navigation/nav-row";
 
 export function OrganizerSidebar({
   collapsed = false,
@@ -94,22 +66,11 @@ export function OrganizerSidebar({
               return (
                 <div
                   key={item.label}
-                  className={cn(
-                    "flex h-9 items-center rounded-lg px-3 text-[11px] font-semibold text-sidebar-foreground/35",
-                    collapsed ? "justify-center px-2" : "gap-3",
-                  )}
+                  className={navRowClassName({ collapsed, available: false })}
                   title={collapsed ? `${item.label} — em breve` : undefined}
                   aria-disabled="true"
                 >
-                  <item.icon className="h-3.5 w-3.5 shrink-0" />
-                  {!collapsed && (
-                    <>
-                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                      <Badge variant="outline" className="px-1 text-[7px]">
-                        Em breve
-                      </Badge>
-                    </>
-                  )}
+                  <NavRowContent item={item} collapsed={collapsed} />
                 </div>
               );
             }
@@ -122,16 +83,9 @@ export function OrganizerSidebar({
                 onClick={onNavigate}
                 title={collapsed ? item.label : undefined}
                 aria-current={active ? "page" : undefined}
-                className={cn(
-                  "group flex h-9 items-center rounded-lg text-[11px] font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
-                  collapsed ? "justify-center px-2" : "gap-3 px-3",
-                  active
-                    ? "bg-neon text-neon-foreground shadow-[0_9px_24px_-14px_var(--color-neon)]"
-                    : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
-                )}
+                className={navRowClassName({ collapsed, available: true, active })}
               >
-                <item.icon className="h-3.5 w-3.5 shrink-0" />
-                {!collapsed && <span className="truncate">{item.label}</span>}
+                <NavRowContent item={item} collapsed={collapsed} />
               </Link>
             );
           })}
@@ -187,4 +141,3 @@ export function OrganizerSidebar({
   );
 }
 
-export { ORGANIZER_NAV };

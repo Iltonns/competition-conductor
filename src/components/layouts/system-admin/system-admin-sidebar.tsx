@@ -1,36 +1,21 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  Building2,
-  CreditCard,
-  Flag,
-  History,
-  LayoutDashboard,
-  LifeBuoy,
-  LogOut,
-  Settings,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { Flag, LogOut } from "lucide-react";
 import { IsArenaLogo } from "@/components/is-arena-logo";
 import { supabase } from "@/integrations/supabase/client";
+import { SYSTEM_ADMIN_NAV } from "@/features/navigation/system-admin-nav.config";
+import { NavRowContent } from "@/features/navigation/nav-row";
 import { cn } from "@/lib/utils";
 
 /**
  * Menu do painel do administrador do sistema (plano seção 3.6 e 4).
  * Nunca compartilha rota, layout ou papel com `organization_members` —
  * ver `src/lib/system-admin.ts` para a checagem de autorização.
+ *
+ * Os itens vêm de `features/navigation/system-admin-nav.config.ts`. Só
+ * "Dashboard global" está `available: true` hoje — os demais aparecem
+ * com o badge "Em breve" até as telas de organizações/usuários/planos
+ * serem implementadas (dependem do gate de backend da seção 3.6).
  */
-const SYSTEM_ADMIN_NAV = [
-  { to: "/system-admin", label: "Dashboard global", icon: LayoutDashboard },
-  { to: "/system-admin/organizacoes", label: "Organizações e clientes", icon: Building2 },
-  { to: "/system-admin/usuarios", label: "Usuários", icon: Users },
-  { to: "/system-admin/campeonatos", label: "Campeonatos e conteúdo", icon: Trophy },
-  { to: "/system-admin/assinaturas", label: "Planos e assinaturas", icon: CreditCard },
-  { to: "/system-admin/suporte", label: "Modo suporte", icon: LifeBuoy },
-  { to: "/system-admin/auditoria", label: "Auditoria", icon: History },
-  { to: "/system-admin/configuracoes", label: "Configuração da plataforma", icon: Settings },
-] as const;
-
 export function SystemAdminSidebar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
@@ -47,10 +32,23 @@ export function SystemAdminSidebar() {
       <nav className="compact-scrollbar min-h-0 flex-1 overflow-y-auto px-2.5 py-3" aria-label="Navegação administrativa">
         <div className="space-y-0.5">
           {SYSTEM_ADMIN_NAV.map((item) => {
+            if (!item.available) {
+              return (
+                <div
+                  key={item.label}
+                  className="flex h-9 items-center gap-3 rounded-lg px-3 text-[11px] font-semibold text-muted-foreground/40"
+                  title={`${item.label} — em breve`}
+                  aria-disabled="true"
+                >
+                  <NavRowContent item={item} collapsed={false} />
+                </div>
+              );
+            }
+
             const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
             return (
               <Link
-                key={item.to}
+                key={item.label}
                 to={item.to}
                 aria-current={active ? "page" : undefined}
                 className={cn(
@@ -60,8 +58,7 @@ export function SystemAdminSidebar() {
                     : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
                 )}
               >
-                <item.icon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <NavRowContent item={item} collapsed={false} />
               </Link>
             );
           })}
