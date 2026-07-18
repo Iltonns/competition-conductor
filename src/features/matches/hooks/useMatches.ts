@@ -1,56 +1,61 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  computeStandings,
   computeStats,
   createMatch,
   createMatchEvent,
   deleteMatch,
   deleteMatchEvent,
   getMatch,
+  listStandings,
   listMatchEvents,
   listMatches,
   updateMatch,
+  setMatchStatus,
   type CreateEventInput,
   type CreateMatchInput,
+  type MatchFilters,
   type UpdateMatchInput,
 } from "../api/matches";
 
 export const matchKeys = {
-  list: (championshipId: string) => ["matches", "list", championshipId] as const,
-  detail: (matchId: string) => ["matches", "detail", matchId] as const,
-  events: (matchId: string) => ["matches", "events", matchId] as const,
+  list: (championshipId: string, filters?: MatchFilters) =>
+    ["matches", "list", championshipId, filters ?? {}] as const,
+  detail: (championshipId: string, matchId: string) =>
+    ["matches", "detail", championshipId, matchId] as const,
+  events: (championshipId: string, matchId: string) =>
+    ["matches", "events", championshipId, matchId] as const,
   standings: (championshipId: string) => ["matches", "standings", championshipId] as const,
   stats: (championshipId: string) => ["matches", "stats", championshipId] as const,
 };
 
-export function useMatches(championshipId: string) {
+export function useMatches(championshipId: string, filters?: MatchFilters) {
   return useQuery({
-    queryKey: matchKeys.list(championshipId),
-    queryFn: () => listMatches(championshipId),
+    queryKey: matchKeys.list(championshipId, filters),
+    queryFn: () => listMatches(championshipId, filters),
     enabled: Boolean(championshipId),
   });
 }
 
-export function useMatch(matchId: string) {
+export function useMatch(championshipId: string, matchId: string) {
   return useQuery({
-    queryKey: matchKeys.detail(matchId),
-    queryFn: () => getMatch(matchId),
-    enabled: Boolean(matchId),
+    queryKey: matchKeys.detail(championshipId, matchId),
+    queryFn: () => getMatch(championshipId, matchId),
+    enabled: Boolean(championshipId && matchId),
   });
 }
 
-export function useMatchEvents(matchId: string) {
+export function useMatchEvents(championshipId: string, matchId: string) {
   return useQuery({
-    queryKey: matchKeys.events(matchId),
-    queryFn: () => listMatchEvents(matchId),
-    enabled: Boolean(matchId),
+    queryKey: matchKeys.events(championshipId, matchId),
+    queryFn: () => listMatchEvents(championshipId, matchId),
+    enabled: Boolean(championshipId && matchId),
   });
 }
 
 export function useStandings(championshipId: string) {
   return useQuery({
     queryKey: matchKeys.standings(championshipId),
-    queryFn: () => computeStandings(championshipId),
+    queryFn: () => listStandings(championshipId),
     enabled: Boolean(championshipId),
   });
 }
@@ -66,12 +71,12 @@ export function useChampionshipStats(championshipId: string) {
 function useInvalidateAll(championshipId: string, matchId?: string) {
   const qc = useQueryClient();
   return async () => {
-    await qc.invalidateQueries({ queryKey: matchKeys.list(championshipId) });
+    await qc.invalidateQueries({ queryKey: ["matches", "list", championshipId] });
     await qc.invalidateQueries({ queryKey: matchKeys.standings(championshipId) });
     await qc.invalidateQueries({ queryKey: matchKeys.stats(championshipId) });
     if (matchId) {
-      await qc.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
-      await qc.invalidateQueries({ queryKey: matchKeys.events(matchId) });
+      await qc.invalidateQueries({ queryKey: matchKeys.detail(championshipId, matchId) });
+      await qc.invalidateQueries({ queryKey: matchKeys.events(championshipId, matchId) });
     }
   };
 }
@@ -87,20 +92,37 @@ export function useCreateMatch(championshipId: string) {
 export function useUpdateMatch(championshipId: string, matchId: string) {
   const refresh = useInvalidateAll(championshipId, matchId);
   return useMutation({
-    mutationFn: (changes: UpdateMatchInput) => updateMatch(matchId, changes),
+    mutationFn: (changes: UpdateMatchInput) => updateMatch(championshipId, matchId, changes),
+    onSuccess: refresh,
+  });
+}
+
+export function useSetMatchStatus(championshipId: string, matchId: string) {
+  const refresh = useInvalidateAll(championshipId, matchId);
+  return useMutation({
+    mutationFn: ({
+      status,
+      reason,
+    }: {
+      status: import("../api/matches").MatchStatus;
+      reason?: string;
+    }) => setMatchStatus(championshipId, matchId, status, reason),
     onSuccess: refresh,
   });
 }
 
 export function useDeleteMatch(championshipId: string) {
   const refresh = useInvalidateAll(championshipId);
-  return useMutation({ mutationFn: (matchId: string) => deleteMatch(matchId), onSuccess: refresh });
+  return useMutation({
+    mutationFn: (matchId: string) => deleteMatch(championshipId, matchId),
+    onSuccess: refresh,
+  });
 }
 
 export function useCreateMatchEvent(championshipId: string, matchId: string) {
   const refresh = useInvalidateAll(championshipId, matchId);
   return useMutation({
-    mutationFn: (input: CreateEventInput) => createMatchEvent(input),
+    mutationFn: (input: CreateEventInput) => createMatchEvent(championshipId, input),
     onSuccess: refresh,
   });
 }
@@ -108,7 +130,7 @@ export function useCreateMatchEvent(championshipId: string, matchId: string) {
 export function useDeleteMatchEvent(championshipId: string, matchId: string) {
   const refresh = useInvalidateAll(championshipId, matchId);
   return useMutation({
-    mutationFn: (eventId: string) => deleteMatchEvent(eventId),
+    mutationFn: (eventId: string) => deleteMatchEvent(championshipId, matchId, eventId),
     onSuccess: refresh,
   });
 }

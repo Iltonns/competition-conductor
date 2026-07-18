@@ -23,4 +23,16 @@ test("a conta de teste acessa campeonatos e a área de equipes", async ({ page }
   await firstChampionshipLink.click();
   await page.getByRole("link", { name: "Equipes" }).first().click();
   await expect(page).toHaveURL(/\/championships\/[^/]+\/teams/);
+
+  await page.getByRole("link", { name: "Partidas" }).first().click();
+  await expect(page).toHaveURL(/\/championships\/[^/]+\/matches/);
+  await expect(page.getByRole("heading", { name: "Partidas & Súmula" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Classificação" }).first().click();
+  await expect(page).toHaveURL(/\/championships\/[^/]+\/standings/);
+  await expect(page.getByRole("heading", { name: "Classificação" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Estatísticas" }).first().click();
+  await expect(page).toHaveURL(/\/championships\/[^/]+\/stats/);
+  await expect(page.getByRole("heading", { name: "Estatísticas" })).toBeVisible();
 });

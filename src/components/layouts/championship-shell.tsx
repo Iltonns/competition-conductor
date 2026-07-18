@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Home, Shield, Users } from "lucide-react";
+import { CalendarDays, Home, ListOrdered, Shield, Users } from "lucide-react";
 import { ChampionshipHeader } from "@/components/layouts/championship-header";
 import { MobileBottomNav } from "@/components/layouts/mobile-bottom-nav";
 import { ChampionshipSidebar } from "@/features/championships/components/ChampionshipSidebar";
@@ -44,6 +44,8 @@ export function ChampionshipShell({
       <MobileBottomNav
         items={[
           { to: `/championships/${championship.id}`, label: "Início", icon: Home },
+          { to: `/championships/${championship.id}/matches`, label: "Jogos", icon: CalendarDays },
+          { to: `/championships/${championship.id}/standings`, label: "Tabela", icon: ListOrdered },
           { to: `/championships/${championship.id}/teams`, label: "Equipes", icon: Shield },
           { to: `/championships/${championship.id}/athletes`, label: "Atletas", icon: Users },
         ]}

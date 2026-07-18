@@ -23,6 +23,14 @@ export interface MatchWithTeams extends MatchRow {
   } | null;
 }
 
+export interface MatchFilters {
+  status?: MatchStatus | "all";
+  teamId?: string;
+  round?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface CreateMatchInput {
   championship_id: string;
   home_team_id: string;
@@ -34,13 +42,10 @@ export interface CreateMatchInput {
 }
 
 export interface UpdateMatchInput {
-  scheduled_at?: string | null;
-  venue?: string | null;
-  phase?: string | null;
-  round?: string | null;
-  home_score?: number | null;
-  away_score?: number | null;
-  status?: MatchStatus;
+  scheduled_at: string | null;
+  venue: string | null;
+  phase: string | null;
+  round: string | null;
 }
 
 export interface CreateEventInput {
@@ -51,15 +56,28 @@ export interface CreateEventInput {
   minute?: number | null;
   period?: string | null;
   note?: string | null;
+  client_request_id?: string;
 }
 
 const MATCH_SELECT = `
   id, organization_id, championship_id, home_team_id, away_team_id,
   phase, round, venue, scheduled_at, home_score, away_score, status,
-  created_at, updated_at, created_by,
+  created_at, updated_at, created_by, updated_by, started_at, ended_at, metadata,
   home_team:teams!matches_home_team_id_fkey(id, name, short_name, crest_url, primary_color),
   away_team:teams!matches_away_team_id_fkey(id, name, short_name, crest_url, primary_color)
 `;
+
+type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
+const phase1Rpc = supabase.rpc as unknown as (
+  name: string,
+  args: Record<string, unknown>,
+) => PromiseLike<RpcResult>;
+
+async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
+  const { data, error } = await phase1Rpc(name, args);
+  if (error) throw error;
+  return data as T;
+}
 
 async function getChampionshipOrg(championshipId: string): Promise<string> {
   const { data, error } = await supabase
@@ -72,20 +90,31 @@ async function getChampionshipOrg(championshipId: string): Promise<string> {
   return data.organization_id;
 }
 
-export async function listMatches(championshipId: string): Promise<MatchWithTeams[]> {
-  const { data, error } = await supabase
+export async function listMatches(
+  championshipId: string,
+  filters: MatchFilters = {},
+): Promise<MatchWithTeams[]> {
+  let query = supabase
     .from("matches")
     .select(MATCH_SELECT)
     .eq("championship_id", championshipId)
     .order("scheduled_at", { ascending: true, nullsFirst: false });
+  if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
+  if (filters.round) query = query.eq("round", filters.round);
+  if (filters.dateFrom) query = query.gte("scheduled_at", filters.dateFrom);
+  if (filters.dateTo) query = query.lte("scheduled_at", filters.dateTo);
+  if (filters.teamId)
+    query = query.or(`home_team_id.eq.${filters.teamId},away_team_id.eq.${filters.teamId}`);
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as unknown as MatchWithTeams[];
 }
 
-export async function getMatch(matchId: string): Promise<MatchWithTeams> {
+export async function getMatch(championshipId: string, matchId: string): Promise<MatchWithTeams> {
   const { data, error } = await supabase
     .from("matches")
     .select(MATCH_SELECT)
+    .eq("championship_id", championshipId)
     .eq("id", matchId)
     .maybeSingle();
   if (error) throw error;
@@ -93,131 +122,100 @@ export async function getMatch(matchId: string): Promise<MatchWithTeams> {
   return data as unknown as MatchWithTeams;
 }
 
-export async function createMatch(input: CreateMatchInput): Promise<MatchRow> {
-  const organization_id = await getChampionshipOrg(input.championship_id);
-  const { data, error } = await supabase
-    .from("matches")
-    .insert({
-      organization_id,
-      championship_id: input.championship_id,
-      home_team_id: input.home_team_id,
-      away_team_id: input.away_team_id,
-      scheduled_at: input.scheduled_at,
-      venue: input.venue ?? null,
-      phase: input.phase ?? null,
-      round: input.round ?? null,
-      status: "scheduled" as MatchStatus,
-    })
-    .select("*")
-    .single();
-  if (error) throw error;
-  return data;
+export function createMatch(input: CreateMatchInput): Promise<MatchRow> {
+  return callRpc("create_championship_match", {
+    p_championship_id: input.championship_id,
+    p_home_team_id: input.home_team_id,
+    p_away_team_id: input.away_team_id,
+    p_scheduled_at: input.scheduled_at,
+    p_venue: input.venue ?? null,
+    p_phase: input.phase ?? null,
+    p_round: input.round ?? null,
+  });
 }
 
-export async function updateMatch(matchId: string, changes: UpdateMatchInput): Promise<MatchRow> {
-  const { data, error } = await supabase
-    .from("matches")
-    .update(changes)
-    .eq("id", matchId)
-    .select("*")
-    .single();
-  if (error) throw error;
-  return data;
+export function updateMatch(
+  championshipId: string,
+  matchId: string,
+  changes: UpdateMatchInput,
+): Promise<MatchRow> {
+  return callRpc("update_championship_match", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_scheduled_at: changes.scheduled_at,
+    p_venue: changes.venue,
+    p_phase: changes.phase,
+    p_round: changes.round,
+  });
 }
 
-export async function deleteMatch(matchId: string): Promise<void> {
-  const { error } = await supabase.from("matches").delete().eq("id", matchId);
-  if (error) throw error;
+export function setMatchStatus(
+  championshipId: string,
+  matchId: string,
+  status: MatchStatus,
+  reason?: string | null,
+): Promise<MatchRow> {
+  return callRpc("set_championship_match_status", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_status: status,
+    p_reason: reason ?? null,
+  });
 }
 
-export async function listMatchEvents(matchId: string): Promise<MatchEventRow[]> {
+export async function deleteMatch(championshipId: string, matchId: string): Promise<void> {
+  await callRpc("delete_championship_match", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+  });
+}
+
+export async function listMatchEvents(
+  championshipId: string,
+  matchId: string,
+): Promise<MatchEventRow[]> {
+  const match = await getMatch(championshipId, matchId);
   const { data, error } = await supabase
     .from("match_events")
     .select("*")
+    .eq("organization_id", match.organization_id)
     .eq("match_id", matchId)
+    .is("deleted_at", null)
     .order("minute", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function createMatchEvent(input: CreateEventInput): Promise<MatchEventRow> {
-  const { data: match, error: mErr } = await supabase
-    .from("matches")
-    .select("organization_id, home_team_id, away_team_id, home_score, away_score")
-    .eq("id", input.match_id)
-    .maybeSingle();
-  if (mErr) throw mErr;
-  if (!match) throw new Error("match:not_found");
-
-  const { data, error } = await supabase
-    .from("match_events")
-    .insert({
-      match_id: input.match_id,
-      organization_id: match.organization_id,
-      team_id: input.team_id,
-      athlete_id: input.athlete_id ?? null,
-      type: input.type,
-      minute: input.minute ?? null,
-      period: input.period ?? null,
-      note: input.note ?? null,
-    })
-    .select("*")
-    .single();
-  if (error) throw error;
-
-  // Auto-update score on goal events
-  if (input.type === "goal" || input.type === "own_goal") {
-    const isHome =
-      (input.type === "goal" && input.team_id === match.home_team_id) ||
-      (input.type === "own_goal" && input.team_id === match.away_team_id);
-    const isAway =
-      (input.type === "goal" && input.team_id === match.away_team_id) ||
-      (input.type === "own_goal" && input.team_id === match.home_team_id);
-    if (isHome || isAway) {
-      await supabase
-        .from("matches")
-        .update({
-          home_score: (match.home_score ?? 0) + (isHome ? 1 : 0),
-          away_score: (match.away_score ?? 0) + (isAway ? 1 : 0),
-        })
-        .eq("id", input.match_id);
-    }
-  }
-  return data;
+export function createMatchEvent(
+  championshipId: string,
+  input: CreateEventInput,
+): Promise<MatchEventRow> {
+  return callRpc("record_match_event", {
+    p_championship_id: championshipId,
+    p_match_id: input.match_id,
+    p_client_request_id: input.client_request_id ?? crypto.randomUUID(),
+    p_team_id: input.team_id,
+    p_athlete_id: input.athlete_id ?? null,
+    p_type: input.type,
+    p_minute: input.minute ?? null,
+    p_period: input.period ?? null,
+    p_note: input.note ?? null,
+  });
 }
 
-export async function deleteMatchEvent(eventId: string): Promise<void> {
-  // Load event & match to reverse score if goal
-  const { data: ev } = await supabase
-    .from("match_events")
-    .select("id, match_id, team_id, type")
-    .eq("id", eventId)
-    .maybeSingle();
-  const { error } = await supabase.from("match_events").delete().eq("id", eventId);
-  if (error) throw error;
-  if (ev && (ev.type === "goal" || ev.type === "own_goal")) {
-    const { data: match } = await supabase
-      .from("matches")
-      .select("home_team_id, away_team_id, home_score, away_score")
-      .eq("id", ev.match_id)
-      .maybeSingle();
-    if (match) {
-      const isHome =
-        (ev.type === "goal" && ev.team_id === match.home_team_id) ||
-        (ev.type === "own_goal" && ev.team_id === match.away_team_id);
-      const isAway =
-        (ev.type === "goal" && ev.team_id === match.away_team_id) ||
-        (ev.type === "own_goal" && ev.team_id === match.home_team_id);
-      await supabase
-        .from("matches")
-        .update({
-          home_score: Math.max(0, (match.home_score ?? 0) - (isHome ? 1 : 0)),
-          away_score: Math.max(0, (match.away_score ?? 0) - (isAway ? 1 : 0)),
-        })
-        .eq("id", ev.match_id);
-    }
-  }
+export async function deleteMatchEvent(
+  championshipId: string,
+  matchId: string,
+  eventId: string,
+  reason?: string,
+): Promise<void> {
+  await callRpc("remove_match_event", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_event_id: eventId,
+    p_reason: reason ?? null,
+  });
 }
 
 export interface StandingRow {
@@ -233,68 +231,43 @@ export interface StandingRow {
   goals_against: number;
   goal_diff: number;
   points: number;
+  position: number;
 }
 
-export async function computeStandings(championshipId: string): Promise<StandingRow[]> {
-  const matches = await listMatches(championshipId);
-  const table = new Map<string, StandingRow>();
-  const ensure = (t: MatchWithTeams["home_team"]) => {
-    if (!t) return null;
-    if (!table.has(t.id)) {
-      table.set(t.id, {
-        team_id: t.id,
-        team_name: t.name,
-        team_short: t.short_name,
-        team_crest: t.crest_url,
-        played: 0,
-        wins: 0,
-        draws: 0,
-        losses: 0,
-        goals_for: 0,
-        goals_against: 0,
-        goal_diff: 0,
-        points: 0,
-      });
-    }
-    return table.get(t.id)!;
-  };
-  for (const m of matches) {
-    if (m.status !== "finished") continue;
-    const home = ensure(m.home_team);
-    const away = ensure(m.away_team);
-    if (!home || !away) continue;
-    const hs = m.home_score ?? 0;
-    const as = m.away_score ?? 0;
-    home.played++;
-    away.played++;
-    home.goals_for += hs;
-    home.goals_against += as;
-    away.goals_for += as;
-    away.goals_against += hs;
-    if (hs > as) {
-      home.wins++;
-      home.points += 3;
-      away.losses++;
-    } else if (hs < as) {
-      away.wins++;
-      away.points += 3;
-      home.losses++;
-    } else {
-      home.draws++;
-      away.draws++;
-      home.points++;
-      away.points++;
-    }
-  }
-  return Array.from(table.values())
-    .map((r) => ({ ...r, goal_diff: r.goals_for - r.goals_against }))
-    .sort(
-      (a, b) =>
-        b.points - a.points ||
-        b.goal_diff - a.goal_diff ||
-        b.goals_for - a.goals_for ||
-        a.team_name.localeCompare(b.team_name),
-    );
+export async function listStandings(championshipId: string): Promise<StandingRow[]> {
+  const { data, error } = await supabase
+    .from("standings")
+    .select(
+      "team_id, position, played, wins, draws, losses, goals_for, goals_against, goal_difference, points, team:teams!standings_team_id_fkey(name, short_name, crest_url)",
+    )
+    .eq("championship_id", championshipId)
+    .is("stage_id", null)
+    .is("group_id", null)
+    .is("category_id", null)
+    .order("position");
+  if (error) throw error;
+  return (data ?? []).map((row) => {
+    const team = row.team as unknown as {
+      name: string;
+      short_name: string | null;
+      crest_url: string | null;
+    } | null;
+    return {
+      team_id: row.team_id,
+      team_name: team?.name ?? "Equipe",
+      team_short: team?.short_name ?? null,
+      team_crest: team?.crest_url ?? null,
+      played: row.played,
+      wins: row.wins,
+      draws: row.draws,
+      losses: row.losses,
+      goals_for: row.goals_for,
+      goals_against: row.goals_against,
+      goal_diff: row.goal_difference,
+      points: row.points,
+      position: row.position,
+    };
+  });
 }
 
 export interface ScorerRow {
@@ -304,7 +277,6 @@ export interface ScorerRow {
   team_name: string | null;
   goals: number;
 }
-
 export interface CardsRow {
   athlete_id: string;
   athlete_name: string;
@@ -318,21 +290,19 @@ export async function computeStats(championshipId: string): Promise<{
   cards: CardsRow[];
   totals: { matches: number; goals: number; yellows: number; reds: number };
 }> {
+  const organizationId = await getChampionshipOrg(championshipId);
   const matches = await listMatches(championshipId);
-  const matchIds = matches.map((m) => m.id);
-  if (matchIds.length === 0) {
+  const matchIds = matches.map((match) => match.id);
+  if (!matchIds.length)
     return { scorers: [], cards: [], totals: { matches: 0, goals: 0, yellows: 0, reds: 0 } };
-  }
   const { data: events, error } = await supabase
     .from("match_events")
     .select(
-      `
-      id, type, athlete_id, team_id,
-      athlete:athletes!athlete_id(id, full_name),
-      team:teams!team_id(id, name, short_name)
-    `,
+      "id, type, athlete_id, team_id, athlete:athletes!athlete_id(id, full_name), team:teams!team_id(id, name)",
     )
-    .in("match_id", matchIds);
+    .eq("organization_id", organizationId)
+    .in("match_id", matchIds)
+    .is("deleted_at", null);
   if (error) throw error;
 
   const scorers = new Map<string, ScorerRow>();
@@ -340,50 +310,39 @@ export async function computeStats(championshipId: string): Promise<{
   let goals = 0,
     yellows = 0,
     reds = 0;
-
-  for (const e of events ?? []) {
-    const ath = e.athlete;
-    const tm = e.team;
-    if (e.type === "goal") {
-      goals++;
-      if (ath) {
-        const key = ath.id;
-        const row = scorers.get(key) ?? {
-          athlete_id: ath.id,
-          athlete_name: ath.full_name,
-          team_id: tm?.id ?? null,
-          team_name: tm?.name ?? null,
-          goals: 0,
-        };
-        row.goals++;
-        scorers.set(key, row);
-      }
-    } else if (e.type === "own_goal") {
-      goals++;
-    } else if (e.type === "yellow_card" || e.type === "red_card") {
-      if (e.type === "yellow_card") yellows++;
-      else reds++;
-      if (ath) {
-        const key = ath.id;
-        const row = cards.get(key) ?? {
-          athlete_id: ath.id,
-          athlete_name: ath.full_name,
-          team_name: tm?.name ?? null,
-          yellows: 0,
-          reds: 0,
-        };
-        if (e.type === "yellow_card") row.yellows++;
-        else row.reds++;
-        cards.set(key, row);
-      }
+  for (const event of events ?? []) {
+    const athlete = event.athlete;
+    const team = event.team;
+    if (["goal", "penalty_goal", "own_goal"].includes(event.type)) goals++;
+    if ((event.type === "goal" || event.type === "penalty_goal") && athlete) {
+      const row = scorers.get(athlete.id) ?? {
+        athlete_id: athlete.id,
+        athlete_name: athlete.full_name,
+        team_id: team?.id ?? null,
+        team_name: team?.name ?? null,
+        goals: 0,
+      };
+      row.goals++;
+      scorers.set(athlete.id, row);
+    }
+    if (event.type === "yellow_card") yellows++;
+    if (event.type === "red_card") reds++;
+    if ((event.type === "yellow_card" || event.type === "red_card") && athlete) {
+      const row = cards.get(athlete.id) ?? {
+        athlete_id: athlete.id,
+        athlete_name: athlete.full_name,
+        team_name: team?.name ?? null,
+        yellows: 0,
+        reds: 0,
+      };
+      if (event.type === "yellow_card") row.yellows++;
+      else row.reds++;
+      cards.set(athlete.id, row);
     }
   }
-
   return {
-    scorers: Array.from(scorers.values())
-      .sort((a, b) => b.goals - a.goals)
-      .slice(0, 20),
-    cards: Array.from(cards.values())
+    scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 20),
+    cards: [...cards.values()]
       .sort((a, b) => b.reds * 3 + b.yellows - (a.reds * 3 + a.yellows))
       .slice(0, 20),
     totals: { matches: matches.length, goals, yellows, reds },
