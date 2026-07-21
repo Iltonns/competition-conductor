@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   assignReferee,
+  deleteRefereeUnavailability,
   getMatchReport,
   homologateMatchReport,
   listEligibleAthletes,
   listLineups,
   listRefereeAssignments,
+  listRefereeUnavailability,
   listReferees,
   listSanctions,
   reopenMatchReport,
@@ -14,6 +16,8 @@ import {
   saveManualSanction,
   saveMatchReport,
   saveReferee,
+  saveRefereeUnavailability,
+  setRefereeAssignmentStatus,
   type LineupEntry,
 } from "../api/sports-operations";
 
@@ -24,6 +28,8 @@ const sportsKeys = {
     ["sports", "eligible", championshipId, teamId] as const,
   referees: (championshipId: string) => ["sports", "referees", championshipId] as const,
   assignments: (championshipId: string) => ["sports", "assignments", championshipId] as const,
+  unavailability: (championshipId: string) =>
+    ["sports", "referee-unavailability", championshipId] as const,
   sanctions: (championshipId: string) => ["sports", "sanctions", championshipId] as const,
 };
 
@@ -88,8 +94,19 @@ export function useRefereeAssignments(championshipId: string) {
     enabled: Boolean(championshipId),
   });
 }
+export function useRefereeUnavailability(championshipId: string) {
+  return useQuery({
+    queryKey: sportsKeys.unavailability(championshipId),
+    queryFn: () => listRefereeUnavailability(championshipId),
+    enabled: Boolean(championshipId),
+  });
+}
 export function useRefereeActions(championshipId: string) {
   const client = useQueryClient();
+  const refreshAssignments = () =>
+    client.invalidateQueries({ queryKey: sportsKeys.assignments(championshipId) });
+  const refreshUnavailability = () =>
+    client.invalidateQueries({ queryKey: sportsKeys.unavailability(championshipId) });
   return {
     save: useMutation({
       mutationFn: ({ id, payload }: { id: string | null; payload: object }) =>
@@ -99,8 +116,30 @@ export function useRefereeActions(championshipId: string) {
     assign: useMutation({
       mutationFn: (input: { matchId: string; refereeId: string; role: string; fee: number }) =>
         assignReferee(championshipId, input.matchId, input.refereeId, input.role, input.fee),
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: sportsKeys.assignments(championshipId) }),
+      onSuccess: refreshAssignments,
+    }),
+    setAssignmentStatus: useMutation({
+      mutationFn: (input: {
+        assignmentId: string;
+        status: "pending" | "confirmed" | "declined" | "cancelled";
+        note?: string;
+      }) =>
+        setRefereeAssignmentStatus(championshipId, input.assignmentId, input.status, input.note),
+      onSuccess: refreshAssignments,
+    }),
+    saveUnavailability: useMutation({
+      mutationFn: (input: {
+        id?: string | null;
+        refereeId: string;
+        startsAt: string;
+        endsAt: string;
+        reason?: string;
+      }) => saveRefereeUnavailability(championshipId, input),
+      onSuccess: refreshUnavailability,
+    }),
+    deleteUnavailability: useMutation({
+      mutationFn: (id: string) => deleteRefereeUnavailability(championshipId, id),
+      onSuccess: refreshUnavailability,
     }),
   };
 }

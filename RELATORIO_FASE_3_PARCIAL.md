@@ -14,6 +14,8 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 - homologação separada de `finished`, snapshot imutável, bloqueio e reabertura justificada/auditada;
 - saída imprimível da versão homologada, permitindo salvar como PDF pelo navegador;
 - cadastro e designação de árbitros, valor previsto e detecção de indisponibilidade/conflito de horário;
+- CRUD de períodos de indisponibilidade, com bloqueio de conflito contra escalas pendentes ou confirmadas;
+- confirmação e recusa de designações, com justificativa obrigatória, revalidação de agenda e auditoria;
 - sanções manuais e suspensões automáticas por cartões conforme o regulamento;
 - revogação justificada e revogação automática quando o cartão de origem é removido;
 - rotas `/championships/$id/referees` e `/championships/$id/sanctions` no cockpit;
@@ -32,13 +34,12 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 
 - projeto vinculado: `lzjkvgvlfupklpmytvbr`;
 - migrations das Fases 1, 2 e 3 aplicadas em ordem em 21/07/2026;
-- histórico local e remoto reconciliado até `20260721170000`;
+- histórico local e remoto reconciliado até `20260721213000`;
 - `phase3_sports_operations_verification.sql`: aprovado no banco remoto;
 - tipos TypeScript regenerados a partir do schema remoto.
 
 ## Itens ainda necessários para concluir a Fase 3
 
-- CRUD de indisponibilidades e confirmação/recusa da escala pelo árbitro;
 - escalação da comissão técnica na súmula;
 - substituições estruturadas com atleta de entrada e saída;
 - anexos reais em Storage com regras de tipo e tamanho;

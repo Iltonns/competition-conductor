@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Flag, Plus } from "lucide-react";
+import { CalendarClock, Check, Flag, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,14 @@ import { useMatches } from "@/features/matches/hooks/useMatches";
 import {
   useRefereeActions,
   useRefereeAssignments,
+  useRefereeUnavailability,
   useReferees,
 } from "../hooks/useSportsOperations";
 
 export function RefereesPage({ championshipId }: { championshipId: string }) {
   const referees = useReferees(championshipId);
   const assignments = useRefereeAssignments(championshipId);
+  const unavailability = useRefereeUnavailability(championshipId);
   const matches = useMatches(championshipId);
   const actions = useRefereeActions(championshipId);
   const [name, setName] = useState("");
@@ -26,7 +28,11 @@ export function RefereesPage({ championshipId }: { championshipId: string }) {
   const [matchId, setMatchId] = useState("");
   const [assignmentRole, setAssignmentRole] = useState("main");
   const [fee, setFee] = useState("0");
-  if (referees.isLoading || assignments.isLoading || matches.isLoading)
+  const [unavailableRefereeId, setUnavailableRefereeId] = useState("");
+  const [unavailableFrom, setUnavailableFrom] = useState("");
+  const [unavailableUntil, setUnavailableUntil] = useState("");
+  const [unavailableReason, setUnavailableReason] = useState("");
+  if (referees.isLoading || assignments.isLoading || unavailability.isLoading || matches.isLoading)
     return <Skeleton className="h-96" />;
   return (
     <div className="space-y-4">
@@ -172,6 +178,101 @@ export function RefereesPage({ championshipId }: { championshipId: string }) {
           </Button>
         </section>
       </div>
+      <section className="card-arena p-4">
+        <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+          <CalendarClock className="h-4 w-4 text-neon" /> Registrar indisponibilidade
+        </h3>
+        <div className="mt-3 grid gap-3 md:grid-cols-4">
+          <select
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            value={unavailableRefereeId}
+            onChange={(event) => setUnavailableRefereeId(event.target.value)}
+          >
+            <option value="">Selecione o árbitro</option>
+            {(referees.data ?? []).map((referee) => (
+              <option key={referee.id} value={referee.id}>
+                {referee.full_name}
+              </option>
+            ))}
+          </select>
+          <Input
+            aria-label="Início da indisponibilidade"
+            type="datetime-local"
+            value={unavailableFrom}
+            onChange={(event) => setUnavailableFrom(event.target.value)}
+          />
+          <Input
+            aria-label="Fim da indisponibilidade"
+            type="datetime-local"
+            value={unavailableUntil}
+            onChange={(event) => setUnavailableUntil(event.target.value)}
+          />
+          <Input
+            value={unavailableReason}
+            onChange={(event) => setUnavailableReason(event.target.value)}
+            placeholder="Motivo (opcional)"
+          />
+        </div>
+        <Button
+          className="mt-3"
+          disabled={
+            !unavailableRefereeId ||
+            !unavailableFrom ||
+            !unavailableUntil ||
+            actions.saveUnavailability.isPending
+          }
+          onClick={async () => {
+            try {
+              await actions.saveUnavailability.mutateAsync({
+                refereeId: unavailableRefereeId,
+                startsAt: new Date(unavailableFrom).toISOString(),
+                endsAt: new Date(unavailableUntil).toISOString(),
+                reason: unavailableReason,
+              });
+              setUnavailableFrom("");
+              setUnavailableUntil("");
+              setUnavailableReason("");
+              toast.success("Indisponibilidade registrada.");
+            } catch (error) {
+              toast.error(
+                error instanceof Error ? error.message : "Conflito com uma designação existente.",
+              );
+            }
+          }}
+        >
+          Registrar período
+        </Button>
+        <div className="mt-4 space-y-2">
+          {(unavailability.data ?? []).map((period) => (
+            <div
+              key={period.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 p-3 text-xs"
+            >
+              <span>
+                {period.referee?.full_name ?? "Árbitro"} ·{" "}
+                {new Date(period.starts_at).toLocaleString("pt-BR")} até{" "}
+                {new Date(period.ends_at).toLocaleString("pt-BR")}
+                {period.reason ? ` · ${period.reason}` : ""}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Remover indisponibilidade"
+                onClick={async () => {
+                  try {
+                    await actions.deleteUnavailability.mutateAsync(period.id);
+                    toast.success("Indisponibilidade removida.");
+                  } catch {
+                    toast.error("Não foi possível remover o período.");
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </section>
       <section className="card-arena overflow-hidden">
         <div className="border-b border-white/10 p-4">
           <h3 className="font-display text-sm font-bold">Quadro de arbitragem</h3>
@@ -209,7 +310,48 @@ export function RefereesPage({ championshipId }: { championshipId: string }) {
               <span>
                 {assignment.referee?.full_name ?? "Árbitro"} · {assignment.assignment_role}
               </span>
-              <Badge variant="outline">{assignment.confirmation_status}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{assignment.confirmation_status}</Badge>
+                {assignment.confirmation_status === "pending" && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          await actions.setAssignmentStatus.mutateAsync({
+                            assignmentId: assignment.id,
+                            status: "confirmed",
+                          });
+                          toast.success("Designação confirmada.");
+                        } catch (error) {
+                          toast.error(
+                            error instanceof Error ? error.message : "Conflito de agenda.",
+                          );
+                        }
+                      }}
+                    >
+                      <Check className="h-3.5 w-3.5" /> Confirmar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        const note = window.prompt("Motivo da recusa:");
+                        if (!note?.trim()) return;
+                        await actions.setAssignmentStatus.mutateAsync({
+                          assignmentId: assignment.id,
+                          status: "declined",
+                          note,
+                        });
+                        toast.success("Designação recusada.");
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" /> Recusar
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>

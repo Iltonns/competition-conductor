@@ -4,6 +4,8 @@ import type { Database, Json } from "@/integrations/supabase/types";
 export type LineupRow = Database["public"]["Tables"]["lineups"]["Row"];
 export type RefereeRow = Database["public"]["Tables"]["referees"]["Row"];
 export type RefereeAssignmentRow = Database["public"]["Tables"]["referee_assignments"]["Row"];
+export type RefereeUnavailabilityRow =
+  Database["public"]["Tables"]["referee_unavailability"]["Row"];
 export type SanctionRow = Database["public"]["Tables"]["sanctions"]["Row"] & {
   team_staff_id?: string | null;
   revoked_at?: string | null;
@@ -222,6 +224,66 @@ export function assignReferee(
     p_referee_id: refereeId,
     p_role: role,
     p_fee: fee,
+  });
+}
+
+export async function listRefereeUnavailability(championshipId: string) {
+  const { data: championship, error: championshipError } = await supabase
+    .from("championships")
+    .select("organization_id")
+    .eq("id", championshipId)
+    .single();
+  if (championshipError) throw championshipError;
+  const { data, error } = await supabase
+    .from("referee_unavailability")
+    .select("*, referee:referees!referee_unavailability_referee_id_fkey(full_name)")
+    .eq("organization_id", championship.organization_id)
+    .order("starts_at");
+  if (error) throw error;
+  return data ?? [];
+}
+
+export function saveRefereeUnavailability(
+  championshipId: string,
+  input: {
+    id?: string | null;
+    refereeId: string;
+    startsAt: string;
+    endsAt: string;
+    reason?: string | null;
+  },
+) {
+  return callRpc<RefereeUnavailabilityRow>("save_referee_unavailability", {
+    p_championship_id: championshipId,
+    p_unavailability_id: input.id ?? null,
+    p_referee_id: input.refereeId,
+    p_starts_at: input.startsAt,
+    p_ends_at: input.endsAt,
+    p_reason: input.reason ?? null,
+  });
+}
+
+export async function deleteRefereeUnavailability(
+  championshipId: string,
+  unavailabilityId: string,
+) {
+  await callRpc<void>("delete_referee_unavailability", {
+    p_championship_id: championshipId,
+    p_unavailability_id: unavailabilityId,
+  });
+}
+
+export function setRefereeAssignmentStatus(
+  championshipId: string,
+  assignmentId: string,
+  status: "pending" | "confirmed" | "declined" | "cancelled",
+  note?: string | null,
+) {
+  return callRpc<RefereeAssignmentRow>("set_referee_assignment_status", {
+    p_championship_id: championshipId,
+    p_assignment_id: assignmentId,
+    p_status: status,
+    p_note: note ?? null,
   });
 }
 

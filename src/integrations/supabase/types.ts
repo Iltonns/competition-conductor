@@ -2654,6 +2654,9 @@ export type Database = {
           organization_id: string;
           payment_status: string;
           referee_id: string;
+          responded_at: string | null;
+          responded_by: string | null;
+          response_note: string | null;
           updated_at: string;
           updated_by: string | null;
         };
@@ -2671,6 +2674,9 @@ export type Database = {
           organization_id: string;
           payment_status?: string;
           referee_id: string;
+          responded_at?: string | null;
+          responded_by?: string | null;
+          response_note?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -2688,6 +2694,9 @@ export type Database = {
           organization_id?: string;
           payment_status?: string;
           referee_id?: string;
+          responded_at?: string | null;
+          responded_by?: string | null;
+          response_note?: string | null;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -4694,6 +4703,9 @@ export type Database = {
           organization_id: string;
           payment_status: string;
           referee_id: string;
+          responded_at: string | null;
+          responded_by: string | null;
+          response_note: string | null;
           updated_at: string;
           updated_by: string | null;
         };
@@ -4974,6 +4986,10 @@ export type Database = {
       };
       delete_championship_match: {
         Args: { p_championship_id: string; p_match_id: string };
+        Returns: undefined;
+      };
+      delete_referee_unavailability: {
+        Args: { p_championship_id: string; p_unavailability_id: string };
         Returns: undefined;
       };
       extend_team_edit_link_expiration: {
@@ -5707,6 +5723,32 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      save_referee_unavailability: {
+        Args: {
+          p_championship_id: string;
+          p_ends_at: string;
+          p_reason?: string;
+          p_referee_id: string;
+          p_starts_at: string;
+          p_unavailability_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          organization_id: string;
+          reason: string | null;
+          referee_id: string;
+          starts_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "referee_unavailability";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       set_championship_match_status: {
         Args: {
           p_championship_id: string;
@@ -5761,6 +5803,40 @@ export type Database = {
       set_primary_team_responsible: {
         Args: { p_responsible_id: string; p_team_id: string };
         Returns: undefined;
+      };
+      set_referee_assignment_status: {
+        Args: {
+          p_assignment_id: string;
+          p_championship_id: string;
+          p_note?: string;
+          p_status: string;
+        };
+        Returns: {
+          assignment_role: string;
+          championship_id: string;
+          confirmation_status: string;
+          confirmed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          fee_amount: number;
+          id: string;
+          match_id: string;
+          notes: string | null;
+          organization_id: string;
+          payment_status: string;
+          referee_id: string;
+          responded_at: string | null;
+          responded_by: string | null;
+          response_note: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "referee_assignments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       set_team_championship_archived: {
         Args: {
