@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MatchPanel } from "@/features/matches/components/MatchesPage";
 import { useMatch } from "@/features/matches/hooks/useMatches";
+import { MatchReportPage } from "@/features/sports-operations/components/MatchReportPage";
 
 export const Route = createFileRoute("/_authenticated/championships_/$id/matches/$matchId/report")({
   head: () => ({ meta: [{ title: "Súmula · IS Arena" }] }),
@@ -28,9 +28,7 @@ function MatchReportRoute() {
           </Link>
         </Button>
       </header>
-      <section className="card-arena p-4">
-        <MatchPanel championshipId={id} match={match.data} />
-      </section>
+      <MatchReportPage championshipId={id} match={match.data} />
     </div>
   );
 }
