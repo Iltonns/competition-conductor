@@ -37,8 +37,11 @@ import { Route as AuthenticatedChampionshipsIdTeamsRouteImport } from './routes/
 import { Route as AuthenticatedChampionshipsIdStructureRouteImport } from './routes/_authenticated/championships_.$id.structure'
 import { Route as AuthenticatedChampionshipsIdStatsRouteImport } from './routes/_authenticated/championships_.$id.stats'
 import { Route as AuthenticatedChampionshipsIdStandingsRouteImport } from './routes/_authenticated/championships_.$id.standings'
+import { Route as AuthenticatedChampionshipsIdSponsorsRouteImport } from './routes/_authenticated/championships_.$id.sponsors'
 import { Route as AuthenticatedChampionshipsIdSanctionsRouteImport } from './routes/_authenticated/championships_.$id.sanctions'
 import { Route as AuthenticatedChampionshipsIdRefereesRouteImport } from './routes/_authenticated/championships_.$id.referees'
+import { Route as AuthenticatedChampionshipsIdPublicPageRouteImport } from './routes/_authenticated/championships_.$id.public-page'
+import { Route as AuthenticatedChampionshipsIdMediaRouteImport } from './routes/_authenticated/championships_.$id.media'
 import { Route as AuthenticatedChampionshipsIdMatchesRouteImport } from './routes/_authenticated/championships_.$id.matches'
 import { Route as AuthenticatedChampionshipsIdConfigurationRouteImport } from './routes/_authenticated/championships_.$id.configuration'
 import { Route as AuthenticatedChampionshipsIdAthletesRouteImport } from './routes/_authenticated/championships_.$id.athletes'
@@ -213,6 +216,12 @@ const AuthenticatedChampionshipsIdStandingsRoute =
     path: '/standings',
     getParentRoute: () => AuthenticatedChampionshipsIdRoute,
   } as any)
+const AuthenticatedChampionshipsIdSponsorsRoute =
+  AuthenticatedChampionshipsIdSponsorsRouteImport.update({
+    id: '/sponsors',
+    path: '/sponsors',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
 const AuthenticatedChampionshipsIdSanctionsRoute =
   AuthenticatedChampionshipsIdSanctionsRouteImport.update({
     id: '/sanctions',
@@ -223,6 +232,18 @@ const AuthenticatedChampionshipsIdRefereesRoute =
   AuthenticatedChampionshipsIdRefereesRouteImport.update({
     id: '/referees',
     path: '/referees',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
+const AuthenticatedChampionshipsIdPublicPageRoute =
+  AuthenticatedChampionshipsIdPublicPageRouteImport.update({
+    id: '/public-page',
+    path: '/public-page',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
+const AuthenticatedChampionshipsIdMediaRoute =
+  AuthenticatedChampionshipsIdMediaRouteImport.update({
+    id: '/media',
+    path: '/media',
     getParentRoute: () => AuthenticatedChampionshipsIdRoute,
   } as any)
 const AuthenticatedChampionshipsIdMatchesRoute =
@@ -347,8 +368,11 @@ export interface FileRoutesByFullPath {
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
   '/championships/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
+  '/championships/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
+  '/championships/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
   '/championships/$id/referees': typeof AuthenticatedChampionshipsIdRefereesRoute
   '/championships/$id/sanctions': typeof AuthenticatedChampionshipsIdSanctionsRoute
+  '/championships/$id/sponsors': typeof AuthenticatedChampionshipsIdSponsorsRoute
   '/championships/$id/standings': typeof AuthenticatedChampionshipsIdStandingsRoute
   '/championships/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/championships/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
@@ -391,8 +415,11 @@ export interface FileRoutesByTo {
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
   '/championships/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
+  '/championships/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
+  '/championships/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
   '/championships/$id/referees': typeof AuthenticatedChampionshipsIdRefereesRoute
   '/championships/$id/sanctions': typeof AuthenticatedChampionshipsIdSanctionsRoute
+  '/championships/$id/sponsors': typeof AuthenticatedChampionshipsIdSponsorsRoute
   '/championships/$id/standings': typeof AuthenticatedChampionshipsIdStandingsRoute
   '/championships/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/championships/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
@@ -438,8 +465,11 @@ export interface FileRoutesById {
   '/_authenticated/championships_/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/_authenticated/championships_/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
   '/_authenticated/championships_/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
+  '/_authenticated/championships_/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
+  '/_authenticated/championships_/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
   '/_authenticated/championships_/$id/referees': typeof AuthenticatedChampionshipsIdRefereesRoute
   '/_authenticated/championships_/$id/sanctions': typeof AuthenticatedChampionshipsIdSanctionsRoute
+  '/_authenticated/championships_/$id/sponsors': typeof AuthenticatedChampionshipsIdSponsorsRoute
   '/_authenticated/championships_/$id/standings': typeof AuthenticatedChampionshipsIdStandingsRoute
   '/_authenticated/championships_/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/_authenticated/championships_/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
@@ -486,8 +516,11 @@ export interface FileRouteTypes {
     | '/championships/$id/athletes'
     | '/championships/$id/configuration'
     | '/championships/$id/matches'
+    | '/championships/$id/media'
+    | '/championships/$id/public-page'
     | '/championships/$id/referees'
     | '/championships/$id/sanctions'
+    | '/championships/$id/sponsors'
     | '/championships/$id/standings'
     | '/championships/$id/stats'
     | '/championships/$id/structure'
@@ -530,8 +563,11 @@ export interface FileRouteTypes {
     | '/championships/$id/athletes'
     | '/championships/$id/configuration'
     | '/championships/$id/matches'
+    | '/championships/$id/media'
+    | '/championships/$id/public-page'
     | '/championships/$id/referees'
     | '/championships/$id/sanctions'
+    | '/championships/$id/sponsors'
     | '/championships/$id/standings'
     | '/championships/$id/stats'
     | '/championships/$id/structure'
@@ -576,8 +612,11 @@ export interface FileRouteTypes {
     | '/_authenticated/championships_/$id/athletes'
     | '/_authenticated/championships_/$id/configuration'
     | '/_authenticated/championships_/$id/matches'
+    | '/_authenticated/championships_/$id/media'
+    | '/_authenticated/championships_/$id/public-page'
     | '/_authenticated/championships_/$id/referees'
     | '/_authenticated/championships_/$id/sanctions'
+    | '/_authenticated/championships_/$id/sponsors'
     | '/_authenticated/championships_/$id/standings'
     | '/_authenticated/championships_/$id/stats'
     | '/_authenticated/championships_/$id/structure'
@@ -807,6 +846,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChampionshipsIdStandingsRouteImport
       parentRoute: typeof AuthenticatedChampionshipsIdRoute
     }
+    '/_authenticated/championships_/$id/sponsors': {
+      id: '/_authenticated/championships_/$id/sponsors'
+      path: '/sponsors'
+      fullPath: '/championships/$id/sponsors'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdSponsorsRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
     '/_authenticated/championships_/$id/sanctions': {
       id: '/_authenticated/championships_/$id/sanctions'
       path: '/sanctions'
@@ -819,6 +865,20 @@ declare module '@tanstack/react-router' {
       path: '/referees'
       fullPath: '/championships/$id/referees'
       preLoaderRoute: typeof AuthenticatedChampionshipsIdRefereesRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
+    '/_authenticated/championships_/$id/public-page': {
+      id: '/_authenticated/championships_/$id/public-page'
+      path: '/public-page'
+      fullPath: '/championships/$id/public-page'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdPublicPageRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
+    '/_authenticated/championships_/$id/media': {
+      id: '/_authenticated/championships_/$id/media'
+      path: '/media'
+      fullPath: '/championships/$id/media'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdMediaRouteImport
       parentRoute: typeof AuthenticatedChampionshipsIdRoute
     }
     '/_authenticated/championships_/$id/matches': {
@@ -1076,8 +1136,11 @@ interface AuthenticatedChampionshipsIdRouteChildren {
   AuthenticatedChampionshipsIdAthletesRoute: typeof AuthenticatedChampionshipsIdAthletesRoute
   AuthenticatedChampionshipsIdConfigurationRoute: typeof AuthenticatedChampionshipsIdConfigurationRoute
   AuthenticatedChampionshipsIdMatchesRoute: typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
+  AuthenticatedChampionshipsIdMediaRoute: typeof AuthenticatedChampionshipsIdMediaRoute
+  AuthenticatedChampionshipsIdPublicPageRoute: typeof AuthenticatedChampionshipsIdPublicPageRoute
   AuthenticatedChampionshipsIdRefereesRoute: typeof AuthenticatedChampionshipsIdRefereesRoute
   AuthenticatedChampionshipsIdSanctionsRoute: typeof AuthenticatedChampionshipsIdSanctionsRoute
+  AuthenticatedChampionshipsIdSponsorsRoute: typeof AuthenticatedChampionshipsIdSponsorsRoute
   AuthenticatedChampionshipsIdStandingsRoute: typeof AuthenticatedChampionshipsIdStandingsRoute
   AuthenticatedChampionshipsIdStatsRoute: typeof AuthenticatedChampionshipsIdStatsRoute
   AuthenticatedChampionshipsIdStructureRoute: typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
@@ -1093,10 +1156,16 @@ const AuthenticatedChampionshipsIdRouteChildren: AuthenticatedChampionshipsIdRou
       AuthenticatedChampionshipsIdConfigurationRoute,
     AuthenticatedChampionshipsIdMatchesRoute:
       AuthenticatedChampionshipsIdMatchesRouteWithChildren,
+    AuthenticatedChampionshipsIdMediaRoute:
+      AuthenticatedChampionshipsIdMediaRoute,
+    AuthenticatedChampionshipsIdPublicPageRoute:
+      AuthenticatedChampionshipsIdPublicPageRoute,
     AuthenticatedChampionshipsIdRefereesRoute:
       AuthenticatedChampionshipsIdRefereesRoute,
     AuthenticatedChampionshipsIdSanctionsRoute:
       AuthenticatedChampionshipsIdSanctionsRoute,
+    AuthenticatedChampionshipsIdSponsorsRoute:
+      AuthenticatedChampionshipsIdSponsorsRoute,
     AuthenticatedChampionshipsIdStandingsRoute:
       AuthenticatedChampionshipsIdStandingsRoute,
     AuthenticatedChampionshipsIdStatsRoute:

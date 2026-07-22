@@ -381,6 +381,83 @@ export type Database = {
           },
         ];
       };
+      championship_public_pages: {
+        Row: {
+          championship_id: string;
+          contact: Json;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          hero_media_id: string | null;
+          id: string;
+          organization_id: string;
+          social_links: Json;
+          theme: Json;
+          updated_at: string;
+          updated_by: string | null;
+          visible_sections: Json;
+        };
+        Insert: {
+          championship_id: string;
+          contact?: Json;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          hero_media_id?: string | null;
+          id?: string;
+          organization_id: string;
+          social_links?: Json;
+          theme?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+          visible_sections?: Json;
+        };
+        Update: {
+          championship_id?: string;
+          contact?: Json;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          hero_media_id?: string | null;
+          id?: string;
+          organization_id?: string;
+          social_links?: Json;
+          theme?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+          visible_sections?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "championship_public_pages_championship_id_fkey";
+            columns: ["championship_id"];
+            isOneToOne: true;
+            referencedRelation: "championships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "championship_public_pages_hero_media_id_fkey";
+            columns: ["hero_media_id"];
+            isOneToOne: false;
+            referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "championship_public_pages_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "championship_public_pages_same_org_fk";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
       championship_settings: {
         Row: {
           allow_athlete_multiple_teams: boolean;
@@ -2068,6 +2145,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;
@@ -2105,6 +2183,7 @@ export type Database = {
           away_penalty_score?: number | null;
           away_score?: number | null;
           away_team_id?: string | null;
+          broadcast_url?: string | null;
           category_id?: string | null;
           championship_id: string;
           confirmed_at?: string | null;
@@ -2142,6 +2221,7 @@ export type Database = {
           away_penalty_score?: number | null;
           away_score?: number | null;
           away_team_id?: string | null;
+          broadcast_url?: string | null;
           category_id?: string | null;
           championship_id?: string;
           confirmed_at?: string | null;
@@ -2292,12 +2372,15 @@ export type Database = {
       };
       media: {
         Row: {
+          alt_text: string | null;
+          archived_at: string | null;
           athlete_id: string | null;
           championship_id: string | null;
           created_at: string;
           created_by: string | null;
           description: string | null;
           external_url: string | null;
+          file_name: string | null;
           file_url: string | null;
           id: string;
           is_featured: boolean;
@@ -2305,8 +2388,11 @@ export type Database = {
           match_id: string | null;
           media_type: string;
           metadata: Json;
+          mime_type: string | null;
+          object_path: string | null;
           organization_id: string;
           published_at: string | null;
+          size_bytes: number | null;
           team_id: string | null;
           thumbnail_url: string | null;
           title: string;
@@ -2314,12 +2400,15 @@ export type Database = {
           updated_by: string | null;
         };
         Insert: {
+          alt_text?: string | null;
+          archived_at?: string | null;
           athlete_id?: string | null;
           championship_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
           external_url?: string | null;
+          file_name?: string | null;
           file_url?: string | null;
           id?: string;
           is_featured?: boolean;
@@ -2327,8 +2416,11 @@ export type Database = {
           match_id?: string | null;
           media_type: string;
           metadata?: Json;
+          mime_type?: string | null;
+          object_path?: string | null;
           organization_id: string;
           published_at?: string | null;
+          size_bytes?: number | null;
           team_id?: string | null;
           thumbnail_url?: string | null;
           title: string;
@@ -2336,12 +2428,15 @@ export type Database = {
           updated_by?: string | null;
         };
         Update: {
+          alt_text?: string | null;
+          archived_at?: string | null;
           athlete_id?: string | null;
           championship_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
           external_url?: string | null;
+          file_name?: string | null;
           file_url?: string | null;
           id?: string;
           is_featured?: boolean;
@@ -2349,8 +2444,11 @@ export type Database = {
           match_id?: string | null;
           media_type?: string;
           metadata?: Json;
+          mime_type?: string | null;
+          object_path?: string | null;
           organization_id?: string;
           published_at?: string | null;
+          size_bytes?: number | null;
           team_id?: string | null;
           thumbnail_url?: string | null;
           title?: string;
@@ -2409,8 +2507,105 @@ export type Database = {
           },
         ];
       };
+      media_galleries: {
+        Row: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          organization_id: string;
+          published_at: string | null;
+          slug: string;
+          status: string;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          championship_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          organization_id: string;
+          published_at?: string | null;
+          slug: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          championship_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          organization_id?: string;
+          published_at?: string | null;
+          slug?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_galleries_championship_id_fkey";
+            columns: ["championship_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "media_galleries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      media_gallery_items: {
+        Row: {
+          caption: string | null;
+          display_order: number;
+          gallery_id: string;
+          media_id: string;
+        };
+        Insert: {
+          caption?: string | null;
+          display_order?: number;
+          gallery_id: string;
+          media_id: string;
+        };
+        Update: {
+          caption?: string | null;
+          display_order?: number;
+          gallery_id?: string;
+          media_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_gallery_items_gallery_id_fkey";
+            columns: ["gallery_id"];
+            isOneToOne: false;
+            referencedRelation: "media_galleries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "media_gallery_items_media_id_fkey";
+            columns: ["media_id"];
+            isOneToOne: false;
+            referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       news: {
         Row: {
+          archived_at: string | null;
           author: string | null;
           body: string | null;
           championship_id: string | null;
@@ -2421,12 +2616,16 @@ export type Database = {
           is_featured: boolean;
           organization_id: string;
           published_at: string | null;
+          scheduled_at: string | null;
+          slug: string;
+          status: string;
           summary: string | null;
           title: string;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
+          archived_at?: string | null;
           author?: string | null;
           body?: string | null;
           championship_id?: string | null;
@@ -2437,12 +2636,16 @@ export type Database = {
           is_featured?: boolean;
           organization_id: string;
           published_at?: string | null;
+          scheduled_at?: string | null;
+          slug: string;
+          status?: string;
           summary?: string | null;
           title: string;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
+          archived_at?: string | null;
           author?: string | null;
           body?: string | null;
           championship_id?: string | null;
@@ -2453,6 +2656,9 @@ export type Database = {
           is_featured?: boolean;
           organization_id?: string;
           published_at?: string | null;
+          scheduled_at?: string | null;
+          slug?: string;
+          status?: string;
           summary?: string | null;
           title?: string;
           updated_at?: string;
@@ -3406,10 +3612,14 @@ export type Database = {
           championship_id: string | null;
           created_at: string;
           created_by: string | null;
+          display_order: number;
+          ends_at: string | null;
           id: string;
           logo_url: string | null;
           name: string;
           organization_id: string;
+          starts_at: string | null;
+          status: string;
           tier: string | null;
           updated_at: string;
           updated_by: string | null;
@@ -3419,10 +3629,14 @@ export type Database = {
           championship_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          display_order?: number;
+          ends_at?: string | null;
           id?: string;
           logo_url?: string | null;
           name: string;
           organization_id: string;
+          starts_at?: string | null;
+          status?: string;
           tier?: string | null;
           updated_at?: string;
           updated_by?: string | null;
@@ -3432,10 +3646,14 @@ export type Database = {
           championship_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          display_order?: number;
+          ends_at?: string | null;
           id?: string;
           logo_url?: string | null;
           name?: string;
           organization_id?: string;
+          starts_at?: string | null;
+          status?: string;
           tier?: string | null;
           updated_at?: string;
           updated_by?: string | null;
@@ -4784,6 +5002,43 @@ export type Database = {
             };
             Returns: string;
           };
+      archive_championship_media: {
+        Args: { p_championship_id: string; p_media_id: string };
+        Returns: {
+          alt_text: string | null;
+          archived_at: string | null;
+          athlete_id: string | null;
+          championship_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          external_url: string | null;
+          file_name: string | null;
+          file_url: string | null;
+          id: string;
+          is_featured: boolean;
+          is_public: boolean;
+          match_id: string | null;
+          media_type: string;
+          metadata: Json;
+          mime_type: string | null;
+          object_path: string | null;
+          organization_id: string;
+          published_at: string | null;
+          size_bytes: number | null;
+          team_id: string | null;
+          thumbnail_url: string | null;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "media";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       archive_competition_stage: {
         Args: {
           p_championship_id: string;
@@ -4975,6 +5230,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;
@@ -5206,6 +5462,10 @@ export type Database = {
         Args: { p_championship_id: string; p_stage_id: string };
         Returns: Json;
       };
+      get_public_championship_portal: {
+        Args: { p_slug: string };
+        Returns: Json;
+      };
       get_team_edit_session: {
         Args: { p_session_hash: string };
         Returns: {
@@ -5295,6 +5555,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;
@@ -5331,6 +5592,46 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "matches";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      phase4_championship_context: {
+        Args: { p_championship_id: string };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -5381,6 +5682,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;
@@ -5504,6 +5806,43 @@ export type Database = {
             };
             Returns: string;
           };
+      register_championship_media: {
+        Args: { p_championship_id: string; p_payload: Json };
+        Returns: {
+          alt_text: string | null;
+          archived_at: string | null;
+          athlete_id: string | null;
+          championship_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          external_url: string | null;
+          file_name: string | null;
+          file_url: string | null;
+          id: string;
+          is_featured: boolean;
+          is_public: boolean;
+          match_id: string | null;
+          media_type: string;
+          metadata: Json;
+          mime_type: string | null;
+          object_path: string | null;
+          organization_id: string;
+          published_at: string | null;
+          size_bytes: number | null;
+          team_id: string | null;
+          thumbnail_url: string | null;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "media";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       register_match_report_attachment: {
         Args: {
           p_championship_id: string;
@@ -5640,6 +5979,89 @@ export type Database = {
       revoke_team_edit_link: {
         Args: { p_link_id: string; p_reason: string };
         Returns: string;
+      };
+      save_championship_news: {
+        Args: { p_championship_id: string; p_news_id: string; p_payload: Json };
+        Returns: {
+          archived_at: string | null;
+          author: string | null;
+          body: string | null;
+          championship_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          image_url: string | null;
+          is_featured: boolean;
+          organization_id: string;
+          published_at: string | null;
+          scheduled_at: string | null;
+          slug: string;
+          status: string;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "news";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      save_championship_public_page: {
+        Args: { p_championship_id: string; p_payload: Json };
+        Returns: {
+          championship_id: string;
+          contact: Json;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          hero_media_id: string | null;
+          id: string;
+          organization_id: string;
+          social_links: Json;
+          theme: Json;
+          updated_at: string;
+          updated_by: string | null;
+          visible_sections: Json;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championship_public_pages";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      save_championship_sponsor: {
+        Args: {
+          p_championship_id: string;
+          p_payload: Json;
+          p_sponsor_id: string;
+        };
+        Returns: {
+          championship_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          display_order: number;
+          ends_at: string | null;
+          id: string;
+          logo_url: string | null;
+          name: string;
+          organization_id: string;
+          starts_at: string | null;
+          status: string;
+          tier: string | null;
+          updated_at: string;
+          updated_by: string | null;
+          website: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "sponsors";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       save_competition_group: {
         Args: {
@@ -5990,6 +6412,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;
@@ -6026,6 +6449,46 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "matches";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      set_championship_publication: {
+        Args: { p_championship_id: string; p_publish: boolean };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -6123,6 +6586,7 @@ export type Database = {
           away_penalty_score: number | null;
           away_score: number | null;
           away_team_id: string | null;
+          broadcast_url: string | null;
           category_id: string | null;
           championship_id: string;
           confirmed_at: string | null;

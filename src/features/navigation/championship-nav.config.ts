@@ -62,9 +62,9 @@ export const CHAMPIONSHIP_NAV = [
   { label: "Arbitragem", icon: Flag, to: "/championships/$id/referees", available: true },
   { label: "Sanções", icon: Gavel, to: "/championships/$id/sanctions", available: true },
   { label: "Financeiro", icon: CircleDollarSign, available: false },
-  { label: "Notícias e mídia", icon: Newspaper, available: false },
-  { label: "Patrocinadores", icon: Handshake, available: false },
-  { label: "Página pública", icon: Globe2, available: false },
+  { label: "Notícias e mídia", icon: Newspaper, to: "/championships/$id/media", available: true },
+  { label: "Patrocinadores", icon: Handshake, to: "/championships/$id/sponsors", available: true },
+  { label: "Página pública", icon: Globe2, to: "/championships/$id/public-page", available: true },
   { label: "Auditoria", icon: History, available: false },
   { label: "Configurações", icon: Settings, available: false },
 ] as const satisfies NavItem[];
