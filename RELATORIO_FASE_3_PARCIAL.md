@@ -22,6 +22,14 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 - policies somente de leitura para membros e mutações críticas exclusivamente via RPCs autorizadas;
 - teste SQL de presença, privilégios e triggers da Fase 3.
 
+### Incremento de continuidade — 22/07/2026
+
+- escalação da comissão técnica por equipe, limitada pelo regulamento e restrita a membros ativos e não suspensos;
+- substituições estruturadas com atleta de saída, atleta de entrada, minuto e período, validadas contra titulares e reservas da escalação;
+- anexos reais em bucket privado do Storage, com URLs temporárias, limite de 10 MB e tipos PDF, JPG, PNG e WebP;
+- comissão, substituições, arbitragem e anexos incorporados ao snapshot imutável da súmula homologada;
+- correção de uma ambiguidade legada na RPC de escalações identificada pelo lint remoto.
+
 ## Validação local
 
 - `npm run typecheck`: aprovado;
@@ -37,12 +45,13 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 - histórico local e remoto reconciliado até `20260721213000`;
 - `phase3_sports_operations_verification.sql`: aprovado no banco remoto;
 - tipos TypeScript regenerados a partir do schema remoto.
+- migrations `20260722140000`, `20260722153000` e `20260722154500` aplicadas em 22/07/2026;
+- histórico local e remoto reconciliado até `20260722154500`;
+- `supabase db lint --linked --schema public --level error`: aprovado sem erros;
+- tipos TypeScript regenerados novamente a partir do schema remoto após o incremento.
 
 ## Itens ainda necessários para concluir a Fase 3
 
-- escalação da comissão técnica na súmula;
-- substituições estruturadas com atleta de entrada e saída;
-- anexos reais em Storage com regras de tipo e tamanho;
 - integração do pagamento de arbitragem ao módulo financeiro da Fase 5;
 - E2E autenticado da jornada completa e conferência visual do PDF homologado.
 

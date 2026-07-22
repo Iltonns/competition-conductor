@@ -6,31 +6,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       athlete_registrations: {
@@ -1843,6 +1818,67 @@ export type Database = {
           },
         ];
       };
+      match_report_attachments: {
+        Row: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          file_name: string;
+          id: string;
+          match_id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+        };
+        Insert: {
+          championship_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          file_name: string;
+          id?: string;
+          match_id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+        };
+        Update: {
+          championship_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          file_name?: string;
+          id?: string;
+          match_id?: string;
+          mime_type?: string;
+          object_path?: string;
+          organization_id?: string;
+          size_bytes?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "match_report_attachments_championship_id_fkey";
+            columns: ["championship_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_report_attachments_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_report_attachments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       match_reports: {
         Row: {
           attachments: Json;
@@ -1948,6 +1984,81 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      match_staff: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          match_id: string;
+          organization_id: string;
+          role: string;
+          team_id: string;
+          team_staff_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          match_id: string;
+          organization_id: string;
+          role: string;
+          team_id: string;
+          team_staff_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          match_id?: string;
+          organization_id?: string;
+          role?: string;
+          team_id?: string;
+          team_staff_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "match_staff_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_staff_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_staff_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "public_team_profiles";
+            referencedColumns: ["team_id"];
+          },
+          {
+            foreignKeyName: "match_staff_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_staff_team_staff_id_fkey";
+            columns: ["team_staff_id"];
+            isOneToOne: false;
+            referencedRelation: "team_staff";
             referencedColumns: ["id"];
           },
         ];
@@ -4988,6 +5099,39 @@ export type Database = {
         Args: { p_championship_id: string; p_match_id: string };
         Returns: undefined;
       };
+      delete_match_report_attachment: {
+        Args: {
+          p_attachment_id: string;
+          p_championship_id: string;
+          p_match_id: string;
+        };
+        Returns: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          file_name: string;
+          id: string;
+          match_id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "match_report_attachments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      delete_match_substitution: {
+        Args: {
+          p_championship_id: string;
+          p_match_id: string;
+          p_substitution_id: string;
+        };
+        Returns: undefined;
+      };
       delete_referee_unavailability: {
         Args: { p_championship_id: string; p_unavailability_id: string };
         Returns: undefined;
@@ -5360,6 +5504,34 @@ export type Database = {
             };
             Returns: string;
           };
+      register_match_report_attachment: {
+        Args: {
+          p_championship_id: string;
+          p_file_name: string;
+          p_match_id: string;
+          p_mime_type: string;
+          p_object_path: string;
+          p_size_bytes: number;
+        };
+        Returns: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          file_name: string;
+          id: string;
+          match_id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "match_report_attachments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       remove_match_event: {
         Args: {
           p_championship_id: string;
@@ -5688,6 +5860,64 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "match_reports";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      save_match_staff: {
+        Args: {
+          p_championship_id: string;
+          p_match_id: string;
+          p_staff_ids: string[];
+          p_team_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          match_id: string;
+          organization_id: string;
+          role: string;
+          team_id: string;
+          team_staff_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "match_staff";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      save_match_substitution: {
+        Args: {
+          p_athlete_in_id: string;
+          p_athlete_out_id: string;
+          p_championship_id: string;
+          p_match_id: string;
+          p_minute: number;
+          p_note?: string;
+          p_period: string;
+          p_substitution_id: string;
+          p_team_id: string;
+        };
+        Returns: {
+          athlete_in_id: string;
+          athlete_out_id: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          match_id: string;
+          minute: number | null;
+          note: string | null;
+          organization_id: string;
+          period: string | null;
+          team_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "substitutions";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -6163,9 +6393,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["owner", "admin", "editor", "viewer", "manager", "team_manager", "referee"],

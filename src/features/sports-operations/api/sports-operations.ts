@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 
 export type LineupRow = Database["public"]["Tables"]["lineups"]["Row"];
+export type SubstitutionRow = Database["public"]["Tables"]["substitutions"]["Row"];
 export type RefereeRow = Database["public"]["Tables"]["referees"]["Row"];
 export type RefereeAssignmentRow = Database["public"]["Tables"]["referee_assignments"]["Row"];
 export type RefereeUnavailabilityRow =
@@ -22,6 +23,47 @@ export interface LineupEntry {
 
 export interface LineupWithAthlete extends LineupRow {
   athlete: { id: string; full_name: string; is_goalkeeper: boolean } | null;
+}
+
+export interface EligibleStaff {
+  id: string;
+  full_name: string;
+  role: string;
+  custom_role: string | null;
+}
+
+export interface MatchStaffRow {
+  id: string;
+  match_id: string;
+  team_id: string;
+  team_staff_id: string;
+  role: string;
+  staff: { id: string; full_name: string } | null;
+}
+
+export interface SubstitutionWithAthletes extends SubstitutionRow {
+  athlete_in: { id: string; full_name: string } | null;
+  athlete_out: { id: string; full_name: string } | null;
+}
+
+export interface MatchReportAttachment {
+  id: string;
+  object_path: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+  signed_url: string;
+}
+
+export interface SubstitutionInput {
+  id?: string | null;
+  teamId: string;
+  athleteOutId: string;
+  athleteInId: string;
+  minute: number;
+  period: "first_half" | "second_half" | "extra_time" | "penalties";
+  note?: string | null;
 }
 
 export interface EligibleAthlete {
@@ -141,6 +183,167 @@ export function saveLineup(
     p_team_id: teamId,
     p_entries: entries,
   });
+}
+
+export async function listEligibleStaff(
+  championshipId: string,
+  teamId: string,
+): Promise<EligibleStaff[]> {
+  const { data: participation, error: participationError } = await supabase
+    .from("championship_teams")
+    .select("id")
+    .eq("championship_id", championshipId)
+    .eq("team_id", teamId)
+    .maybeSingle();
+  if (participationError) throw participationError;
+  if (!participation) return [];
+  const { data, error } = await supabase
+    .from("championship_team_staff")
+    .select("team_staff!inner(id,full_name,role,custom_role,archived_at,status)")
+    .eq("championship_team_id", participation.id)
+    .eq("active", true);
+  if (error) throw error;
+  return (data ?? []).flatMap((row) => {
+    const staff = row.team_staff as unknown as EligibleStaff & {
+      archived_at: string | null;
+      status: string;
+    };
+    return !staff.archived_at && staff.status === "active" ? [staff] : [];
+  });
+}
+
+export async function listMatchStaff(matchId: string): Promise<MatchStaffRow[]> {
+  const { data, error } = await fromUntyped("match_staff")
+    .select("*, staff:team_staff!match_staff_team_staff_id_fkey(id,full_name)")
+    .eq("match_id", matchId)
+    .order("role");
+  if (error) throw error;
+  return (data ?? []) as MatchStaffRow[];
+}
+
+export function saveMatchStaff(
+  championshipId: string,
+  matchId: string,
+  teamId: string,
+  staffIds: string[],
+) {
+  return callRpc<MatchStaffRow[]>("save_match_staff", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_team_id: teamId,
+    p_staff_ids: staffIds,
+  });
+}
+
+export async function listSubstitutions(matchId: string): Promise<SubstitutionWithAthletes[]> {
+  const { data, error } = await supabase
+    .from("substitutions")
+    .select(
+      "*, athlete_in:athletes!substitutions_athlete_in_id_fkey(id,full_name), athlete_out:athletes!substitutions_athlete_out_id_fkey(id,full_name)",
+    )
+    .eq("match_id", matchId)
+    .order("minute");
+  if (error) throw error;
+  return (data ?? []) as unknown as SubstitutionWithAthletes[];
+}
+
+export function saveSubstitution(
+  championshipId: string,
+  matchId: string,
+  input: SubstitutionInput,
+) {
+  return callRpc<SubstitutionRow>("save_match_substitution", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_substitution_id: input.id ?? null,
+    p_team_id: input.teamId,
+    p_athlete_out_id: input.athleteOutId,
+    p_athlete_in_id: input.athleteInId,
+    p_minute: input.minute,
+    p_period: input.period,
+    p_note: input.note ?? null,
+  });
+}
+
+export async function deleteSubstitution(
+  championshipId: string,
+  matchId: string,
+  substitutionId: string,
+) {
+  await callRpc<void>("delete_match_substitution", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_substitution_id: substitutionId,
+  });
+}
+
+export async function listMatchReportAttachments(
+  matchId: string,
+): Promise<MatchReportAttachment[]> {
+  const { data, error } = await fromUntyped("match_report_attachments")
+    .select("*")
+    .eq("match_id", matchId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  const attachments = (data ?? []) as Omit<MatchReportAttachment, "signed_url">[];
+  return Promise.all(
+    attachments.map(async (attachment) => {
+      const { data: signed, error: signedError } = await supabase.storage
+        .from("match-report-attachments")
+        .createSignedUrl(attachment.object_path, 3600);
+      if (signedError) throw signedError;
+      return { ...attachment, signed_url: signed.signedUrl };
+    }),
+  );
+}
+
+export async function uploadMatchReportAttachment(
+  organizationId: string,
+  championshipId: string,
+  matchId: string,
+  file: File,
+) {
+  const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type) || file.size <= 0 || file.size > 10 * 1024 * 1024) {
+    throw new Error("Use PDF, JPG, PNG ou WebP com até 10 MB.");
+  }
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const objectPath = `${organizationId}/${championshipId}/${matchId}/${crypto.randomUUID()}-${safeName}`;
+  const bucket = supabase.storage.from("match-report-attachments");
+  const { error: uploadError } = await bucket.upload(objectPath, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (uploadError) throw uploadError;
+  try {
+    return await callRpc<MatchReportAttachment>("register_match_report_attachment", {
+      p_championship_id: championshipId,
+      p_match_id: matchId,
+      p_object_path: objectPath,
+      p_file_name: file.name,
+      p_mime_type: file.type,
+      p_size_bytes: file.size,
+    });
+  } catch (error) {
+    await bucket.remove([objectPath]);
+    throw error;
+  }
+}
+
+export async function deleteMatchReportAttachment(
+  championshipId: string,
+  matchId: string,
+  attachment: MatchReportAttachment,
+) {
+  const removed = await callRpc<MatchReportAttachment>("delete_match_report_attachment", {
+    p_championship_id: championshipId,
+    p_match_id: matchId,
+    p_attachment_id: attachment.id,
+  });
+  const { error } = await supabase.storage
+    .from("match-report-attachments")
+    .remove([removed.object_path]);
+  if (error) throw error;
 }
 
 export async function getMatchReport(matchId: string): Promise<MatchReport | null> {

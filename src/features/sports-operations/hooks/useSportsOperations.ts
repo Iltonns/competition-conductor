@@ -1,31 +1,47 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   assignReferee,
+  deleteMatchReportAttachment,
+  deleteSubstitution,
   deleteRefereeUnavailability,
   getMatchReport,
   homologateMatchReport,
   listEligibleAthletes,
+  listEligibleStaff,
   listLineups,
+  listMatchReportAttachments,
+  listMatchStaff,
   listRefereeAssignments,
   listRefereeUnavailability,
   listReferees,
   listSanctions,
+  listSubstitutions,
   reopenMatchReport,
   revokeSanction,
   saveLineup,
+  saveMatchStaff,
   saveManualSanction,
   saveMatchReport,
   saveReferee,
   saveRefereeUnavailability,
+  saveSubstitution,
   setRefereeAssignmentStatus,
+  uploadMatchReportAttachment,
   type LineupEntry,
+  type MatchReportAttachment,
+  type SubstitutionInput,
 } from "../api/sports-operations";
 
 const sportsKeys = {
   report: (matchId: string) => ["sports", "report", matchId] as const,
   lineups: (matchId: string) => ["sports", "lineups", matchId] as const,
+  staff: (matchId: string) => ["sports", "staff", matchId] as const,
+  substitutions: (matchId: string) => ["sports", "substitutions", matchId] as const,
+  attachments: (matchId: string) => ["sports", "attachments", matchId] as const,
   eligible: (championshipId: string, teamId: string) =>
     ["sports", "eligible", championshipId, teamId] as const,
+  eligibleStaff: (championshipId: string, teamId: string) =>
+    ["sports", "eligible-staff", championshipId, teamId] as const,
   referees: (championshipId: string) => ["sports", "referees", championshipId] as const,
   assignments: (championshipId: string) => ["sports", "assignments", championshipId] as const,
   unavailability: (championshipId: string) =>
@@ -61,6 +77,74 @@ export function useSaveLineup(championshipId: string, matchId: string) {
       saveLineup(championshipId, matchId, teamId, entries),
     onSuccess: () => client.invalidateQueries({ queryKey: sportsKeys.lineups(matchId) }),
   });
+}
+export function useMatchStaff(matchId: string) {
+  return useQuery({
+    queryKey: sportsKeys.staff(matchId),
+    queryFn: () => listMatchStaff(matchId),
+    enabled: Boolean(matchId),
+  });
+}
+export function useEligibleStaff(championshipId: string, teamId: string) {
+  return useQuery({
+    queryKey: sportsKeys.eligibleStaff(championshipId, teamId),
+    queryFn: () => listEligibleStaff(championshipId, teamId),
+    enabled: Boolean(championshipId && teamId),
+  });
+}
+export function useSaveMatchStaff(championshipId: string, matchId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ teamId, staffIds }: { teamId: string; staffIds: string[] }) =>
+      saveMatchStaff(championshipId, matchId, teamId, staffIds),
+    onSuccess: () => client.invalidateQueries({ queryKey: sportsKeys.staff(matchId) }),
+  });
+}
+export function useSubstitutions(championshipId: string, matchId: string) {
+  const client = useQueryClient();
+  const refresh = () => client.invalidateQueries({ queryKey: sportsKeys.substitutions(matchId) });
+  const query = useQuery({
+    queryKey: sportsKeys.substitutions(matchId),
+    queryFn: () => listSubstitutions(matchId),
+    enabled: Boolean(matchId),
+  });
+  return {
+    ...query,
+    save: useMutation({
+      mutationFn: (input: SubstitutionInput) => saveSubstitution(championshipId, matchId, input),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => deleteSubstitution(championshipId, matchId, id),
+      onSuccess: refresh,
+    }),
+  };
+}
+export function useMatchReportAttachments(
+  organizationId: string,
+  championshipId: string,
+  matchId: string,
+) {
+  const client = useQueryClient();
+  const refresh = () => client.invalidateQueries({ queryKey: sportsKeys.attachments(matchId) });
+  const query = useQuery({
+    queryKey: sportsKeys.attachments(matchId),
+    queryFn: () => listMatchReportAttachments(matchId),
+    enabled: Boolean(matchId),
+  });
+  return {
+    ...query,
+    upload: useMutation({
+      mutationFn: (file: File) =>
+        uploadMatchReportAttachment(organizationId, championshipId, matchId, file),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (attachment: MatchReportAttachment) =>
+        deleteMatchReportAttachment(championshipId, matchId, attachment),
+      onSuccess: refresh,
+    }),
+  };
 }
 export function useReportActions(championshipId: string, matchId: string) {
   const client = useQueryClient();

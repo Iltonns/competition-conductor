@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, FileDown, LockKeyhole, RotateCcw, Save, ShieldCheck } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CheckCircle2,
+  FileDown,
+  LockKeyhole,
+  Paperclip,
+  RotateCcw,
+  Save,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,13 +19,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { MatchWithTeams } from "@/features/matches/api/matches";
 import { useMatchEvents } from "@/features/matches/hooks/useMatches";
-import type { LineupEntry, LineupWithAthlete } from "../api/sports-operations";
+import type { LineupEntry, LineupWithAthlete, MatchStaffRow } from "../api/sports-operations";
 import {
   useEligibleAthletes,
+  useEligibleStaff,
   useLineups,
   useMatchReport,
+  useMatchReportAttachments,
+  useMatchStaff,
   useReportActions,
   useSaveLineup,
+  useSaveMatchStaff,
+  useSubstitutions,
 } from "../hooks/useSportsOperations";
 
 export function MatchReportPage({
@@ -27,6 +42,9 @@ export function MatchReportPage({
 }) {
   const report = useMatchReport(match.id);
   const lineups = useLineups(match.id);
+  const staff = useMatchStaff(match.id);
+  const substitutions = useSubstitutions(championshipId, match.id);
+  const attachments = useMatchReportAttachments(match.organization_id, championshipId, match.id);
   const events = useMatchEvents(championshipId, match.id);
   const actions = useReportActions(championshipId, match.id);
   const [homeScore, setHomeScore] = useState(String(match.home_score ?? 0));
@@ -45,7 +63,14 @@ export function MatchReportPage({
     setNotes(report.data.notes ?? "");
   }, [report.data, match.home_score, match.away_score]);
 
-  if (report.isLoading || lineups.isLoading || events.isLoading)
+  if (
+    report.isLoading ||
+    lineups.isLoading ||
+    staff.isLoading ||
+    substitutions.isLoading ||
+    attachments.isLoading ||
+    events.isLoading
+  )
     return <Skeleton className="h-96" />;
   const locked = report.data?.status === "homologated";
   const lineupLocked =
@@ -60,7 +85,7 @@ export function MatchReportPage({
         first_half_added_minutes: Number(firstAdded),
         second_half_added_minutes: Number(secondAdded),
         notes,
-        attachments: [],
+        attachments: (attachments.data ?? []).map(({ signed_url: _signedUrl, ...item }) => item),
       });
       toast.success("Súmula salva e versionada.");
     } catch (error) {
@@ -139,6 +164,39 @@ export function MatchReportPage({
         )}
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-2">
+        {match.home_team_id && (
+          <StaffEditor
+            championshipId={championshipId}
+            matchId={match.id}
+            teamId={match.home_team_id}
+            teamName={match.home_team?.name ?? "Mandante"}
+            locked={lineupLocked}
+            current={staff.data ?? []}
+          />
+        )}
+        {match.away_team_id && (
+          <StaffEditor
+            championshipId={championshipId}
+            matchId={match.id}
+            teamId={match.away_team_id}
+            teamName={match.away_team?.name ?? "Visitante"}
+            locked={lineupLocked}
+            current={staff.data ?? []}
+          />
+        )}
+      </div>
+
+      <SubstitutionsEditor
+        homeTeamId={match.home_team_id}
+        awayTeamId={match.away_team_id}
+        homeTeamName={match.home_team?.name ?? "Mandante"}
+        awayTeamName={match.away_team?.name ?? "Visitante"}
+        lineups={lineups.data ?? []}
+        substitutions={substitutions}
+        locked={locked}
+      />
+
       <section className="card-arena p-4">
         <h3 className="font-display text-sm font-bold">Eventos e ocorrências</h3>
         <div className="mt-3 space-y-2">
@@ -188,6 +246,76 @@ export function MatchReportPage({
             disabled={locked}
             onChange={(event) => setNotes(event.target.value)}
           />
+        </div>
+      </section>
+
+      <section className="card-arena p-4 print:border-black print:bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-display text-sm font-bold">Anexos da súmula</h3>
+            <p className="mt-1 text-xs text-muted-foreground">PDF, JPG, PNG ou WebP · até 10 MB</p>
+          </div>
+          {!locked && (
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-xs font-medium hover:bg-accent">
+              <Paperclip className="h-4 w-4" /> Anexar arquivo
+              <input
+                className="sr-only"
+                type="file"
+                accept="application/pdf,image/jpeg,image/png,image/webp"
+                disabled={attachments.upload.isPending}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  try {
+                    await attachments.upload.mutateAsync(file);
+                    toast.success("Anexo enviado com segurança.");
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : "Falha ao enviar anexo.");
+                  }
+                }}
+              />
+            </label>
+          )}
+        </div>
+        <div className="mt-3 space-y-2">
+          {(attachments.data ?? []).map((attachment) => (
+            <div
+              key={attachment.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2 text-xs print:border-black"
+            >
+              <a
+                className="min-w-0 truncate underline-offset-4 hover:underline"
+                href={attachment.signed_url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {attachment.file_name} · {(attachment.size_bytes / 1024 / 1024).toFixed(2)} MB
+              </a>
+              {!locked && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 print:hidden"
+                  aria-label={`Excluir ${attachment.file_name}`}
+                  disabled={attachments.remove.isPending}
+                  onClick={async () => {
+                    try {
+                      await attachments.remove.mutateAsync(attachment);
+                      toast.success("Anexo removido.");
+                    } catch {
+                      toast.error("Não foi possível remover o anexo.");
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          {(attachments.data?.length ?? 0) === 0 && (
+            <p className="text-xs text-muted-foreground">Nenhum anexo registrado.</p>
+          )}
         </div>
       </section>
 
@@ -249,6 +377,231 @@ export function MatchReportPage({
         </p>
       )}
     </div>
+  );
+}
+
+function StaffEditor({
+  championshipId,
+  matchId,
+  teamId,
+  teamName,
+  locked,
+  current,
+}: {
+  championshipId: string;
+  matchId: string;
+  teamId: string;
+  teamName: string;
+  locked: boolean;
+  current: MatchStaffRow[];
+}) {
+  const eligible = useEligibleStaff(championshipId, teamId);
+  const mutation = useSaveMatchStaff(championshipId, matchId);
+  const currentIds = useMemo(
+    () => current.filter((row) => row.team_id === teamId).map((row) => row.team_staff_id),
+    [current, teamId],
+  );
+  const [selected, setSelected] = useState<string[]>([]);
+  useEffect(() => setSelected(currentIds), [currentIds]);
+  return (
+    <section className="card-arena p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-sm font-bold">Comissão · {teamName}</h3>
+        <Badge variant="outline">{selected.length} membros</Badge>
+      </div>
+      <div className="mt-3 space-y-2">
+        {(eligible.data ?? []).map((person) => (
+          <label
+            key={person.id}
+            className="flex items-center gap-2 rounded-lg border border-white/10 p-2 text-xs"
+          >
+            <input
+              type="checkbox"
+              checked={selected.includes(person.id)}
+              disabled={locked}
+              onChange={() =>
+                setSelected((state) =>
+                  state.includes(person.id)
+                    ? state.filter((id) => id !== person.id)
+                    : [...state, person.id],
+                )
+              }
+            />
+            <span className="flex-1">{person.full_name}</span>
+            <span className="text-muted-foreground">{person.custom_role || person.role}</span>
+          </label>
+        ))}
+        {(eligible.data?.length ?? 0) === 0 && (
+          <p className="text-xs text-muted-foreground">Nenhum membro elegível cadastrado.</p>
+        )}
+      </div>
+      {!locked && (
+        <Button
+          className="mt-3 w-full"
+          variant="outline"
+          disabled={mutation.isPending}
+          onClick={async () => {
+            try {
+              await mutation.mutateAsync({ teamId, staffIds: selected });
+              toast.success(`Comissão de ${teamName} salva.`);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Comissão inválida.");
+            }
+          }}
+        >
+          <CheckCircle2 className="h-4 w-4" /> Salvar comissão
+        </Button>
+      )}
+    </section>
+  );
+}
+
+function SubstitutionsEditor({
+  homeTeamId,
+  awayTeamId,
+  homeTeamName,
+  awayTeamName,
+  lineups,
+  substitutions,
+  locked,
+}: {
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  homeTeamName: string;
+  awayTeamName: string;
+  lineups: LineupWithAthlete[];
+  substitutions: ReturnType<typeof useSubstitutions>;
+  locked: boolean;
+}) {
+  const [teamId, setTeamId] = useState(homeTeamId ?? awayTeamId ?? "");
+  const [athleteOutId, setAthleteOutId] = useState("");
+  const [athleteInId, setAthleteInId] = useState("");
+  const [minute, setMinute] = useState("0");
+  const [period, setPeriod] = useState<"first_half" | "second_half" | "extra_time" | "penalties">(
+    "first_half",
+  );
+  const teamLineup = lineups.filter((row) => row.team_id === teamId);
+  const starters = teamLineup.filter((row) => row.lineup_role === "starter");
+  const reserves = teamLineup.filter((row) => row.lineup_role === "substitute");
+  return (
+    <section className="card-arena p-4 print:border-black print:bg-white">
+      <h3 className="font-display text-sm font-bold">Substituições</h3>
+      {!locked && (
+        <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_1fr_90px_130px_auto]">
+          <select
+            aria-label="Equipe da substituição"
+            className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+            value={teamId}
+            onChange={(event) => {
+              setTeamId(event.target.value);
+              setAthleteOutId("");
+              setAthleteInId("");
+            }}
+          >
+            {homeTeamId && <option value={homeTeamId}>{homeTeamName}</option>}
+            {awayTeamId && <option value={awayTeamId}>{awayTeamName}</option>}
+          </select>
+          <select
+            aria-label="Atleta que sai"
+            className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+            value={athleteOutId}
+            onChange={(event) => setAthleteOutId(event.target.value)}
+          >
+            <option value="">Sai...</option>
+            {starters.map((row) => (
+              <option key={row.id} value={row.athlete_id}>
+                {row.athlete?.full_name}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Atleta que entra"
+            className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+            value={athleteInId}
+            onChange={(event) => setAthleteInId(event.target.value)}
+          >
+            <option value="">Entra...</option>
+            {reserves.map((row) => (
+              <option key={row.id} value={row.athlete_id}>
+                {row.athlete?.full_name}
+              </option>
+            ))}
+          </select>
+          <Input
+            aria-label="Minuto da substituição"
+            type="number"
+            min={0}
+            max={180}
+            value={minute}
+            onChange={(event) => setMinute(event.target.value)}
+          />
+          <select
+            aria-label="Período da substituição"
+            className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as typeof period)}
+          >
+            <option value="first_half">1º tempo</option>
+            <option value="second_half">2º tempo</option>
+            <option value="extra_time">Prorrogação</option>
+            <option value="penalties">Pênaltis</option>
+          </select>
+          <Button
+            disabled={!athleteOutId || !athleteInId || substitutions.save.isPending}
+            onClick={async () => {
+              try {
+                await substitutions.save.mutateAsync({
+                  teamId,
+                  athleteOutId,
+                  athleteInId,
+                  minute: Number(minute),
+                  period,
+                });
+                setAthleteOutId("");
+                setAthleteInId("");
+                toast.success("Substituição registrada.");
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Substituição inválida.");
+              }
+            }}
+          >
+            <ArrowRightLeft className="h-4 w-4" /> Registrar
+          </Button>
+        </div>
+      )}
+      <div className="mt-3 space-y-2">
+        {(substitutions.data ?? []).map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs print:border-black"
+          >
+            <strong>{item.minute}'</strong>
+            <span className="text-red-400 print:text-black">
+              Sai: {item.athlete_out?.full_name}
+            </span>
+            <ArrowRightLeft className="h-3.5 w-3.5" />
+            <span className="text-emerald-400 print:text-black">
+              Entra: {item.athlete_in?.full_name}
+            </span>
+            {!locked && (
+              <Button
+                className="ml-auto h-7 w-7 print:hidden"
+                size="icon"
+                variant="ghost"
+                aria-label="Excluir substituição"
+                disabled={substitutions.remove.isPending}
+                onClick={() => substitutions.remove.mutate(item.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        ))}
+        {(substitutions.data?.length ?? 0) === 0 && (
+          <p className="text-xs text-muted-foreground">Nenhuma substituição registrada.</p>
+        )}
+      </div>
+    </section>
   );
 }
 
