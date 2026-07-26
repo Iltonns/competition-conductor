@@ -69,10 +69,11 @@ const MATCH_SELECT = `
 `;
 
 type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
-const phase1Rpc = supabase.rpc as unknown as (
-  name: string,
-  args: Record<string, unknown>,
-) => PromiseLike<RpcResult>;
+type Phase1Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
+
+function phase1Rpc(name: string, args: Record<string, unknown>) {
+  return (supabase.rpc as unknown as Phase1Rpc)(name, args);
+}
 
 async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await phase1Rpc(name, args);

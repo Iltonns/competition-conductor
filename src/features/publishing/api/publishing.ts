@@ -136,12 +136,9 @@ export interface PublicPortal {
 }
 
 type RpcResult = { data: unknown; error: { message: string } | null };
-const rpc = supabase.rpc as unknown as (
-  name: string,
-  args: Record<string, unknown>,
-) => PromiseLike<RpcResult>;
+type Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
 type DynamicQuery = PromiseLike<{ data: unknown; error: { message: string } | null }>;
-const fromUntyped = supabase.from as unknown as (name: string) => {
+type FromUntyped = (name: string) => {
   select: (columns?: string) => {
     eq: (
       column: string,
@@ -155,6 +152,14 @@ const fromUntyped = supabase.from as unknown as (name: string) => {
     };
   };
 };
+
+function rpc(name: string, args: Record<string, unknown>) {
+  return (supabase.rpc as unknown as Rpc)(name, args);
+}
+
+function fromUntyped(name: string) {
+  return (supabase.from as unknown as FromUntyped)(name);
+}
 
 async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await rpc(name, args);

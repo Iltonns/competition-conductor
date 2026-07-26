@@ -13,10 +13,11 @@ import type {
 } from "../types/engine-records.types";
 
 type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
-const engineRpc = supabase.rpc as unknown as (
-  name: string,
-  args: Record<string, unknown>,
-) => PromiseLike<RpcResult>;
+type EngineRpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
+
+function engineRpc(name: string, args: Record<string, unknown>) {
+  return (supabase.rpc as unknown as EngineRpc)(name, args);
+}
 
 async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await engineRpc(name, args);

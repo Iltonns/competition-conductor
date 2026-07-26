@@ -99,11 +99,8 @@ export interface MatchReport {
 
 type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
 type QueryResult = PromiseLike<{ data: unknown; error: { message: string } | null }>;
-const rpc = supabase.rpc as unknown as (
-  name: string,
-  args: Record<string, unknown>,
-) => PromiseLike<RpcResult>;
-const fromUntyped = supabase.from as unknown as (table: string) => {
+type Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
+type FromUntyped = (table: string) => {
   select: (columns?: string) => {
     eq: (
       column: string,
@@ -114,6 +111,14 @@ const fromUntyped = supabase.from as unknown as (table: string) => {
     };
   };
 };
+
+function rpc(name: string, args: Record<string, unknown>) {
+  return (supabase.rpc as unknown as Rpc)(name, args);
+}
+
+function fromUntyped(table: string) {
+  return (supabase.from as unknown as FromUntyped)(table);
+}
 
 async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await rpc(name, args);
