@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Championship } from "@/features/championships/types/championship.types";
 import type { EditorialStatus, NewsItem } from "../api/publishing";
 import { useContentPublishing } from "../hooks/usePublishing";
+import { GalleryPublishingSection } from "./GalleryPublishingSection";
 
 const emptyNews = {
   id: null as string | null,
@@ -279,6 +280,8 @@ export function ContentPublishingPage({ championship }: { championship: Champion
           ))}
         </div>
       </section>
+
+      <GalleryPublishingSection championshipId={championship.id} media={content.media.data ?? []} />
     </div>
   );
 }

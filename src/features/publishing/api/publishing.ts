@@ -35,12 +35,45 @@ export interface SponsorItem {
   id: string;
   name: string;
   logo_url: string | null;
+  logo_media_id: string | null;
+  resolved_logo_url?: string;
   website: string | null;
   tier: string | null;
   status: "active" | "inactive" | "archived";
   starts_at: string | null;
   ends_at: string | null;
   display_order: number;
+}
+
+export interface GalleryItem {
+  media_id: string;
+  display_order: number;
+  caption: string | null;
+}
+
+export interface MediaGallery {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  status: "draft" | "published" | "archived";
+  published_at: string | null;
+  items: GalleryItem[];
+}
+
+export interface PublicGallery {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  items: Array<{
+    media_id: string;
+    title: string;
+    object_path: string | null;
+    alt_text: string | null;
+    caption: string | null;
+    signed_url?: string;
+  }>;
 }
 
 export interface PublicPageConfig {
@@ -98,6 +131,7 @@ export interface PublicPortal {
   }>;
   news: NewsItem[];
   media: MediaItem[];
+  galleries: PublicGallery[];
   sponsors: SponsorItem[];
 }
 
@@ -109,7 +143,16 @@ const rpc = supabase.rpc as unknown as (
 type DynamicQuery = PromiseLike<{ data: unknown; error: { message: string } | null }>;
 const fromUntyped = supabase.from as unknown as (name: string) => {
   select: (columns?: string) => {
-    eq: (column: string, value: unknown) => { maybeSingle: () => DynamicQuery };
+    eq: (
+      column: string,
+      value: unknown,
+    ) => {
+      maybeSingle: () => DynamicQuery;
+      order: (
+        column: string,
+        options?: { ascending?: boolean },
+      ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+    };
   };
 };
 
@@ -222,6 +265,35 @@ export function saveSponsor(championshipId: string, id: string | null, payload: 
   });
 }
 
+export async function listGalleries(championshipId: string): Promise<MediaGallery[]> {
+  const { data, error } = await fromUntyped("media_galleries")
+    .select(
+      "id,title,slug,description,status,published_at,items:media_gallery_items(media_id,display_order,caption)",
+    )
+    .eq("championship_id", championshipId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as MediaGallery[];
+}
+
+export function saveGallery(
+  championshipId: string,
+  id: string | null,
+  payload: {
+    title: string;
+    slug: string;
+    description: string;
+    status: MediaGallery["status"];
+    items: GalleryItem[];
+  },
+) {
+  return callRpc<MediaGallery>("save_championship_gallery", {
+    p_championship_id: championshipId,
+    p_gallery_id: id,
+    p_payload: payload,
+  });
+}
+
 export async function getPublicPageConfig(
   championshipId: string,
 ): Promise<PublicPageConfig | null> {
@@ -259,6 +331,31 @@ export async function getPublicPortal(slug: string): Promise<PublicPortal | null
         .from("championship-media")
         .createSignedUrl(item.object_path, 3600);
       return { ...item, signed_url: data?.signedUrl };
+    }),
+  );
+  portal.galleries = await Promise.all(
+    (portal.galleries ?? []).map(async (gallery) => ({
+      ...gallery,
+      items: await Promise.all(
+        gallery.items.map(async (item) => {
+          if (!item.object_path) return item;
+          const { data } = await supabase.storage
+            .from("championship-media")
+            .createSignedUrl(item.object_path, 3600);
+          return { ...item, signed_url: data?.signedUrl };
+        }),
+      ),
+    })),
+  );
+  portal.sponsors = await Promise.all(
+    portal.sponsors.map(async (sponsor) => {
+      const logoObjectPath = (sponsor as SponsorItem & { logo_object_path?: string | null })
+        .logo_object_path;
+      if (!logoObjectPath) return sponsor;
+      const { data } = await supabase.storage
+        .from("championship-media")
+        .createSignedUrl(logoObjectPath, 3600);
+      return { ...sponsor, resolved_logo_url: data?.signedUrl };
     }),
   );
   return portal;

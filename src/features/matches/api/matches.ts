@@ -46,6 +46,7 @@ export interface UpdateMatchInput {
   venue: string | null;
   phase: string | null;
   round: string | null;
+  broadcast_url: string | null;
 }
 
 export interface CreateEventInput {
@@ -62,7 +63,7 @@ export interface CreateEventInput {
 const MATCH_SELECT = `
   id, organization_id, championship_id, home_team_id, away_team_id,
   phase, round, venue, scheduled_at, home_score, away_score, status,
-  created_at, updated_at, created_by, updated_by, started_at, ended_at, metadata,
+  broadcast_url, created_at, updated_at, created_by, updated_by, started_at, ended_at, metadata,
   home_team:teams!matches_home_team_id_fkey(id, name, short_name, crest_url, primary_color),
   away_team:teams!matches_away_team_id_fkey(id, name, short_name, crest_url, primary_color)
 `;
@@ -139,13 +140,14 @@ export function updateMatch(
   matchId: string,
   changes: UpdateMatchInput,
 ): Promise<MatchRow> {
-  return callRpc("update_championship_match", {
+  return callRpc("update_championship_match_public_details", {
     p_championship_id: championshipId,
     p_match_id: matchId,
     p_scheduled_at: changes.scheduled_at,
     p_venue: changes.venue,
     p_phase: changes.phase,
     p_round: changes.round,
+    p_broadcast_url: changes.broadcast_url,
   });
 }
 

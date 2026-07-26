@@ -9,6 +9,7 @@ import {
   MapPin,
   Play,
   Plus,
+  Radio,
   Square,
   Timer,
   Trash2,
@@ -438,6 +439,11 @@ export function MatchPanel({
                 hour: "2-digit",
                 minute: "2-digit",
               })}
+            </p>
+          )}
+          {match.broadcast_url && (
+            <p className="mt-1 flex items-center justify-center gap-1 text-[9px] text-neon">
+              <Radio className="h-3 w-3" /> Transmissão configurada
             </p>
           )}
         </div>
@@ -926,6 +932,7 @@ function EditMatchDialog({
   const [venue, setVenue] = useState("");
   const [phase, setPhase] = useState("");
   const [round, setRound] = useState("");
+  const [broadcastUrl, setBroadcastUrl] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -935,6 +942,7 @@ function EditMatchDialog({
     setVenue(match.venue ?? "");
     setPhase(match.phase ?? "");
     setRound(match.round ?? "");
+    setBroadcastUrl(match.broadcast_url ?? "");
   }, [open, match]);
 
   const save = async () => {
@@ -943,6 +951,7 @@ function EditMatchDialog({
       venue: venue.trim() || null,
       phase: phase.trim() || null,
       round: round.trim() || null,
+      broadcast_url: broadcastUrl.trim() || null,
     };
     try {
       await update.mutateAsync(changes);
@@ -992,6 +1001,19 @@ function EditMatchDialog({
               value={round}
               onChange={(event) => setRound(event.target.value)}
             />
+          </div>
+          <div className="sm:col-span-2">
+            <Label>Link HTTPS da transmissão</Label>
+            <Input
+              className="mt-1"
+              type="url"
+              placeholder="https://..."
+              value={broadcastUrl}
+              onChange={(event) => setBroadcastUrl(event.target.value)}
+            />
+            <p className="mt-1 text-[9px] text-muted-foreground">
+              O link será exibido no portal público do campeonato.
+            </p>
           </div>
         </div>
         <DialogFooter>

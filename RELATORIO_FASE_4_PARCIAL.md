@@ -34,3 +34,48 @@ Data: 22/07/2026
 - adicionar upload/substituição de logo de patrocinador usando a biblioteca de mídia;
 - executar E2E autenticado de publicação/despublicação e validação visual responsiva do portal;
 - validar RLS anônima e administrativa com usuários reais de papéis distintos.
+
+### Incremento de continuidade — 26/07/2026
+
+- interface administrativa para criar, editar, ordenar, publicar e arquivar galerias;
+- seleção ordenada de imagens da biblioteca, com legenda por item;
+- persistência transacional de galeria e itens por RPC, com validação de mídia,
+  organização e campeonato;
+- campo HTTPS de transmissão incorporado à edição da partida e ao portal público;
+- atualização atômica dos detalhes públicos da partida, com auditoria;
+- upload e substituição de logo de patrocinador pela biblioteca privada de mídia;
+- vínculo `sponsors.logo_media_id`, validado no backend contra o mesmo campeonato;
+- URLs temporárias geradas em runtime para logos e imagens públicas, sem persistir
+  URLs assinadas expiradas;
+- portal público atualizado para exibir galerias publicadas e logos vinculados;
+- arquivamento de mídia bloqueado quando ela estiver em uma galeria, página pública
+  ou logo de patrocinador;
+- verificação SQL da Fase 4 ampliada para os novos contratos e privilégios.
+
+## Validação local do incremento de 26/07/2026
+
+- `npm run typecheck`: aprovado;
+- `npm run lint`: zero erros e oito avisos preexistentes de Fast Refresh;
+- `npm run test`: 32 testes aprovados;
+- `npm run build`: aprovado fora do sandbox após o erro ambiental `spawn EPERM`;
+- `git diff --check`: aprovado, com apenas avisos de normalização LF/CRLF.
+
+## Gate remoto do incremento
+
+A migration `20260726120000_phase4_gallery_broadcast_sponsor_media.sql` ainda não foi
+aplicada. A consulta de histórico remoto foi interrompida com
+`LegacyPlatformAuthRequiredError`, pois a sessão administrativa da CLI expirou.
+
+Antes de liberar o incremento:
+
+1. autenticar a CLI por meio seguro, sem compartilhar o token na conversa;
+2. executar `supabase migration list --linked` e `supabase db push --linked --dry-run`;
+3. aplicar a migration em homologação;
+4. executar `supabase db lint --linked --schema public --level error`;
+5. regenerar oficialmente `src/integrations/supabase/types.ts`;
+6. executar `supabase/tests/phase4_publishing_verification.sql`;
+7. validar RLS com admin, viewer, outro tenant e acesso anônimo;
+8. executar E2E autenticado e validação visual responsiva do portal.
+
+Com este incremento, os três gaps funcionais locais anteriormente listados foram
+implementados. A Fase 4 continua parcial até a aprovação dos gates remotos e E2E.

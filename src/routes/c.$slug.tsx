@@ -1,5 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, ExternalLink, MapPin, Newspaper, Radio, Shield, Trophy } from "lucide-react";
+import {
+  CalendarDays,
+  ExternalLink,
+  Images,
+  MapPin,
+  Newspaper,
+  Radio,
+  Shield,
+  Trophy,
+} from "lucide-react";
 import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Button } from "@/components/ui/button";
 import { getPublicPortal } from "@/features/publishing/api/publishing";
@@ -230,25 +239,41 @@ function PublicChampionship() {
           </Section>
         )}
         {visible.has("media") && (
-          <Section id="galeria" title="Galeria" icon={<Newspaper className="h-5 w-5" />}>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {portal.media
-                .filter((item) => item.mime_type?.startsWith("image/") && item.signed_url)
-                .map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.signed_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="aspect-video overflow-hidden rounded-xl border border-white/10"
-                  >
-                    <img
-                      src={item.signed_url}
-                      alt={item.alt_text ?? item.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </a>
-                ))}
+          <Section id="galeria" title="Galeria" icon={<Images className="h-5 w-5" />}>
+            <div className="space-y-8">
+              {portal.galleries.map((gallery) => (
+                <article key={gallery.id}>
+                  <h3 className="font-display text-lg font-bold">{gallery.title}</h3>
+                  {gallery.description && (
+                    <p className="mt-1 text-xs text-white/50">{gallery.description}</p>
+                  )}
+                  <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {gallery.items
+                      .filter((item) => item.signed_url)
+                      .map((item) => (
+                        <a
+                          key={item.media_id}
+                          href={item.signed_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group overflow-hidden rounded-xl border border-white/10"
+                        >
+                          <img
+                            src={item.signed_url}
+                            alt={item.alt_text ?? item.title}
+                            className="aspect-video h-full w-full object-cover"
+                          />
+                          {item.caption && (
+                            <span className="block p-2 text-[10px] text-white/60">
+                              {item.caption}
+                            </span>
+                          )}
+                        </a>
+                      ))}
+                  </div>
+                </article>
+              ))}
+              {portal.galleries.length === 0 && <Empty />}
             </div>
           </Section>
         )}
@@ -263,8 +288,12 @@ function PublicChampionship() {
                   rel="noreferrer"
                   className="grid h-20 min-w-36 place-items-center rounded-xl border border-white/10 bg-white p-3 text-center text-sm font-bold text-black"
                 >
-                  {sponsor.logo_url ? (
-                    <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-12 max-w-28" />
+                  {sponsor.resolved_logo_url || sponsor.logo_url ? (
+                    <img
+                      src={sponsor.resolved_logo_url ?? sponsor.logo_url ?? undefined}
+                      alt={sponsor.name}
+                      className="max-h-12 max-w-28"
+                    />
                   ) : (
                     sponsor.name
                   )}
