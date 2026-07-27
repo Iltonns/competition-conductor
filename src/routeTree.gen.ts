@@ -43,6 +43,7 @@ import { Route as AuthenticatedChampionshipsIdRefereesRouteImport } from './rout
 import { Route as AuthenticatedChampionshipsIdPublicPageRouteImport } from './routes/_authenticated/championships_.$id.public-page'
 import { Route as AuthenticatedChampionshipsIdMediaRouteImport } from './routes/_authenticated/championships_.$id.media'
 import { Route as AuthenticatedChampionshipsIdMatchesRouteImport } from './routes/_authenticated/championships_.$id.matches'
+import { Route as AuthenticatedChampionshipsIdFinanceRouteImport } from './routes/_authenticated/championships_.$id.finance'
 import { Route as AuthenticatedChampionshipsIdConfigurationRouteImport } from './routes/_authenticated/championships_.$id.configuration'
 import { Route as AuthenticatedChampionshipsIdAthletesRouteImport } from './routes/_authenticated/championships_.$id.athletes'
 import { Route as AuthenticatedChampionshipsIdTeamsIndexRouteImport } from './routes/_authenticated/championships_.$id.teams.index'
@@ -252,6 +253,12 @@ const AuthenticatedChampionshipsIdMatchesRoute =
     path: '/matches',
     getParentRoute: () => AuthenticatedChampionshipsIdRoute,
   } as any)
+const AuthenticatedChampionshipsIdFinanceRoute =
+  AuthenticatedChampionshipsIdFinanceRouteImport.update({
+    id: '/finance',
+    path: '/finance',
+    getParentRoute: () => AuthenticatedChampionshipsIdRoute,
+  } as any)
 const AuthenticatedChampionshipsIdConfigurationRoute =
   AuthenticatedChampionshipsIdConfigurationRouteImport.update({
     id: '/configuration',
@@ -367,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/championships/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
+  '/championships/$id/finance': typeof AuthenticatedChampionshipsIdFinanceRoute
   '/championships/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
   '/championships/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
   '/championships/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
@@ -414,6 +422,7 @@ export interface FileRoutesByTo {
   '/teams': typeof AuthenticatedOrganizerTeamsRoute
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/championships/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
+  '/championships/$id/finance': typeof AuthenticatedChampionshipsIdFinanceRoute
   '/championships/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
   '/championships/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
   '/championships/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
@@ -464,6 +473,7 @@ export interface FileRoutesById {
   '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/_authenticated/championships_/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
   '/_authenticated/championships_/$id/configuration': typeof AuthenticatedChampionshipsIdConfigurationRoute
+  '/_authenticated/championships_/$id/finance': typeof AuthenticatedChampionshipsIdFinanceRoute
   '/_authenticated/championships_/$id/matches': typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
   '/_authenticated/championships_/$id/media': typeof AuthenticatedChampionshipsIdMediaRoute
   '/_authenticated/championships_/$id/public-page': typeof AuthenticatedChampionshipsIdPublicPageRoute
@@ -515,6 +525,7 @@ export interface FileRouteTypes {
     | '/championships/$id'
     | '/championships/$id/athletes'
     | '/championships/$id/configuration'
+    | '/championships/$id/finance'
     | '/championships/$id/matches'
     | '/championships/$id/media'
     | '/championships/$id/public-page'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/championships/$id/athletes'
     | '/championships/$id/configuration'
+    | '/championships/$id/finance'
     | '/championships/$id/matches'
     | '/championships/$id/media'
     | '/championships/$id/public-page'
@@ -611,6 +623,7 @@ export interface FileRouteTypes {
     | '/_authenticated/championships_/$id'
     | '/_authenticated/championships_/$id/athletes'
     | '/_authenticated/championships_/$id/configuration'
+    | '/_authenticated/championships_/$id/finance'
     | '/_authenticated/championships_/$id/matches'
     | '/_authenticated/championships_/$id/media'
     | '/_authenticated/championships_/$id/public-page'
@@ -888,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChampionshipsIdMatchesRouteImport
       parentRoute: typeof AuthenticatedChampionshipsIdRoute
     }
+    '/_authenticated/championships_/$id/finance': {
+      id: '/_authenticated/championships_/$id/finance'
+      path: '/finance'
+      fullPath: '/championships/$id/finance'
+      preLoaderRoute: typeof AuthenticatedChampionshipsIdFinanceRouteImport
+      parentRoute: typeof AuthenticatedChampionshipsIdRoute
+    }
     '/_authenticated/championships_/$id/configuration': {
       id: '/_authenticated/championships_/$id/configuration'
       path: '/configuration'
@@ -1135,6 +1155,7 @@ const AuthenticatedChampionshipsIdTeamsRouteWithChildren =
 interface AuthenticatedChampionshipsIdRouteChildren {
   AuthenticatedChampionshipsIdAthletesRoute: typeof AuthenticatedChampionshipsIdAthletesRoute
   AuthenticatedChampionshipsIdConfigurationRoute: typeof AuthenticatedChampionshipsIdConfigurationRoute
+  AuthenticatedChampionshipsIdFinanceRoute: typeof AuthenticatedChampionshipsIdFinanceRoute
   AuthenticatedChampionshipsIdMatchesRoute: typeof AuthenticatedChampionshipsIdMatchesRouteWithChildren
   AuthenticatedChampionshipsIdMediaRoute: typeof AuthenticatedChampionshipsIdMediaRoute
   AuthenticatedChampionshipsIdPublicPageRoute: typeof AuthenticatedChampionshipsIdPublicPageRoute
@@ -1154,6 +1175,8 @@ const AuthenticatedChampionshipsIdRouteChildren: AuthenticatedChampionshipsIdRou
       AuthenticatedChampionshipsIdAthletesRoute,
     AuthenticatedChampionshipsIdConfigurationRoute:
       AuthenticatedChampionshipsIdConfigurationRoute,
+    AuthenticatedChampionshipsIdFinanceRoute:
+      AuthenticatedChampionshipsIdFinanceRoute,
     AuthenticatedChampionshipsIdMatchesRoute:
       AuthenticatedChampionshipsIdMatchesRouteWithChildren,
     AuthenticatedChampionshipsIdMediaRoute:

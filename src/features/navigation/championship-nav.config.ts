@@ -61,7 +61,12 @@ export const CHAMPIONSHIP_NAV = [
   { label: "Estatísticas", icon: BarChart3, to: "/championships/$id/stats", available: true },
   { label: "Arbitragem", icon: Flag, to: "/championships/$id/referees", available: true },
   { label: "Sanções", icon: Gavel, to: "/championships/$id/sanctions", available: true },
-  { label: "Financeiro", icon: CircleDollarSign, available: false },
+  {
+    label: "Financeiro",
+    icon: CircleDollarSign,
+    to: "/championships/$id/finance",
+    available: true,
+  },
   { label: "Notícias e mídia", icon: Newspaper, to: "/championships/$id/media", available: true },
   { label: "Patrocinadores", icon: Handshake, to: "/championships/$id/sponsors", available: true },
   { label: "Página pública", icon: Globe2, to: "/championships/$id/public-page", available: true },
