@@ -4,9 +4,10 @@ Data: 27/07/2026
 
 ## Ponto de continuidade
 
-Os gaps funcionais locais da Fase 4 foram concluídos em 26/07/2026. O gate remoto
-da migration `20260726120000_phase4_gallery_broadcast_sponsor_media.sql` ainda
-depende de autenticação administrativa válida na CLI do Supabase.
+Os gaps funcionais locais da Fase 4 foram concluídos em 26/07/2026. O histórico
+remoto foi reconciliado até a migration
+`20260727120000_phase5_finance_foundation.sql`, aplicada diretamente no banco.
+O incremento de auditoria iniciado abaixo permanece somente local.
 
 Este incremento inicia a Fase 5 pelo domínio financeiro, substituindo a tela
 demonstrativa por uma fatia vertical real e contextualizada por campeonato.
@@ -66,11 +67,27 @@ O schema remoto já possuía `financial_transactions` com as colunas
 
 ## Próximas fatias da Fase 5
 
-- auditoria de domínio com paginação, filtros, exportação restrita e retenção;
 - configurações operacionais e arquivamento do campeonato;
 - organização, convites, papéis e proteção do último owner;
 - visões globais reais de equipes e atletas;
 - notificações internas idempotentes e preferências.
+
+## Incremento de continuidade — Auditoria
+
+- `audit_logs` preservada como fonte canônica, agora com vínculo explícito e
+  indexado ao campeonato;
+- backfill contextual de eventos das Fases 1–5 a partir dos recursos de origem;
+- sanitização recursiva de senhas, tokens, documentos, contatos e caminhos
+  privados em dados antigos e novos;
+- bloqueio de update/delete para clientes, preservando retenção controlada por
+  `service_role`;
+- leitura e exportação restritas a `owner` e `admin`;
+- tela `/championships/$id/audit` com paginação e filtros por ator, ação,
+  módulo, recurso, ID e período;
+- detalhes sanitizados de antes/depois/contexto;
+- exportação CSV limitada a 5.000 registros por consulta;
+- política de retenção padrão de 60 meses, configurável entre 12 e 120 meses;
+- verificação SQL específica e testes unitários da serialização CSV.
 
 ## Gate de liberação
 

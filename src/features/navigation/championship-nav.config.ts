@@ -70,7 +70,12 @@ export const CHAMPIONSHIP_NAV = [
   { label: "Notícias e mídia", icon: Newspaper, to: "/championships/$id/media", available: true },
   { label: "Patrocinadores", icon: Handshake, to: "/championships/$id/sponsors", available: true },
   { label: "Página pública", icon: Globe2, to: "/championships/$id/public-page", available: true },
-  { label: "Auditoria", icon: History, available: false },
+  {
+    label: "Auditoria",
+    icon: History,
+    to: "/championships/$id/audit",
+    available: true,
+  },
   { label: "Configurações", icon: Settings, available: false },
 ] as const satisfies NavItem[];
 
