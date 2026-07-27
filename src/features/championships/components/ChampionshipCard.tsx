@@ -12,10 +12,9 @@ import {
 interface ChampionshipCardProps {
   championship: Championship;
   onEdit: () => void;
-  onDelete: () => void;
 }
 
-export function ChampionshipCard({ championship, onEdit, onDelete }: ChampionshipCardProps) {
+export function ChampionshipCard({ championship, onEdit }: ChampionshipCardProps) {
   return (
     <article className="card-arena overflow-hidden">
       <div className="relative h-28 bg-gradient-to-br from-neon/15 via-sky-400/5 to-violet-400/10">
@@ -76,10 +75,12 @@ export function ChampionshipCard({ championship, onEdit, onDelete }: Championshi
           <Button
             variant="ghost"
             size="sm"
-            onClick={onDelete}
+            asChild
             className="text-destructive hover:text-destructive"
           >
-            <Trash2 className="h-3.5 w-3.5" /> Excluir
+            <Link to="/championships/$id/settings" params={{ id: championship.id }}>
+              <Trash2 className="h-3.5 w-3.5" /> Zona de perigo
+            </Link>
           </Button>
         </div>
       </div>

@@ -128,8 +128,3 @@ export async function updateChampionship(
   if (error) throw error;
   return data;
 }
-
-export async function deleteChampionship(championshipId: string): Promise<void> {
-  const { error } = await supabase.from("championships").delete().eq("id", championshipId);
-  if (error) throw error;
-}

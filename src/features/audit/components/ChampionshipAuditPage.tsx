@@ -38,6 +38,7 @@ const moduleLabels: Record<string, string> = {
   publishing: "Publicação",
   finance: "Financeiro",
   registry: "Cadastros",
+  governance: "Governança",
   other: "Outros",
 };
 

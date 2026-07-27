@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import {
   createChampionshipAtomic,
-  deleteChampionship as deleteRecord,
   fetchChampionship,
   fetchChampionshipOverview,
   fetchChampionships,
@@ -99,8 +98,4 @@ export async function updateChampionship(
   return withChampionshipErrorTranslation(() =>
     updateRecord(organizationId, championshipId, changes),
   );
-}
-
-export async function deleteChampionship(championshipId: string): Promise<void> {
-  return withChampionshipErrorTranslation(() => deleteRecord(championshipId));
 }

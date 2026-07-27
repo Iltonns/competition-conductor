@@ -76,7 +76,12 @@ export const CHAMPIONSHIP_NAV = [
     to: "/championships/$id/audit",
     available: true,
   },
-  { label: "Configurações", icon: Settings, available: false },
+  {
+    label: "Configurações",
+    icon: Settings,
+    to: "/championships/$id/settings",
+    available: true,
+  },
 ] as const satisfies NavItem[];
 
 /** Subconjunto usado nos atalhos horizontais do mobile (chips no topo do conteúdo). */

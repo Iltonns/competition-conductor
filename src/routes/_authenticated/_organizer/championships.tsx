@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Trophy } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
-import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { ChampionshipCard } from "@/features/championships/components/ChampionshipCard";
 import { ChampionshipDialog } from "@/features/championships/components/ChampionshipDialog";
 import { useChampionships } from "@/features/championships/hooks/useChampionships";
-import { useDeleteChampionship } from "@/features/championships/hooks/useDeleteChampionship";
 import type { Championship } from "@/features/championships/types/championship.types";
 import { getChampionshipErrorMessage } from "@/features/championships/utils/championship-display";
 
@@ -20,28 +17,12 @@ export const Route = createFileRoute("/_authenticated/_organizer/championships")
 
 function ChampionshipsPage() {
   const championships = useChampionships();
-  const deleteMutation = useDeleteChampionship();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Championship | null>(null);
-  const [deleting, setDeleting] = useState<Championship | null>(null);
 
   const openCreate = () => {
     setEditing(null);
     setFormOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleting) return;
-    try {
-      await deleteMutation.mutateAsync({
-        organizationId: deleting.organization_id,
-        championshipId: deleting.id,
-      });
-      toast.success("Campeonato excluído.");
-      setDeleting(null);
-    } catch (error) {
-      toast.error(getChampionshipErrorMessage(error));
-    }
   };
 
   return (
@@ -97,30 +78,12 @@ function ChampionshipsPage() {
                 setEditing(championship);
                 setFormOpen(true);
               }}
-              onDelete={() => setDeleting(championship)}
             />
           ))}
         </section>
       )}
 
       <ChampionshipDialog open={formOpen} championship={editing} onOpenChange={setFormOpen} />
-
-      <ConfirmActionDialog
-        open={Boolean(deleting)}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title="Excluir campeonato?"
-        description={
-          <>
-            {deleting?.name} será excluído permanentemente. A exclusão será bloqueada se houver
-            partidas, inscrições ou equipes vinculadas.
-          </>
-        }
-        confirmLabel="Excluir"
-        pendingLabel="Verificando..."
-        destructive
-        isPending={deleteMutation.isPending}
-        onConfirm={confirmDelete}
-      />
     </div>
   );
 }

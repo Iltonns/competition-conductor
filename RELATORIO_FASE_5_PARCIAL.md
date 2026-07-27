@@ -67,7 +67,6 @@ O schema remoto já possuía `financial_transactions` com as colunas
 
 ## Próximas fatias da Fase 5
 
-- configurações operacionais e arquivamento do campeonato;
 - organização, convites, papéis e proteção do último owner;
 - visões globais reais de equipes e atletas;
 - notificações internas idempotentes e preferências.
@@ -89,7 +88,31 @@ O schema remoto já possuía `financial_transactions` com as colunas
 - política de retenção padrão de 60 meses, configurável entre 12 e 120 meses;
 - verificação SQL específica e testes unitários da serialização CSV.
 
+Migração e verificação SQL executadas com sucesso diretamente no banco em
+27/07/2026.
+
+## Incremento de continuidade — Configurações operacionais
+
+- rota `/championships/$id/settings` separada da configuração esportiva da
+  Fase 2;
+- identidade administrativa, contato, período, localização, idioma e fuso
+  horário;
+- preferências de notificações internas sem prometer entrega por e-mail antes
+  da validação de SMTP;
+- allowlist explícita das integrações financeiras opcionais;
+- leitura e alteração restritas a `owner` e `admin`, inclusive no RLS direto de
+  `championships`;
+- alterações registradas na auditoria de governança;
+- arquivamento com nome digitado e justificativa, removendo a exposição pública
+  sem apagar histórico;
+- exclusão física exclusiva do `owner`, também com confirmação reforçada,
+  justificativa e bloqueio por dependências;
+- remoção do fluxo antigo de exclusão direta na lista de campeonatos;
+- verificação SQL de estrutura/privilégios e testes unitários das validações.
+
 ## Gate de liberação
 
-Este incremento está implementado localmente, mas não deve ser liberado em
-produção antes da aprovação dos gates remotos pendentes das Fases 4 e 5.
+O incremento de auditoria concluiu seu gate remoto. As configurações
+operacionais permanecem locais até a aplicação da migration
+`20260727200000_phase5_championship_operational_settings.sql`, execução da
+verificação SQL e testes autenticados de RLS.

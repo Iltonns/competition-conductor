@@ -39,5 +39,3 @@ export interface ChampionshipMutationContext {
 export interface UpdateChampionshipVariables extends ChampionshipMutationContext {
   changes: UpdateChampionshipDTO;
 }
-
-export type DeleteChampionshipVariables = ChampionshipMutationContext;
