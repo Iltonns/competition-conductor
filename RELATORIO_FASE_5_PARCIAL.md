@@ -112,7 +112,33 @@ Migração e verificação SQL executadas com sucesso diretamente no banco em
 
 ## Gate de liberação
 
-O incremento de auditoria concluiu seu gate remoto. As configurações
-operacionais permanecem locais até a aplicação da migration
-`20260727200000_phase5_championship_operational_settings.sql`, execução da
-verificação SQL e testes autenticados de RLS.
+Os incrementos de auditoria e configurações operacionais concluíram a aplicação
+e a verificação remotas em 27/07/2026. As migrations `20260727150000` e
+`20260727200000` também foram reconciliadas no histórico remoto do Supabase.
+
+## Incremento de continuidade — Organização e usuários
+
+- rotas `/settings/organization` e `/settings/users` integradas ao Organizer
+  Shell;
+- seleção explícita da organização administrável, sem assumir um tenant global;
+- edição auditada dos dados institucionais por `owner` e `admin`;
+- papel efetivo determinístico para reconciliar os registros legados que
+  permitiam múltiplas funções por usuário;
+- convites com expiração, reenvio limitado, revogação justificada e vínculo
+  automático no cadastro;
+- usuários já cadastrados são vinculados sem duplicar identidade;
+- `admin` limitado a gerenciar `editor` e `viewer`; promoção para `owner` é
+  exclusiva de outro `owner`;
+- proteção transacional contra remoção ou rebaixamento do último proprietário;
+- escritas diretas em organizações, membros, funções e convites revogadas dos
+  clientes autenticados; mutações passam por RPCs auditadas;
+- verificação SQL estrutural/de privilégios e testes unitários das regras
+  compartilhadas com a interface.
+
+## Gate do incremento Organização e usuários
+
+Permanecem necessários: aplicar
+`20260727213000_phase5_organization_users.sql`, executar
+`supabase/tests/phase5_organization_users_verification.sql`, regenerar os tipos
+Supabase e validar em ambiente autenticado os perfis owner, admin, editor,
+viewer, outro tenant, último owner e entrega real de e-mail pelo SMTP.
