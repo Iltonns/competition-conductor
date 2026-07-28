@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type {
   AdminAuditFilters,
   AdminAuditPage,
+  PlatformOperationalStatus,
   SystemAdminChampionshipRow,
   SystemAdminDashboardData,
   SystemAdminDirectoryKind,
@@ -92,4 +93,8 @@ export function getSystemAdminAuditLogs(filters: AdminAuditFilters, limit: numbe
     p_limit: limit,
     p_offset: offset,
   });
+}
+
+export function getPlatformOperationalStatus() {
+  return rpc<PlatformOperationalStatus>("get_platform_operational_status");
 }

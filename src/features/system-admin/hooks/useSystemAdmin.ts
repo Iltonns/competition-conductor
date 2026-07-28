@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import {
   endSupportSession,
   getMyActiveSupportSession,
+  getPlatformOperationalStatus,
   getSupportSessionContext,
   getSystemAdminAuditLogs,
   getSystemAdminDashboard,
@@ -80,5 +81,13 @@ export function useSystemAdminAudit(filters: AdminAuditFilters, page: number, li
     queryKey: ["system-admin", "audit", filters, page, limit],
     queryFn: () => getSystemAdminAuditLogs(filters, limit, page * limit),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function usePlatformOperationalStatus() {
+  return useQuery({
+    queryKey: ["system-admin", "operational-status"],
+    queryFn: getPlatformOperationalStatus,
+    refetchInterval: 60_000,
   });
 }

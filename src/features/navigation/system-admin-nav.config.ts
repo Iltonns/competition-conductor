@@ -45,6 +45,6 @@ export const SYSTEM_ADMIN_NAV = [
     to: "/system-admin/configuracoes",
     label: "Configuração da plataforma",
     icon: Settings,
-    available: false,
+    available: true,
   },
 ] as const satisfies NavItem[];

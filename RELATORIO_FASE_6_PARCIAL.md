@@ -78,8 +78,8 @@ adapter temporário usado pela nova RPC.
 ## Próximas entregas da Fase 6
 
 - `F6-RF02`: assinaturas, eventos idempotentes e integração de cobrança.
-- `F6-RF04` a `F6-RF07`: System Admin real, suporte auditado, auditoria global
-  e observabilidade.
+- Continuidades de `F6-RF01` e `F6-RF07` que dependem das decisões comerciais,
+  jurídicas e operacionais ainda abertas no PRD.
 
 ## F6-RF03 — Página pública da organização
 
@@ -167,8 +167,8 @@ Continuações de `F6-RF04`:
 
 - Ações privilegiadas de plataforma continuam bloqueadas até serem modeladas
   com confirmação, justificativa e auditoria.
-- As rotas de auditoria e configurações permanecem desabilitadas e pertencem
-  às próximas entregas `F6-RF06` e `F6-RF07`.
+- As rotas de auditoria e configurações não faziam parte desta primeira fatia;
+  foram habilitadas posteriormente pelas entregas `F6-RF06` e `F6-RF07`.
 
 ## F6-RF05 — Modo suporte auditado (primeira fatia)
 
@@ -270,3 +270,60 @@ Continuação de `F6-RF06`:
 - Um prazo finito de retenção e qualquer rotina de expurgo dependem de decisão
   jurídica/operacional explícita e devem preservar evidências ou gerar arquivo
   imutável antes de qualquer exclusão.
+
+## F6-RF07 — Observabilidade e operação (primeira fatia)
+
+Implementado em 28/07/2026:
+
+- Coleta deduplicada de erros globais do cliente, integrada ao error boundary e
+  aos eventos `error` e `unhandledrejection`.
+- Telemetria sem mensagem, stack trace, query string ou payload: somente código
+  normalizado, fingerprint, rota sem parâmetros, responsável e horário.
+- Rate limit de 20 eventos por hora por usuário autenticado.
+- Tabela operacional sem acesso direto por `anon` ou `authenticated`.
+- Painel em `/system-admin/configuracoes`, protegido pelo papel de administrador
+  geral e atualizado automaticamente a cada minuto.
+- Health checks autoritativos dos catálogos PostgreSQL, Supabase Auth e Storage.
+- Estado explícito das dependências de e-mail, cobrança e coleta de erros.
+- Métricas de eventos, erros, severidade, RPC, autenticação, jobs e webhooks nas
+  últimas 24 horas, além de latência média e p95 quando houver amostra.
+- Atividade real do banco, incluindo commits, rollbacks, deadlocks e data de
+  reset das estatísticas.
+- Medição real de tamanho do banco, Storage e quantidade de objetos, sem
+  estimativas fictícias de custo.
+- Alertas com severidade e runbooks versionados para triagem de incidente,
+  contenção no banco e validação de backup/restauração.
+- RPO, RTO e teste de restauração exibidos honestamente como pendentes, pois o
+  PRD exige decisão operacional explícita.
+- Migration
+  `supabase/migrations/20260728150000_phase6_operational_observability.sql`.
+- Verificação estrutural, de privilégios e bloqueio de acesso indevido em
+  `supabase/tests/phase6_operational_observability_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260728150000_phase6_operational_observability.sql`.
+2. Executar `phase6_operational_observability_verification.sql`.
+3. Validar o painel com um administrador geral e o bloqueio para usuário comum.
+4. Gerar um erro controlado em sessão autenticada e confirmar a coleta sem
+   mensagem, stack trace ou parâmetros de URL.
+5. Definir e aprovar metas de RPO e RTO.
+6. Restaurar um backup em ambiente descartável, medir tempos e registrar
+   evidências de integridade e RLS.
+
+Continuação de `F6-RF07`:
+
+- Falhas de servidor, RPC, autenticação, jobs e webhooks dependem de
+  instrumentação nos respectivos runtimes ou provedores. A tabela já aceita
+  esses eventos, mas o painel não simula amostras inexistentes.
+- Valores financeiros de banco, Storage, e-mail e cobrança dependem das APIs de
+  billing dos provedores; esta fatia expõe somente consumo autoritativo.

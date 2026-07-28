@@ -175,3 +175,67 @@ export interface AdminAuditPage {
     automatic_deletion: false;
   };
 }
+
+export type OperationalSeverity = "info" | "warning" | "error" | "critical";
+
+export interface PlatformOperationalStatus {
+  generated_at: string;
+  health: Array<{
+    dependency: "database" | "auth" | "storage" | "email" | "billing" | "client_error_reporting";
+    status:
+      "operational" | "configured" | "not_configured" | "collecting" | "ready_no_recent_events";
+    detail: string;
+  }>;
+  metrics_24h: {
+    events: number;
+    errors: number;
+    critical: number;
+    rpc_failures: number;
+    auth_failures: number;
+    job_failures: number;
+    webhook_failures: number;
+    average_duration_ms: number | null;
+    p95_duration_ms: number | null;
+  };
+  database_activity: {
+    commits: number;
+    rollbacks: number;
+    deadlocks: number;
+    stats_reset_at: string | null;
+  };
+  resource_usage: {
+    database_bytes: number;
+    storage_bytes: number;
+    storage_objects: number;
+    email_cost_tracking: "unavailable_without_provider_integration";
+    billing_cost_tracking: "unavailable_without_provider_integration";
+  };
+  alerts: Array<{
+    id: string;
+    severity: OperationalSeverity;
+    title: string;
+    description: string;
+    runbook_id: string;
+  }>;
+  recent_events: Array<{
+    id: number;
+    event_kind: string;
+    source: string;
+    severity: OperationalSeverity;
+    code: string;
+    fingerprint: string | null;
+    route: string | null;
+    duration_ms: number | null;
+    occurred_at: string;
+  }>;
+  runbooks: Array<{
+    id: string;
+    title: string;
+    steps: string[];
+  }>;
+  continuity: {
+    rpo: "pending_approval";
+    rto: "pending_approval";
+    restore_test: "not_recorded";
+  };
+}
