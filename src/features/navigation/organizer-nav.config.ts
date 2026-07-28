@@ -25,5 +25,10 @@ export const ORGANIZER_NAV = [
     icon: CreditCard,
     available: true,
   },
-  { to: "/settings", label: "Página do organizador", icon: Globe2, available: false },
+  {
+    to: "/settings/public-page",
+    label: "Página do organizador",
+    icon: Globe2,
+    available: true,
+  },
 ] as const satisfies NavItem[];

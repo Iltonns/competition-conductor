@@ -78,6 +78,41 @@ adapter temporário usado pela nova RPC.
 ## Próximas entregas da Fase 6
 
 - `F6-RF02`: assinaturas, eventos idempotentes e integração de cobrança.
-- `F6-RF03`: página pública da organização.
 - `F6-RF04` a `F6-RF07`: System Admin real, suporte auditado, auditoria global
   e observabilidade.
+
+## F6-RF03 — Página pública da organização
+
+Implementado em 28/07/2026:
+
+- Configuração administrativa em `/settings/public-page`.
+- Portal público separado em `/o/:slug`.
+- Slug global único, normalizado e validado no backend.
+- Rascunho, publicação e retirada do ar por RPCs auditadas.
+- Contato privado por padrão, com autorização independente para e-mail e
+  telefone.
+- Links sociais restritos a redes conhecidas e URLs HTTPS.
+- Listagem somente de campeonatos com `status = 'published'` e `is_public`.
+- Leitura anônima exclusivamente pela RPC sanitizada
+  `get_public_organization_portal`; a tabela canônica não é legível por `anon`.
+- Migration
+  `supabase/migrations/20260728030000_phase6_organization_public_portal.sql`.
+- Verificação estrutural e de privilégios em
+  `supabase/tests/phase6_organization_public_portal_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar a migration `20260728030000_phase6_organization_public_portal.sql`
+   em homologação.
+2. Executar `phase6_organization_public_portal_verification.sql`.
+3. Validar com sessão owner/admin e acesso anônimo aos estados publicado e
+   retirado do ar.

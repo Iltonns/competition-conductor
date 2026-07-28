@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SystemAdminIndexRouteImport } from './routes/system-admin/index'
 import { Route as TeamAccessSessionRouteImport } from './routes/team-access.session'
 import { Route as TeamAccessTokenRouteImport } from './routes/team-access.$token'
+import { Route as OSlugRouteImport } from './routes/o.$slug'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AuthenticatedOrganizerRouteRouteImport } from './routes/_authenticated/_organizer/route'
 import { Route as AuthenticatedChampionshipsIdRouteImport } from './routes/_authenticated/championships_.$id'
@@ -53,9 +54,10 @@ import { Route as AuthenticatedChampionshipsIdAuditRouteImport } from './routes/
 import { Route as AuthenticatedChampionshipsIdAthletesRouteImport } from './routes/_authenticated/championships_.$id.athletes'
 import { Route as AuthenticatedOrganizerTeamsTeamIdRouteImport } from './routes/_authenticated/_organizer/teams.$teamId'
 import { Route as AuthenticatedOrganizerSettingsUsersRouteImport } from './routes/_authenticated/_organizer/settings.users'
+import { Route as AuthenticatedOrganizerSettingsSubscriptionRouteImport } from './routes/_authenticated/_organizer/settings.subscription'
+import { Route as AuthenticatedOrganizerSettingsPublicPageRouteImport } from './routes/_authenticated/_organizer/settings.public-page'
 import { Route as AuthenticatedOrganizerSettingsOrganizationRouteImport } from './routes/_authenticated/_organizer/settings.organization'
 import { Route as AuthenticatedOrganizerSettingsNotificationsRouteImport } from './routes/_authenticated/_organizer/settings.notifications'
-import { Route as AuthenticatedOrganizerSettingsSubscriptionRouteImport } from './routes/_authenticated/_organizer/settings.subscription'
 import { Route as AuthenticatedOrganizerAthletesAthleteIdRouteImport } from './routes/_authenticated/_organizer/athletes.$athleteId'
 import { Route as AuthenticatedChampionshipsIdTeamsIndexRouteImport } from './routes/_authenticated/championships_.$id.teams.index'
 import { Route as AuthenticatedChampionshipsIdTeamsNewRouteImport } from './routes/_authenticated/championships_.$id.teams.new'
@@ -108,6 +110,11 @@ const TeamAccessSessionRoute = TeamAccessSessionRouteImport.update({
 const TeamAccessTokenRoute = TeamAccessTokenRouteImport.update({
   id: '/team-access/$token',
   path: '/team-access/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OSlugRoute = OSlugRouteImport.update({
+  id: '/o/$slug',
+  path: '/o/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
@@ -324,6 +331,18 @@ const AuthenticatedOrganizerSettingsUsersRoute =
     path: '/users',
     getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
   } as any)
+const AuthenticatedOrganizerSettingsSubscriptionRoute =
+  AuthenticatedOrganizerSettingsSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
+  } as any)
+const AuthenticatedOrganizerSettingsPublicPageRoute =
+  AuthenticatedOrganizerSettingsPublicPageRouteImport.update({
+    id: '/public-page',
+    path: '/public-page',
+    getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
+  } as any)
 const AuthenticatedOrganizerSettingsOrganizationRoute =
   AuthenticatedOrganizerSettingsOrganizationRouteImport.update({
     id: '/organization',
@@ -334,12 +353,6 @@ const AuthenticatedOrganizerSettingsNotificationsRoute =
   AuthenticatedOrganizerSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
-    getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
-  } as any)
-const AuthenticatedOrganizerSettingsSubscriptionRoute =
-  AuthenticatedOrganizerSettingsSubscriptionRouteImport.update({
-    id: '/subscription',
-    path: '/subscription',
     getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
   } as any)
 const AuthenticatedOrganizerAthletesAthleteIdRoute =
@@ -433,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
+  '/o/$slug': typeof OSlugRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin/': typeof SystemAdminIndexRoute
@@ -452,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/settings/public-page': typeof AuthenticatedOrganizerSettingsPublicPageRoute
   '/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -493,6 +508,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
+  '/o/$slug': typeof OSlugRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin': typeof SystemAdminIndexRoute
@@ -508,6 +524,7 @@ export interface FileRoutesByTo {
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/settings/public-page': typeof AuthenticatedOrganizerSettingsPublicPageRoute
   '/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -551,6 +568,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/_organizer': typeof AuthenticatedOrganizerRouteRouteWithChildren
   '/c/$slug': typeof CSlugRoute
+  '/o/$slug': typeof OSlugRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin/': typeof SystemAdminIndexRoute
@@ -570,6 +588,7 @@ export interface FileRoutesById {
   '/_authenticated/_organizer/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/_authenticated/_organizer/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/_authenticated/_organizer/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/_authenticated/_organizer/settings/public-page': typeof AuthenticatedOrganizerSettingsPublicPageRoute
   '/_authenticated/_organizer/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/_authenticated/_organizer/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/_authenticated/_organizer/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -614,6 +633,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/c/$slug'
+    | '/o/$slug'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin/'
@@ -633,6 +653,7 @@ export interface FileRouteTypes {
     | '/athletes/$athleteId'
     | '/settings/notifications'
     | '/settings/organization'
+    | '/settings/public-page'
     | '/settings/subscription'
     | '/settings/users'
     | '/teams/$teamId'
@@ -674,6 +695,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/c/$slug'
+    | '/o/$slug'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin'
@@ -689,6 +711,7 @@ export interface FileRouteTypes {
     | '/athletes/$athleteId'
     | '/settings/notifications'
     | '/settings/organization'
+    | '/settings/public-page'
     | '/settings/subscription'
     | '/settings/users'
     | '/teams/$teamId'
@@ -731,6 +754,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/_organizer'
     | '/c/$slug'
+    | '/o/$slug'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin/'
@@ -750,6 +774,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_organizer/athletes/$athleteId'
     | '/_authenticated/_organizer/settings/notifications'
     | '/_authenticated/_organizer/settings/organization'
+    | '/_authenticated/_organizer/settings/public-page'
     | '/_authenticated/_organizer/settings/subscription'
     | '/_authenticated/_organizer/settings/users'
     | '/_authenticated/_organizer/teams/$teamId'
@@ -794,6 +819,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   CSlugRoute: typeof CSlugRoute
+  OSlugRoute: typeof OSlugRoute
   TeamAccessTokenRoute: typeof TeamAccessTokenRoute
   TeamAccessSessionRoute: typeof TeamAccessSessionRoute
 }
@@ -854,6 +880,13 @@ declare module '@tanstack/react-router' {
       path: '/team-access/$token'
       fullPath: '/team-access/$token'
       preLoaderRoute: typeof TeamAccessTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/o/$slug': {
+      id: '/o/$slug'
+      path: '/o/$slug'
+      fullPath: '/o/$slug'
+      preLoaderRoute: typeof OSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$slug': {
@@ -1108,6 +1141,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizerSettingsUsersRouteImport
       parentRoute: typeof AuthenticatedOrganizerSettingsRoute
     }
+    '/_authenticated/_organizer/settings/subscription': {
+      id: '/_authenticated/_organizer/settings/subscription'
+      path: '/subscription'
+      fullPath: '/settings/subscription'
+      preLoaderRoute: typeof AuthenticatedOrganizerSettingsSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedOrganizerSettingsRoute
+    }
+    '/_authenticated/_organizer/settings/public-page': {
+      id: '/_authenticated/_organizer/settings/public-page'
+      path: '/public-page'
+      fullPath: '/settings/public-page'
+      preLoaderRoute: typeof AuthenticatedOrganizerSettingsPublicPageRouteImport
+      parentRoute: typeof AuthenticatedOrganizerSettingsRoute
+    }
     '/_authenticated/_organizer/settings/organization': {
       id: '/_authenticated/_organizer/settings/organization'
       path: '/organization'
@@ -1120,13 +1167,6 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedOrganizerSettingsNotificationsRouteImport
-      parentRoute: typeof AuthenticatedOrganizerSettingsRoute
-    }
-    '/_authenticated/_organizer/settings/subscription': {
-      id: '/_authenticated/_organizer/settings/subscription'
-      path: '/subscription'
-      fullPath: '/settings/subscription'
-      preLoaderRoute: typeof AuthenticatedOrganizerSettingsSubscriptionRouteImport
       parentRoute: typeof AuthenticatedOrganizerSettingsRoute
     }
     '/_authenticated/_organizer/athletes/$athleteId': {
@@ -1251,6 +1291,7 @@ const AuthenticatedOrganizerAthletesRouteWithChildren =
 interface AuthenticatedOrganizerSettingsRouteChildren {
   AuthenticatedOrganizerSettingsNotificationsRoute: typeof AuthenticatedOrganizerSettingsNotificationsRoute
   AuthenticatedOrganizerSettingsOrganizationRoute: typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  AuthenticatedOrganizerSettingsPublicPageRoute: typeof AuthenticatedOrganizerSettingsPublicPageRoute
   AuthenticatedOrganizerSettingsSubscriptionRoute: typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   AuthenticatedOrganizerSettingsUsersRoute: typeof AuthenticatedOrganizerSettingsUsersRoute
   AuthenticatedOrganizerSettingsIndexRoute: typeof AuthenticatedOrganizerSettingsIndexRoute
@@ -1262,6 +1303,8 @@ const AuthenticatedOrganizerSettingsRouteChildren: AuthenticatedOrganizerSetting
       AuthenticatedOrganizerSettingsNotificationsRoute,
     AuthenticatedOrganizerSettingsOrganizationRoute:
       AuthenticatedOrganizerSettingsOrganizationRoute,
+    AuthenticatedOrganizerSettingsPublicPageRoute:
+      AuthenticatedOrganizerSettingsPublicPageRoute,
     AuthenticatedOrganizerSettingsSubscriptionRoute:
       AuthenticatedOrganizerSettingsSubscriptionRoute,
     AuthenticatedOrganizerSettingsUsersRoute:
@@ -1525,6 +1568,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   CSlugRoute: CSlugRoute,
+  OSlugRoute: OSlugRoute,
   TeamAccessTokenRoute: TeamAccessTokenRoute,
   TeamAccessSessionRoute: TeamAccessSessionRoute,
 }
