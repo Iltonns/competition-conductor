@@ -10,7 +10,7 @@ Nenhum token, senha ou URL de banco deve ser enviado por chat ou salvo no reposi
 
 - os tipos oficiais foram regenerados a partir do projeto Supabase vinculado;
 - o arquivo versionado agora cobre o schema aplicado até a Fase 6;
-- o agregador SQL passou a executar todos os 21 testes existentes;
+- o agregador SQL passou a executar todos os testes existentes;
 - o teste de segurança dos links de equipe deixou de depender de pgTAP e pode ser
   executado diretamente no SQL Editor ou por `psql`;
 - segurança de ambiente, lint, TypeScript, testes unitários, build e smoke E2E
@@ -76,7 +76,7 @@ powershell -ExecutionPolicy Bypass -File scripts/verify-phase0-supabase.ps1
 Remove-Item Env:SUPABASE_DB_URL
 ```
 
-O agregador executa todos os 21 arquivos de `supabase/tests`, cobrindo:
+O agregador executa todos os arquivos de `supabase/tests`, cobrindo:
 
 1. fundação de campeonatos e isolamento de papéis/tenants;
 2. administração de equipes, elenco e links temporários;

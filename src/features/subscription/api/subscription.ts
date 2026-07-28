@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import type { OrganizationSubscriptionContext } from "../types/subscription.types";
+import type { CommercialPlan, OrganizationSubscriptionContext } from "../types/subscription.types";
 
 const resourceUsageSchema = z.object({
   used: z.number(),
@@ -38,6 +38,32 @@ const organizationSubscriptionContextSchema = z.object({
     storage_bytes: resourceUsageSchema,
   }),
 });
+
+const commercialPlanSchema = z.object({
+  id: z.string().uuid(),
+  code: z.string(),
+  version: z.number().int().positive(),
+  name: z.string(),
+  description: z.string().nullable(),
+  monthly_price_cents: z.number().int().nonnegative(),
+  currency: z.string().length(3),
+  limits: z.object({
+    athletes_per_championship: z.number().int().positive().nullable(),
+    sponsors_per_championship: z.number().int().positive().nullable(),
+  }),
+  modules: z.array(z.string()),
+});
+
+type PlanCatalogRpc = (
+  name: "list_available_plans",
+) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+
+export async function listAvailablePlans(): Promise<CommercialPlan[]> {
+  // Remover o adapter apos aplicar a migration e regenerar os tipos oficiais.
+  const { data, error } = await (supabase.rpc as unknown as PlanCatalogRpc)("list_available_plans");
+  if (error) throw new Error(error.message);
+  return z.array(commercialPlanSchema).parse(data) satisfies CommercialPlan[];
+}
 
 export async function getOrganizationSubscriptionContext(
   organizationId: string,

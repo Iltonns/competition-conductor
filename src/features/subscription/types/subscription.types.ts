@@ -9,6 +9,21 @@ export interface ResourceUsage {
   state: LimitState;
 }
 
+export interface CommercialPlan {
+  id: string;
+  code: string;
+  version: number;
+  name: string;
+  description: string | null;
+  monthly_price_cents: number;
+  currency: string;
+  limits: {
+    athletes_per_championship: number | null;
+    sponsors_per_championship: number | null;
+  };
+  modules: string[];
+}
+
 export interface OrganizationSubscriptionContext {
   organization: {
     id: string;

@@ -1,5 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { getOrganizationSubscriptionContext } from "../api/subscription";
+import { getOrganizationSubscriptionContext, listAvailablePlans } from "../api/subscription";
+
+export function useAvailablePlans() {
+  return useQuery({
+    queryKey: ["available-subscription-plans"],
+    queryFn: listAvailablePlans,
+    staleTime: 5 * 60_000,
+  });
+}
 
 export function useOrganizationSubscription(organizationId: string | null) {
   return useQuery({

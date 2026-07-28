@@ -2,6 +2,25 @@
 
 Data: 27/07/2026
 
+## Atualização — catálogo comercial e limites por campeonato (28/07/2026)
+
+- Quatro planos comerciais versionados:
+  - Campeonatos Pequenos: R$ 25/mês, 300 atletas e 3 patrocinadores;
+  - Campeonatos Intermediários: R$ 32/mês, 600 atletas e 6 patrocinadores;
+  - Campeonatos Grandes: R$ 40/mês, 900 atletas e 12 patrocinadores;
+  - Organizador Profissional: R$ 55/mês, atletas e patrocinadores ilimitados.
+- Campeonatos permanecem ilimitados nos quatro planos.
+- Limites não informados pela decisão comercial continuam `NULL`/ilimitados.
+- Incorporação HTML e API JSON são módulos exclusivos do plano Profissional.
+- Limites de atletas e patrocinadores são aplicados por triggers no backend, com
+  lock transacional para impedir estouro por concorrência.
+- Assinaturas legadas `starter` migram para Campeonatos Pequenos; novas
+  organizações recebem o mesmo plano padrão.
+- Catálogo público é exposto por RPC somente leitura; tabelas canônicas continuam
+  sem acesso direto.
+- A tela de assinatura apresenta os quatro planos. A troca permanece bloqueada
+  até a implementação do provedor de cobrança em `F6-RF02`.
+
 ## Escopo iniciado
 
 Primeira fatia de `F6-RF01 — Planos e limites`, cobrindo o caminho

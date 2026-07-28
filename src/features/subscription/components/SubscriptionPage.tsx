@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   CreditCard,
   Database,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -21,8 +23,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useManageableOrganizations } from "@/features/organization-settings/hooks/useOrganizationSettings";
-import { useOrganizationSubscription } from "../hooks/useSubscription";
+import { useAvailablePlans, useOrganizationSubscription } from "../hooks/useSubscription";
 import type {
+  CommercialPlan,
   OrganizationSubscriptionContext,
   ResourceUsage,
   SubscriptionStatus,
@@ -42,6 +45,14 @@ const MODULE_LABEL: Record<string, string> = {
   publishing: "Publicação",
   finance: "Financeiro",
   notifications: "Notificações",
+  ad_free: "Campeonatos sem propagandas",
+  custom_url: "URL personalizada",
+  digital_match_report: "Súmula digital",
+  attachments: "Arquivos de anexo",
+  high_resolution_media: "Melhor resolução de imagens",
+  report_printing: "Impressão de relatórios",
+  html_embed: "Incorporação HTML",
+  json_api: "Acesso à API JSON",
 };
 
 export function SubscriptionPage() {
@@ -108,6 +119,7 @@ export function SubscriptionPage() {
 }
 
 function SubscriptionContent({ context }: { context: OrganizationSubscriptionContext }) {
+  const availablePlans = useAvailablePlans();
   const subscriptionWarning =
     context.subscription.status === "past_due" || context.subscription.status === "suspended";
 
@@ -178,8 +190,116 @@ function SubscriptionContent({ context }: { context: OrganizationSubscriptionCon
           </CardContent>
         </Card>
       </div>
+
+      <section className="space-y-4 pt-2" aria-labelledby="available-plans-title">
+        <div>
+          <h2 id="available-plans-title" className="text-xl font-semibold">
+            Planos disponíveis
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Campeonatos são ilimitados em todos os planos. Os limites são aplicados no backend por
+            campeonato.
+          </p>
+        </div>
+        {availablePlans.isLoading ? (
+          <LoadingState />
+        ) : availablePlans.isError || !availablePlans.data ? (
+          <ErrorState message="Não foi possível carregar o catálogo de planos." />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {availablePlans.data.map((plan, index) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                current={plan.code === context.plan.code}
+                featured={index % 2 === 1}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </>
   );
+}
+
+function PlanCard({
+  plan,
+  current,
+  featured,
+}: {
+  plan: CommercialPlan;
+  current: boolean;
+  featured: boolean;
+}) {
+  const athleteLimit = plan.limits.athletes_per_championship;
+  const sponsorLimit = plan.limits.sponsors_per_championship;
+  const features = [
+    athleteLimit === null
+      ? "Atletas ilimitados por campeonato"
+      : `Até ${athleteLimit.toLocaleString("pt-BR")} atletas por campeonato`,
+    sponsorLimit === null
+      ? "Patrocinadores ilimitados"
+      : `Até ${sponsorLimit.toLocaleString("pt-BR")} patrocinadores por campeonato`,
+    "Campeonatos ilimitados",
+    ...plan.modules
+      .filter(
+        (module) =>
+          !["competition", "sports", "publishing", "finance", "notifications"].includes(module),
+      )
+      .map((module) => MODULE_LABEL[module] ?? module),
+  ];
+
+  return (
+    <Card
+      className={
+        featured
+          ? "relative overflow-hidden border-orange-400 shadow-sm"
+          : "relative overflow-hidden"
+      }
+    >
+      {current && (
+        <Badge className="absolute right-4 top-4" variant="secondary">
+          Plano atual
+        </Badge>
+      )}
+      <CardHeader className="pb-3">
+        <CardTitle className="max-w-[15rem] text-xl">{plan.name}</CardTitle>
+        <CardDescription className="min-h-10">{plan.description}</CardDescription>
+        <div className="pt-3">
+          <span className="text-3xl font-bold">
+            {formatCurrency(plan.monthly_price_cents, plan.currency)}
+          </span>
+          <span className="text-sm text-muted-foreground">/mês</span>
+        </div>
+      </CardHeader>
+      <CardContent className="flex h-[calc(100%-10rem)] flex-col gap-4">
+        <ul className="flex-1 space-y-2 text-sm">
+          {features.map((feature) => (
+            <li key={feature} className="flex items-start gap-2 border-b pb-2 last:border-0">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+        <Button type="button" disabled className={featured ? "bg-orange-500" : undefined}>
+          {current ? "Plano atual" : "Assinar plano"}
+        </Button>
+        {!current && (
+          <p className="text-center text-xs text-muted-foreground">
+            Disponível após a conexão do provedor de cobrança.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatCurrency(priceInCents: number, currency: string) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  }).format(priceInCents / 100);
 }
 
 function UsageItem({
