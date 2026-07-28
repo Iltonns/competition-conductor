@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import {
   inviteOrganizationUserSchema,
   resendOrganizationInvitationSchema,
@@ -12,6 +14,8 @@ interface PreparedInvitation {
   status?: "pending" | "provisioned";
   requires_email?: boolean;
 }
+
+type OrganizationInvitationClient = Pick<SupabaseClient<Database>, "rpc">;
 
 function invitationError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
@@ -30,17 +34,7 @@ function invitationError(error: unknown) {
 }
 
 async function deliverInvitation(
-  context: {
-    supabase: {
-      rpc: (
-        name: never,
-        args: never,
-      ) => PromiseLike<{
-        data: unknown;
-        error: { message: string } | null;
-      }>;
-    };
-  },
+  context: { supabase: OrganizationInvitationClient },
   invitation: PreparedInvitation,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -55,10 +49,9 @@ async function deliverInvitation(
   );
   if (deliveryError) throw new Error("organization:email_delivery_failed");
 
-  const { error: markError } = await context.supabase.rpc(
-    "mark_organization_invitation_sent" as never,
-    { p_invitation_id: invitation.id } as never,
-  );
+  const { error: markError } = await context.supabase.rpc("mark_organization_invitation_sent", {
+    p_invitation_id: invitation.id,
+  });
   if (markError) throw new Error(markError.message);
 }
 
@@ -68,12 +61,12 @@ export const inviteOrganizationUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     try {
       const { data: prepared, error } = await context.supabase.rpc(
-        "create_organization_invitation" as never,
+        "create_organization_invitation",
         {
           p_organization_id: data.organizationId,
           p_email: data.email,
           p_role: data.role,
-        } as never,
+        },
       );
       if (error) throw new Error(error.message);
       const invitation = prepared as unknown as PreparedInvitation;
@@ -90,8 +83,8 @@ export const resendOrganizationInvitation = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     try {
       const { data: prepared, error } = await context.supabase.rpc(
-        "prepare_organization_invitation_resend" as never,
-        { p_invitation_id: data.invitationId } as never,
+        "prepare_organization_invitation_resend",
+        { p_invitation_id: data.invitationId },
       );
       if (error) throw new Error(error.message);
       await deliverInvitation(context, prepared as unknown as PreparedInvitation);

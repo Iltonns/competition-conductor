@@ -18,14 +18,11 @@ export function reportOperationalClientError(error: unknown) {
 
   try {
     void supabase
-      .rpc(
-        "record_my_client_error" as never,
-        {
-          p_code: code,
-          p_fingerprint: fingerprint,
-          p_route: route,
-        } as never,
-      )
+      .rpc("record_my_client_error", {
+        p_code: code,
+        p_fingerprint: fingerprint,
+        p_route: route,
+      })
       .then(
         () => undefined,
         () => undefined,

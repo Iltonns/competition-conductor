@@ -8,6 +8,45 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string;
+          actor_user_id: string | null;
+          context: Json;
+          id: string;
+          new_data: Json | null;
+          occurred_at: string;
+          old_data: Json | null;
+          reason: string | null;
+          target_id: string | null;
+          target_type: string;
+        };
+        Insert: {
+          action: string;
+          actor_user_id?: string | null;
+          context?: Json;
+          id?: string;
+          new_data?: Json | null;
+          occurred_at?: string;
+          old_data?: Json | null;
+          reason?: string | null;
+          target_id?: string | null;
+          target_type: string;
+        };
+        Update: {
+          action?: string;
+          actor_user_id?: string | null;
+          context?: Json;
+          id?: string;
+          new_data?: Json | null;
+          occurred_at?: string;
+          old_data?: Json | null;
+          reason?: string | null;
+          target_id?: string | null;
+          target_type?: string;
+        };
+        Relationships: [];
+      };
       athlete_registrations: {
         Row: {
           approved_at: string | null;
@@ -258,6 +297,7 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string;
+          championship_id: string | null;
           context: Json;
           created_at: string;
           entity_id: string | null;
@@ -266,10 +306,12 @@ export type Database = {
           new_data: Json | null;
           old_data: Json | null;
           organization_id: string;
+          sanitized_at: string | null;
           user_id: string | null;
         };
         Insert: {
           action: string;
+          championship_id?: string | null;
           context?: Json;
           created_at?: string;
           entity_id?: string | null;
@@ -278,10 +320,12 @@ export type Database = {
           new_data?: Json | null;
           old_data?: Json | null;
           organization_id: string;
+          sanitized_at?: string | null;
           user_id?: string | null;
         };
         Update: {
           action?: string;
+          championship_id?: string | null;
           context?: Json;
           created_at?: string;
           entity_id?: string | null;
@@ -290,13 +334,50 @@ export type Database = {
           new_data?: Json | null;
           old_data?: Json | null;
           organization_id?: string;
+          sanitized_at?: string | null;
           user_id?: string | null;
         };
         Relationships: [
           {
+            foreignKeyName: "audit_logs_championship_id_fkey";
+            columns: ["championship_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "audit_logs_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      audit_retention_policies: {
+        Row: {
+          organization_id: string;
+          retention_months: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          organization_id: string;
+          retention_months?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          organization_id?: string;
+          retention_months?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "audit_retention_policies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
@@ -374,6 +455,47 @@ export type Database = {
           },
           {
             foreignKeyName: "championship_categories_same_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      championship_operational_settings: {
+        Row: {
+          championship_id: string;
+          enabled_integrations: string[];
+          locale: string;
+          notification_preferences: Json;
+          organization_id: string;
+          timezone: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          championship_id: string;
+          enabled_integrations?: string[];
+          locale?: string;
+          notification_preferences?: Json;
+          organization_id: string;
+          timezone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          championship_id?: string;
+          enabled_integrations?: string[];
+          locale?: string;
+          notification_preferences?: Json;
+          organization_id?: string;
+          timezone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "championship_operational_settings_championship_org_fkey";
             columns: ["championship_id", "organization_id"];
             isOneToOne: false;
             referencedRelation: "championships";
@@ -1562,23 +1684,108 @@ export type Database = {
           },
         ];
       };
+      financial_attachments: {
+        Row: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+          transaction_id: string;
+        };
+        Insert: {
+          championship_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          file_name: string;
+          id?: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+          transaction_id: string;
+        };
+        Update: {
+          championship_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          file_name?: string;
+          id?: string;
+          mime_type?: string;
+          object_path?: string;
+          organization_id?: string;
+          size_bytes?: number;
+          transaction_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "financial_attachments_championship_id_fkey";
+            columns: ["championship_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_attachments_championship_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "financial_attachments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_attachments_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "financial_transactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_attachments_transaction_org_fkey";
+            columns: ["transaction_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "financial_transactions";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
       financial_transactions: {
         Row: {
           amount: number;
           attachment_url: string | null;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
           category: string;
           championship_id: string | null;
+          competence_date: string;
+          counterparty: string | null;
           created_at: string;
           created_by: string | null;
           description: string;
+          due_date: string | null;
           due_on: string | null;
           id: string;
           metadata: Json;
+          notes: string | null;
           occurred_on: string;
           organization_id: string;
+          paid_at: string | null;
           paid_on: string | null;
           payment_id: string | null;
           referee_assignment_id: string | null;
+          source_id: string | null;
+          source_type: string | null;
           status: string;
           transaction_type: string;
           updated_at: string;
@@ -1587,19 +1794,29 @@ export type Database = {
         Insert: {
           amount: number;
           attachment_url?: string | null;
+          cancellation_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
           category: string;
           championship_id?: string | null;
+          competence_date: string;
+          counterparty?: string | null;
           created_at?: string;
           created_by?: string | null;
           description: string;
+          due_date?: string | null;
           due_on?: string | null;
           id?: string;
           metadata?: Json;
+          notes?: string | null;
           occurred_on?: string;
           organization_id: string;
+          paid_at?: string | null;
           paid_on?: string | null;
           payment_id?: string | null;
           referee_assignment_id?: string | null;
+          source_id?: string | null;
+          source_type?: string | null;
           status?: string;
           transaction_type: string;
           updated_at?: string;
@@ -1608,19 +1825,29 @@ export type Database = {
         Update: {
           amount?: number;
           attachment_url?: string | null;
+          cancellation_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
           category?: string;
           championship_id?: string | null;
+          competence_date?: string;
+          counterparty?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string;
+          due_date?: string | null;
           due_on?: string | null;
           id?: string;
           metadata?: Json;
+          notes?: string | null;
           occurred_on?: string;
           organization_id?: string;
+          paid_at?: string | null;
           paid_on?: string | null;
           payment_id?: string | null;
           referee_assignment_id?: string | null;
+          source_id?: string | null;
+          source_type?: string | null;
           status?: string;
           transaction_type?: string;
           updated_at?: string;
@@ -1633,6 +1860,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "championships";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_transactions_championship_org_fkey";
+            columns: ["championship_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "championships";
+            referencedColumns: ["id", "organization_id"];
           },
           {
             foreignKeyName: "financial_transactions_organization_id_fkey";
@@ -2688,12 +2922,88 @@ export type Database = {
           },
         ];
       };
+      notification_delivery_settings: {
+        Row: {
+          email_enabled: boolean;
+          organization_id: string;
+          smtp_validated_at: string | null;
+          smtp_validated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          email_enabled?: boolean;
+          organization_id: string;
+          smtp_validated_at?: string | null;
+          smtp_validated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          email_enabled?: boolean;
+          organization_id?: string;
+          smtp_validated_at?: string | null;
+          smtp_validated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_settings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_preferences: {
+        Row: {
+          created_at: string;
+          email_enabled: boolean;
+          id: string;
+          internal_enabled: boolean;
+          notification_type: string;
+          organization_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          email_enabled?: boolean;
+          id?: string;
+          internal_enabled?: boolean;
+          notification_type: string;
+          organization_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email_enabled?: boolean;
+          id?: string;
+          internal_enabled?: boolean;
+          notification_type?: string;
+          organization_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
+          action_url: string | null;
+          actor_id: string | null;
           championship_id: string | null;
           channel: string;
           created_at: string;
           error_message: string | null;
+          event_key: string | null;
           id: string;
           message: string;
           notification_type: string;
@@ -2702,16 +3012,21 @@ export type Database = {
           read_at: string | null;
           scheduled_at: string | null;
           sent_at: string | null;
+          source_id: string | null;
+          source_type: string | null;
           status: string;
           title: string;
           updated_at: string;
           user_id: string | null;
         };
         Insert: {
+          action_url?: string | null;
+          actor_id?: string | null;
           championship_id?: string | null;
           channel?: string;
           created_at?: string;
           error_message?: string | null;
+          event_key?: string | null;
           id?: string;
           message: string;
           notification_type: string;
@@ -2720,16 +3035,21 @@ export type Database = {
           read_at?: string | null;
           scheduled_at?: string | null;
           sent_at?: string | null;
+          source_id?: string | null;
+          source_type?: string | null;
           status?: string;
           title: string;
           updated_at?: string;
           user_id?: string | null;
         };
         Update: {
+          action_url?: string | null;
+          actor_id?: string | null;
           championship_id?: string | null;
           channel?: string;
           created_at?: string;
           error_message?: string | null;
+          event_key?: string | null;
           id?: string;
           message?: string;
           notification_type?: string;
@@ -2738,6 +3058,8 @@ export type Database = {
           read_at?: string | null;
           scheduled_at?: string | null;
           sent_at?: string | null;
+          source_id?: string | null;
+          source_type?: string | null;
           status?: string;
           title?: string;
           updated_at?: string;
@@ -2753,6 +3075,68 @@ export type Database = {
           },
           {
             foreignKeyName: "notifications_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null;
+          accepted_by: string | null;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          invited_by: string;
+          last_sent_at: string | null;
+          organization_id: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          role: Database["public"]["Enums"]["app_role"];
+          send_count: number;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string;
+          email: string;
+          expires_at?: string;
+          id?: string;
+          invited_by: string;
+          last_sent_at?: string | null;
+          organization_id: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          role: Database["public"]["Enums"]["app_role"];
+          send_count?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string;
+          last_sent_at?: string | null;
+          organization_id?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          role?: Database["public"]["Enums"]["app_role"];
+          send_count?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -2789,42 +3173,194 @@ export type Database = {
           },
         ];
       };
-      organizations: {
+      organization_public_pages: {
         Row: {
           created_at: string;
           created_by: string | null;
-          id: string;
-          logo_url: string | null;
-          name: string;
-          plan: string;
-          plan_expires_at: string | null;
-          slug: string | null;
+          description: string | null;
+          headline: string | null;
+          is_public: boolean;
+          organization_id: string;
+          published_at: string | null;
+          show_contact_email: boolean;
+          show_contact_phone: boolean;
+          slug: string;
+          social_links: Json;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
           created_at?: string;
           created_by?: string | null;
-          id?: string;
-          logo_url?: string | null;
-          name: string;
-          plan?: string;
-          plan_expires_at?: string | null;
-          slug?: string | null;
+          description?: string | null;
+          headline?: string | null;
+          is_public?: boolean;
+          organization_id: string;
+          published_at?: string | null;
+          show_contact_email?: boolean;
+          show_contact_phone?: boolean;
+          slug: string;
+          social_links?: Json;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
           created_at?: string;
           created_by?: string | null;
+          description?: string | null;
+          headline?: string | null;
+          is_public?: boolean;
+          organization_id?: string;
+          published_at?: string | null;
+          show_contact_email?: boolean;
+          show_contact_phone?: boolean;
+          slug?: string;
+          social_links?: Json;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_public_pages_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organization_subscriptions: {
+        Row: {
+          cancelled_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          current_period_ends_at: string | null;
+          current_period_starts_at: string;
+          id: string;
+          metadata: Json;
+          organization_id: string;
+          plan_version_id: string;
+          provider: string | null;
+          provider_customer_id: string | null;
+          provider_subscription_id: string | null;
+          status: string;
+          suspended_at: string | null;
+          trial_ends_at: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          current_period_ends_at?: string | null;
+          current_period_starts_at?: string;
           id?: string;
+          metadata?: Json;
+          organization_id: string;
+          plan_version_id: string;
+          provider?: string | null;
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          status?: string;
+          suspended_at?: string | null;
+          trial_ends_at?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          current_period_ends_at?: string | null;
+          current_period_starts_at?: string;
+          id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          plan_version_id?: string;
+          provider?: string | null;
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          status?: string;
+          suspended_at?: string | null;
+          trial_ends_at?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_subscriptions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organization_subscriptions_plan_version_id_fkey";
+            columns: ["plan_version_id"];
+            isOneToOne: false;
+            referencedRelation: "saas_plan_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organizations: {
+        Row: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          locale: string;
+          logo_url: string | null;
+          name: string;
+          plan: string;
+          plan_expires_at: string | null;
+          slug: string | null;
+          state: string | null;
+          timezone: string;
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        Insert: {
+          city?: string | null;
+          contact_email?: string | null;
+          contact_phone?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          locale?: string;
+          logo_url?: string | null;
+          name: string;
+          plan?: string;
+          plan_expires_at?: string | null;
+          slug?: string | null;
+          state?: string | null;
+          timezone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          website_url?: string | null;
+        };
+        Update: {
+          city?: string | null;
+          contact_email?: string | null;
+          contact_phone?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          locale?: string;
           logo_url?: string | null;
           name?: string;
           plan?: string;
           plan_expires_at?: string | null;
           slug?: string | null;
+          state?: string | null;
+          timezone?: string;
           updated_at?: string;
           updated_by?: string | null;
+          website_url?: string | null;
         };
         Relationships: [];
       };
@@ -2928,6 +3464,45 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      platform_operational_events: {
+        Row: {
+          actor_user_id: string | null;
+          code: string;
+          duration_ms: number | null;
+          event_kind: string;
+          fingerprint: string | null;
+          id: number;
+          occurred_at: string;
+          route: string | null;
+          severity: string;
+          source: string;
+        };
+        Insert: {
+          actor_user_id?: string | null;
+          code: string;
+          duration_ms?: number | null;
+          event_kind: string;
+          fingerprint?: string | null;
+          id?: number;
+          occurred_at?: string;
+          route?: string | null;
+          severity: string;
+          source: string;
+        };
+        Update: {
+          actor_user_id?: string | null;
+          code?: string;
+          duration_ms?: number | null;
+          event_kind?: string;
+          fingerprint?: string | null;
+          id?: number;
+          occurred_at?: string;
+          route?: string | null;
+          severity?: string;
+          source?: string;
+        };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -3429,6 +4004,57 @@ export type Database = {
           },
         ];
       };
+      saas_plan_versions: {
+        Row: {
+          code: string;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          effective_from: string;
+          id: string;
+          limits: Json;
+          modules: string[];
+          name: string;
+          retired_at: string | null;
+          status: string;
+          updated_at: string;
+          updated_by: string | null;
+          version: number;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          effective_from?: string;
+          id?: string;
+          limits?: Json;
+          modules?: string[];
+          name: string;
+          retired_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          version: number;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          effective_from?: string;
+          id?: string;
+          limits?: Json;
+          modules?: string[];
+          name?: string;
+          retired_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          version?: number;
+        };
+        Relationships: [];
+      };
       sanctions: {
         Row: {
           athlete_id: string | null;
@@ -3615,6 +4241,7 @@ export type Database = {
           display_order: number;
           ends_at: string | null;
           id: string;
+          logo_media_id: string | null;
           logo_url: string | null;
           name: string;
           organization_id: string;
@@ -3632,6 +4259,7 @@ export type Database = {
           display_order?: number;
           ends_at?: string | null;
           id?: string;
+          logo_media_id?: string | null;
           logo_url?: string | null;
           name: string;
           organization_id: string;
@@ -3649,6 +4277,7 @@ export type Database = {
           display_order?: number;
           ends_at?: string | null;
           id?: string;
+          logo_media_id?: string | null;
           logo_url?: string | null;
           name?: string;
           organization_id?: string;
@@ -3673,6 +4302,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "championships";
             referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "sponsors_logo_media_id_fkey";
+            columns: ["logo_media_id"];
+            isOneToOne: false;
+            referencedRelation: "media";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "sponsors_organization_id_fkey";
@@ -3997,6 +4633,86 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      support_sessions: {
+        Row: {
+          admin_user_id: string;
+          created_at: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          expires_at: string;
+          id: string;
+          organization_id: string;
+          reason: string;
+          started_at: string;
+          status: string;
+        };
+        Insert: {
+          admin_user_id: string;
+          created_at?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          expires_at: string;
+          id?: string;
+          organization_id: string;
+          reason: string;
+          started_at?: string;
+          status?: string;
+        };
+        Update: {
+          admin_user_id?: string;
+          created_at?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          organization_id?: string;
+          reason?: string;
+          started_at?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_sessions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      system_admins: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          is_active: boolean;
+          reason: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          revoked_reason: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          is_active?: boolean;
+          reason: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          revoked_reason?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          is_active?: boolean;
+          reason?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          revoked_reason?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       team_access_rate_limits: {
         Row: {
@@ -5002,6 +5718,50 @@ export type Database = {
             };
             Returns: string;
           };
+      archive_championship: {
+        Args: {
+          p_championship_id: string;
+          p_confirmation: string;
+          p_reason: string;
+        };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       archive_championship_media: {
         Args: { p_championship_id: string; p_media_id: string };
         Returns: {
@@ -5047,6 +5807,62 @@ export type Database = {
         };
         Returns: undefined;
       };
+      assert_championship_settings_manager: {
+        Args: { p_championship_id: string; p_lock?: boolean };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      assert_organization_limit: {
+        Args: {
+          p_increment?: number;
+          p_organization_id: string;
+          p_resource: string;
+        };
+        Returns: undefined;
+      };
+      assert_organization_role_assignment: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["app_role"];
+          p_organization_id: string;
+        };
+        Returns: Database["public"]["Enums"]["app_role"];
+      };
+      assert_system_admin: { Args: never; Returns: undefined };
       assign_referee: {
         Args: {
           p_championship_id: string;
@@ -5115,16 +5931,140 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      audit_championship_context: {
+        Args: { p_championship_id: string };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      audit_module_name: { Args: { p_entity_type: string }; Returns: string };
+      audit_try_uuid: { Args: { p_value: string }; Returns: string };
       block_team_edit_link: {
         Args: { p_link_id: string; p_reason: string };
         Returns: string;
       };
       can_administer_org: { Args: { _org: string }; Returns: boolean };
       can_edit_org: { Args: { p_organization_id: string }; Returns: boolean };
+      can_manage_championship_settings: {
+        Args: { p_organization_id: string };
+        Returns: boolean;
+      };
+      can_manage_finance: {
+        Args: { p_organization_id: string };
+        Returns: boolean;
+      };
       can_manage_org: { Args: { p_organization_id: string }; Returns: boolean };
+      can_manage_organization: {
+        Args: { p_organization_id: string };
+        Returns: boolean;
+      };
       can_manage_team: {
         Args: { p_championship_id?: string; p_team_id: string };
         Returns: boolean;
+      };
+      can_permanently_delete_championship: {
+        Args: { p_organization_id: string };
+        Returns: boolean;
+      };
+      can_view_audit: { Args: { p_organization_id: string }; Returns: boolean };
+      cancel_financial_transaction: {
+        Args: {
+          p_championship_id: string;
+          p_reason: string;
+          p_transaction_id: string;
+        };
+        Returns: {
+          amount: number;
+          attachment_url: string | null;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          category: string;
+          championship_id: string | null;
+          competence_date: string;
+          counterparty: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          due_date: string | null;
+          due_on: string | null;
+          id: string;
+          metadata: Json;
+          notes: string | null;
+          occurred_on: string;
+          organization_id: string;
+          paid_at: string | null;
+          paid_on: string | null;
+          payment_id: string | null;
+          referee_assignment_id: string | null;
+          source_id: string | null;
+          source_type: string | null;
+          status: string;
+          transaction_type: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "financial_transactions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      championship_dependency_summary: {
+        Args: { p_championship_id: string; p_organization_id: string };
+        Returns: Json;
+      };
+      championship_dependency_total: {
+        Args: { p_summary: Json };
+        Returns: number;
+      };
+      change_organization_member_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["app_role"];
+          p_organization_id: string;
+          p_reason: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      close_expired_support_sessions: {
+        Args: { p_admin_user_id: string };
+        Returns: number;
       };
       commit_fixture_generation: {
         Args: {
@@ -5271,6 +6211,14 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_organization_invitation: {
+        Args: {
+          p_email: string;
+          p_organization_id: string;
+          p_role: Database["public"]["Enums"]["app_role"];
+        };
+        Returns: Json;
+      };
       create_team_for_championship: {
         Args: {
           p_abbreviation?: string;
@@ -5355,6 +6303,14 @@ export type Database = {
         Args: { p_championship_id: string; p_match_id: string };
         Returns: undefined;
       };
+      delete_championship_permanently: {
+        Args: {
+          p_championship_id: string;
+          p_confirmation: string;
+          p_reason: string;
+        };
+        Returns: undefined;
+      };
       delete_match_report_attachment: {
         Args: {
           p_attachment_id: string;
@@ -5392,6 +6348,55 @@ export type Database = {
         Args: { p_championship_id: string; p_unavailability_id: string };
         Returns: undefined;
       };
+      emit_internal_notification: {
+        Args: {
+          p_action_url?: string;
+          p_championship_id: string;
+          p_event_key: string;
+          p_message: string;
+          p_notification_type: string;
+          p_organization_id: string;
+          p_payload?: Json;
+          p_source_id?: string;
+          p_source_type?: string;
+          p_title: string;
+          p_user_id: string;
+        };
+        Returns: string;
+      };
+      emit_internal_notification_to_org: {
+        Args: {
+          p_action_url?: string;
+          p_championship_id: string;
+          p_event_key: string;
+          p_message: string;
+          p_notification_type: string;
+          p_organization_id: string;
+          p_payload?: Json;
+          p_roles?: Database["public"]["Enums"]["app_role"][];
+          p_source_id?: string;
+          p_source_type?: string;
+          p_title: string;
+        };
+        Returns: number;
+      };
+      end_support_session: {
+        Args: { p_reason: string; p_session_id: string };
+        Returns: undefined;
+      };
+      export_championship_audit_logs: {
+        Args: {
+          p_action?: string;
+          p_actor_id?: string;
+          p_championship_id: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_entity_id?: string;
+          p_entity_type?: string;
+          p_module?: string;
+        };
+        Returns: Json;
+      };
       extend_team_edit_link_expiration: {
         Args: { p_expires_at: string; p_link_id: string };
         Returns: string;
@@ -5417,6 +6422,21 @@ export type Database = {
           link_id: string;
           plaintext_token: string;
         }[];
+      };
+      get_championship_audit_logs: {
+        Args: {
+          p_action?: string;
+          p_actor_id?: string;
+          p_championship_id: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_entity_id?: string;
+          p_entity_type?: string;
+          p_module?: string;
+          p_page?: number;
+          p_page_size?: number;
+        };
+        Returns: Json;
       };
       get_championship_context: {
         Args: { p_championship_id: string };
@@ -5458,14 +6478,72 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_championship_finance: {
+        Args: {
+          p_category?: string;
+          p_championship_id: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_status?: string;
+          p_transaction_type?: string;
+        };
+        Returns: Json;
+      };
+      get_championship_operational_settings: {
+        Args: { p_championship_id: string };
+        Returns: Json;
+      };
       get_competition_stage_teams: {
         Args: { p_championship_id: string; p_stage_id: string };
         Returns: Json;
       };
+      get_manageable_organizations: { Args: never; Returns: Json };
+      get_my_active_support_session: { Args: never; Returns: Json };
+      get_my_notification_preferences: {
+        Args: { p_organization_id: string };
+        Returns: Json;
+      };
+      get_my_notifications: { Args: { p_limit?: number }; Returns: Json };
+      get_organization_admin_context: {
+        Args: { p_organization_id: string };
+        Returns: Json;
+      };
+      get_organization_public_page_settings: {
+        Args: { p_organization_id: string };
+        Returns: Json;
+      };
+      get_organization_subscription_context: {
+        Args: { p_organization_id: string };
+        Returns: Json;
+      };
+      get_platform_operational_status: { Args: never; Returns: Json };
       get_public_championship_portal: {
         Args: { p_slug: string };
         Returns: Json;
       };
+      get_public_organization_portal: {
+        Args: { p_slug: string };
+        Returns: Json;
+      };
+      get_support_session_context: {
+        Args: { p_session_id: string };
+        Returns: Json;
+      };
+      get_system_admin_audit_logs: {
+        Args: {
+          p_action?: string;
+          p_actor_user_id?: string;
+          p_alert_category?: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_target_type?: string;
+        };
+        Returns: Json;
+      };
+      get_system_admin_dashboard: { Args: never; Returns: Json };
       get_team_edit_session: {
         Args: { p_session_hash: string };
         Returns: {
@@ -5533,6 +6611,46 @@ export type Database = {
         Returns: undefined;
       };
       is_org_member: { Args: { _org: string }; Returns: boolean };
+      is_system_admin: { Args: never; Returns: boolean };
+      list_system_admin_championships: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string };
+        Returns: Json;
+      };
+      list_system_admin_organizations: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string };
+        Returns: Json;
+      };
+      list_system_admin_subscriptions: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string };
+        Returns: Json;
+      };
+      list_system_admin_users: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string };
+        Returns: Json;
+      };
+      mark_all_my_notifications_read: { Args: never; Returns: number };
+      mark_my_notification_read: {
+        Args: { p_notification_id: string };
+        Returns: undefined;
+      };
+      mark_organization_invitation_sent: {
+        Args: { p_invitation_id: string };
+        Returns: undefined;
+      };
+      notification_type_is_valid: { Args: { p_type: string }; Returns: boolean };
+      organization_effective_role: {
+        Args: { p_organization_id: string; p_user_id?: string };
+        Returns: Database["public"]["Enums"]["app_role"];
+      };
+      organization_public_links_are_valid: {
+        Args: { p_links: Json };
+        Returns: boolean;
+      };
+      organization_public_slug: { Args: { p_value: string }; Returns: string };
+      organization_resource_usage: {
+        Args: { p_organization_id: string; p_resource: string };
+        Returns: number;
+      };
       phase1_assert_editor: {
         Args: { p_organization_id: string };
         Returns: undefined;
@@ -5636,6 +6754,54 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      phase5_finance_context: {
+        Args: { p_championship_id: string };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      plan_limit_snapshot: {
+        Args: { p_limit: number; p_used: number };
+        Returns: Json;
+      };
+      prepare_organization_invitation_resend: {
+        Args: { p_invitation_id: string };
+        Returns: Json;
+      };
       publish_competition: {
         Args: { p_championship_id: string };
         Returns: {
@@ -5676,6 +6842,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      purge_expired_audit_logs: { Args: never; Returns: number };
       recalculate_match_score: {
         Args: { p_match_id: string };
         Returns: {
@@ -5772,6 +6939,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      record_my_client_error: {
+        Args: { p_code: string; p_fingerprint: string; p_route: string };
+        Returns: undefined;
+      };
       register_athlete_for_championship:
         | {
             Args: {
@@ -5843,6 +7014,34 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      register_financial_attachment: {
+        Args: {
+          p_championship_id: string;
+          p_file_name: string;
+          p_mime_type: string;
+          p_object_path: string;
+          p_size_bytes: number;
+          p_transaction_id: string;
+        };
+        Returns: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          object_path: string;
+          organization_id: string;
+          size_bytes: number;
+          transaction_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "financial_attachments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       register_match_report_attachment: {
         Args: {
           p_championship_id: string;
@@ -5871,6 +7070,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      remove_financial_attachment: {
+        Args: { p_attachment_id: string; p_championship_id: string };
+        Returns: undefined;
+      };
       remove_match_event: {
         Args: {
           p_championship_id: string;
@@ -5878,6 +7081,10 @@ export type Database = {
           p_match_id: string;
           p_reason?: string;
         };
+        Returns: undefined;
+      };
+      remove_organization_member: {
+        Args: { p_organization_id: string; p_reason: string; p_user_id: string };
         Returns: undefined;
       };
       remove_team_from_championship: {
@@ -5933,6 +7140,65 @@ export type Database = {
         };
         Returns: undefined;
       };
+      resolve_audit_championship: {
+        Args: {
+          p_context: Json;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_new_data: Json;
+          p_old_data: Json;
+          p_organization_id: string;
+        };
+        Returns: string;
+      };
+      reverse_financial_settlement: {
+        Args: {
+          p_championship_id: string;
+          p_reason: string;
+          p_transaction_id: string;
+        };
+        Returns: {
+          amount: number;
+          attachment_url: string | null;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          category: string;
+          championship_id: string | null;
+          competence_date: string;
+          counterparty: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          due_date: string | null;
+          due_on: string | null;
+          id: string;
+          metadata: Json;
+          notes: string | null;
+          occurred_on: string;
+          organization_id: string;
+          paid_at: string | null;
+          paid_on: string | null;
+          payment_id: string | null;
+          referee_assignment_id: string | null;
+          source_id: string | null;
+          source_type: string | null;
+          status: string;
+          transaction_type: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "financial_transactions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      revoke_organization_invitation: {
+        Args: { p_invitation_id: string; p_reason: string };
+        Returns: undefined;
+      };
       revoke_sanction: {
         Args: {
           p_championship_id: string;
@@ -5980,6 +7246,35 @@ export type Database = {
         Args: { p_link_id: string; p_reason: string };
         Returns: string;
       };
+      sanitize_admin_audit_json: { Args: { p_value: Json }; Returns: Json };
+      sanitize_audit_json: { Args: { p_value: Json }; Returns: Json };
+      save_championship_gallery: {
+        Args: {
+          p_championship_id: string;
+          p_gallery_id: string;
+          p_payload: Json;
+        };
+        Returns: {
+          championship_id: string;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          organization_id: string;
+          published_at: string | null;
+          slug: string;
+          status: string;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "media_galleries";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       save_championship_news: {
         Args: { p_championship_id: string; p_news_id: string; p_payload: Json };
         Returns: {
@@ -6008,6 +7303,17 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      save_championship_operational_settings: {
+        Args: {
+          p_championship_id: string;
+          p_enabled_integrations: string[];
+          p_identity: Json;
+          p_locale: string;
+          p_notification_preferences: Json;
+          p_timezone: string;
+        };
+        Returns: Json;
       };
       save_championship_public_page: {
         Args: { p_championship_id: string; p_payload: Json };
@@ -6046,6 +7352,7 @@ export type Database = {
           display_order: number;
           ends_at: string | null;
           id: string;
+          logo_media_id: string | null;
           logo_url: string | null;
           name: string;
           organization_id: string;
@@ -6172,6 +7479,50 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "competition_stages";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      save_financial_transaction: {
+        Args: {
+          p_championship_id: string;
+          p_payload: Json;
+          p_transaction_id: string;
+        };
+        Returns: {
+          amount: number;
+          attachment_url: string | null;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          category: string;
+          championship_id: string | null;
+          competence_date: string;
+          counterparty: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          due_date: string | null;
+          due_on: string | null;
+          id: string;
+          metadata: Json;
+          notes: string | null;
+          occurred_on: string;
+          organization_id: string;
+          paid_at: string | null;
+          paid_on: string | null;
+          payment_id: string | null;
+          referee_assignment_id: string | null;
+          source_id: string | null;
+          source_type: string | null;
+          status: string;
+          transaction_type: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "financial_transactions";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -6344,6 +7695,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      save_my_notification_preferences: {
+        Args: { p_organization_id: string; p_preferences: Json };
+        Returns: Json;
+      };
+      save_organization_profile: {
+        Args: { p_organization_id: string; p_profile: Json };
+        Returns: Json;
+      };
+      save_organization_public_page: {
+        Args: { p_organization_id: string; p_payload: Json };
+        Returns: Json;
+      };
       save_referee: {
         Args: {
           p_championship_id: string;
@@ -6493,6 +7856,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_organization_public_page_status: {
+        Args: { p_organization_id: string; p_publish: boolean };
+        Returns: Json;
+      };
       set_primary_team_responsible: {
         Args: { p_responsible_id: string; p_team_id: string };
         Returns: undefined;
@@ -6568,6 +7935,60 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      settle_financial_transaction: {
+        Args: {
+          p_championship_id: string;
+          p_paid_at?: string;
+          p_transaction_id: string;
+        };
+        Returns: {
+          amount: number;
+          attachment_url: string | null;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          category: string;
+          championship_id: string | null;
+          competence_date: string;
+          counterparty: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          due_date: string | null;
+          due_on: string | null;
+          id: string;
+          metadata: Json;
+          notes: string | null;
+          occurred_on: string;
+          organization_id: string;
+          paid_at: string | null;
+          paid_on: string | null;
+          payment_id: string | null;
+          referee_assignment_id: string | null;
+          source_id: string | null;
+          source_type: string | null;
+          status: string;
+          transaction_type: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "financial_transactions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_support_session: {
+        Args: {
+          p_duration_minutes?: number;
+          p_organization_id: string;
+          p_reason: string;
+        };
+        Returns: Json;
+      };
+      system_admin_page_size: { Args: { p_limit: number }; Returns: number };
+      system_admin_search: { Args: { p_search: string }; Returns: string };
       team_edit_permissions_are_valid: {
         Args: { p_permissions: Json };
         Returns: boolean;
@@ -6575,6 +7996,61 @@ export type Database = {
       unblock_team_edit_link: { Args: { p_link_id: string }; Returns: string };
       update_championship_match: {
         Args: {
+          p_championship_id: string;
+          p_match_id: string;
+          p_phase: string;
+          p_round: string;
+          p_scheduled_at: string;
+          p_venue: string;
+        };
+        Returns: {
+          away_penalty_score: number | null;
+          away_score: number | null;
+          away_team_id: string | null;
+          broadcast_url: string | null;
+          category_id: string | null;
+          championship_id: string;
+          confirmed_at: string | null;
+          confirmed_by: string | null;
+          created_at: string;
+          created_by: string | null;
+          decided_by: string | null;
+          ended_at: string | null;
+          group_id: string | null;
+          home_penalty_score: number | null;
+          home_score: number | null;
+          home_team_id: string | null;
+          id: string;
+          leg: number;
+          match_number: number | null;
+          metadata: Json;
+          notes: string | null;
+          organization_id: string;
+          phase: string | null;
+          published: boolean;
+          round: string | null;
+          round_id: string | null;
+          scheduled_at: string | null;
+          sequence: number | null;
+          stage_id: string | null;
+          started_at: string | null;
+          status: Database["public"]["Enums"]["match_status"];
+          updated_at: string;
+          updated_by: string | null;
+          venue: string | null;
+          venue_id: string | null;
+          winner_team_id: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "matches";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_championship_match_public_details: {
+        Args: {
+          p_broadcast_url: string;
           p_championship_id: string;
           p_match_id: string;
           p_phase: string;

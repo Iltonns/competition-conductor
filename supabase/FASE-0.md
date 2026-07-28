@@ -6,6 +6,18 @@ A fundação local da Fase 0 foi implementada. O gate remoto continua condiciona
 uma sessão administrativa da Supabase CLI e a uma conexão PostgreSQL descartável.
 Nenhum token, senha ou URL de banco deve ser enviado por chat ou salvo no repositório.
 
+### Atualização de 28/07/2026
+
+- os tipos oficiais foram regenerados a partir do projeto Supabase vinculado;
+- o arquivo versionado agora cobre o schema aplicado até a Fase 6;
+- o agregador SQL passou a executar todos os 21 testes existentes;
+- o teste de segurança dos links de equipe deixou de depender de pgTAP e pode ser
+  executado diretamente no SQL Editor ou por `psql`;
+- segurança de ambiente, lint, TypeScript, testes unitários, build e smoke E2E
+  público passaram;
+- a matriz SQL completa e o E2E autenticado continuam pendentes pelos requisitos
+  de ambiente descritos abaixo.
+
 ## Alterações locais
 
 - `.env` removido do índice Git e coberto pelo `.gitignore`.
@@ -64,12 +76,13 @@ powershell -ExecutionPolicy Bypass -File scripts/verify-phase0-supabase.ps1
 Remove-Item Env:SUPABASE_DB_URL
 ```
 
-O agregador executa:
+O agregador executa todos os 21 arquivos de `supabase/tests`, cobrindo:
 
 1. fundação de campeonatos e isolamento de papéis/tenants;
-2. administração de equipes;
-3. elenco, comissão e responsáveis;
-4. segurança dos links de edição de equipe.
+2. administração de equipes, elenco e links temporários;
+3. partidas, motor de competições e operações esportivas;
+4. publicação, financeiro, auditoria, configurações e notificações;
+5. planos, administração da plataforma, suporte e observabilidade.
 
 Todos os testes transacionais terminam em `ROLLBACK`.
 

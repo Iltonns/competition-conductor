@@ -4,6 +4,39 @@
 **Escopo:** segurança, qualidade e baseline  
 **Status:** concluída localmente; aprovação de produção condicionada aos gates remotos
 
+## Atualização — 28/07/2026
+
+Esta retomada da Fase 0 regularizou o baseline após as entregas das Fases 1 a 6:
+
+- tipos oficiais do Supabase regenerados a partir do projeto vinculado;
+- adapters obsoletos removidos das chamadas de System Admin, observabilidade,
+  assinatura e convites;
+- resposta JSON da assinatura passou a ser validada em runtime com Zod;
+- matriz SQL ampliada de 4 para todos os 21 scripts existentes;
+- teste de links de equipe convertido de pgTAP para SQL nativo, eliminando o erro
+  `function plan(integer) does not exist`;
+- `wrangler` atualizado para `4.115.0`, alinhando o `workerd` com a data de
+  compatibilidade gerada pelo build.
+
+Validações desta atualização:
+
+- segurança de arquivos de ambiente: passou;
+- TypeScript: passou;
+- lint: zero erros e oito warnings históricos de Fast Refresh;
+- testes unitários: 50 passaram em 12 arquivos;
+- cobertura no escopo configurado: 87,22% statements, 79,21% branches,
+  100% functions e 89,8% lines;
+- build cliente, SSR e Cloudflare/Nitro: passou;
+- E2E público: 2 passaram;
+- E2E autenticado: 1 ignorado por ausência das credenciais exclusivas de homologação;
+- `npm audit --omit=dev`: zero vulnerabilidades de produção.
+
+Permanecem como gates externos:
+
+1. executar a matriz SQL completa em banco descartável com `psql`;
+2. executar o E2E autenticado com conta exclusiva de homologação;
+3. revisar/registrar a evidência operacional de rotação de segredos históricos.
+
 ## Resultado
 
 A fundação local da Fase 0 foi implementada e o gate agregado

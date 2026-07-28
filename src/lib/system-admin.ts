@@ -1,12 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type SystemAdminRpcClient = {
-  rpc: (name: "is_system_admin") => PromiseLike<{
-    data: boolean | null;
-    error: { message: string } | null;
-  }>;
-};
-
 /**
  * Verifica se o usuário autenticado é administrador da plataforma.
  *
@@ -20,9 +13,7 @@ type SystemAdminRpcClient = {
  */
 export async function checkIsSystemAdmin(): Promise<boolean> {
   try {
-    // Adapter restrito até os tipos oficiais serem regenerados após a migration.
-    const systemAdminClient = supabase as unknown as SystemAdminRpcClient;
-    const { data, error } = await systemAdminClient.rpc("is_system_admin");
+    const { data, error } = await supabase.rpc("is_system_admin");
     if (error) {
       console.warn("Falha na RPC is_system_admin:", error.message);
       return false;

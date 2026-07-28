@@ -19,7 +19,11 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // Keep the established React Hooks lint contract while using the patched
+      // ESLint 10-compatible plugin. Compiler-oriented rules will be adopted in
+      // a dedicated refactor instead of changing application behavior here.
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       "no-restricted-imports": [
         "error",
         {
