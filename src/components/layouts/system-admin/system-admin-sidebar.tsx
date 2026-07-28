@@ -11,10 +11,8 @@ import { cn } from "@/lib/utils";
  * Nunca compartilha rota, layout ou papel com `organization_members` —
  * ver `src/lib/system-admin.ts` para a checagem de autorização.
  *
- * Os itens vêm de `features/navigation/system-admin-nav.config.ts`. Só
- * "Dashboard global" está `available: true` hoje — os demais aparecem
- * com o badge "Em breve" até as telas de organizações/usuários/planos
- * serem implementadas (dependem do gate de backend da seção 3.6).
+ * Os itens vêm de `features/navigation/system-admin-nav.config.ts`. Rotas sem
+ * backend e autorização completos permanecem desabilitadas.
  */
 export function SystemAdminSidebar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });

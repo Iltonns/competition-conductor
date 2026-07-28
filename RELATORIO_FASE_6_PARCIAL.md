@@ -116,3 +116,56 @@ Gate remoto pendente:
 2. Executar `phase6_organization_public_portal_verification.sql`.
 3. Validar com sessão owner/admin e acesso anônimo aos estados publicado e
    retirado do ar.
+
+## F6-RF04 — System Admin (primeira fatia)
+
+Implementado em 28/07/2026:
+
+- Vínculo de administrador de plataforma em `system_admins`, separado dos
+  papéis das organizações.
+- Guard real e fail-closed pela RPC `is_system_admin()`.
+- Provisionamento do primeiro administrador exclusivamente por operação
+  controlada no banco; não existe promoção pelo cliente.
+- `admin_audit_logs` separado da auditoria de domínio, imutável por trigger.
+- Concessão, atualização e revogação do papel de plataforma auditadas
+  automaticamente, com responsável e justificativa.
+- Dashboard global real com organizações, usuários, campeonatos, assinaturas,
+  storage e alertas operacionais.
+- Listas específicas, pesquisáveis e paginadas para organizações, usuários,
+  campeonatos e assinaturas.
+- Tabelas canônicas sem leitura direta por `authenticated`; todas as consultas
+  passam por RPCs `SECURITY DEFINER` que revalidam `is_system_admin()`.
+- Rotas habilitadas:
+  - `/system-admin`;
+  - `/system-admin/organizacoes`;
+  - `/system-admin/usuarios`;
+  - `/system-admin/campeonatos`;
+  - `/system-admin/assinaturas`.
+- Migration
+  `supabase/migrations/20260728060000_phase6_system_admin_read_model.sql`.
+- Verificação estrutural e de privilégios em
+  `supabase/tests/phase6_system_admin_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260728060000_phase6_system_admin_read_model.sql`.
+2. Executar `phase6_system_admin_verification.sql`.
+3. Provisionar o primeiro administrador com UUID validado, responsável e
+   justificativa de pelo menos 10 caracteres.
+4. Validar que usuário comum é redirecionado e que o administrador autorizado
+   acessa dashboard e quatro listas.
+
+Continuações de `F6-RF04`:
+
+- Ações privilegiadas de plataforma continuam bloqueadas até serem modeladas
+  com confirmação, justificativa e auditoria.
+- As rotas de suporte, auditoria e configurações permanecem desabilitadas e
+  pertencem às próximas entregas `F6-RF05` a `F6-RF07`.

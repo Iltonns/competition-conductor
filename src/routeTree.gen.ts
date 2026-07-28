@@ -17,6 +17,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SystemAdminIndexRouteImport } from './routes/system-admin/index'
 import { Route as TeamAccessSessionRouteImport } from './routes/team-access.session'
 import { Route as TeamAccessTokenRouteImport } from './routes/team-access.$token'
+import { Route as SystemAdminUsuariosRouteImport } from './routes/system-admin/usuarios'
+import { Route as SystemAdminOrganizacoesRouteImport } from './routes/system-admin/organizacoes'
+import { Route as SystemAdminCampeonatosRouteImport } from './routes/system-admin/campeonatos'
+import { Route as SystemAdminAssinaturasRouteImport } from './routes/system-admin/assinaturas'
 import { Route as OSlugRouteImport } from './routes/o.$slug'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AuthenticatedOrganizerRouteRouteImport } from './routes/_authenticated/_organizer/route'
@@ -111,6 +115,26 @@ const TeamAccessTokenRoute = TeamAccessTokenRouteImport.update({
   id: '/team-access/$token',
   path: '/team-access/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SystemAdminUsuariosRoute = SystemAdminUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => SystemAdminRouteRoute,
+} as any)
+const SystemAdminOrganizacoesRoute = SystemAdminOrganizacoesRouteImport.update({
+  id: '/organizacoes',
+  path: '/organizacoes',
+  getParentRoute: () => SystemAdminRouteRoute,
+} as any)
+const SystemAdminCampeonatosRoute = SystemAdminCampeonatosRouteImport.update({
+  id: '/campeonatos',
+  path: '/campeonatos',
+  getParentRoute: () => SystemAdminRouteRoute,
+} as any)
+const SystemAdminAssinaturasRoute = SystemAdminAssinaturasRouteImport.update({
+  id: '/assinaturas',
+  path: '/assinaturas',
+  getParentRoute: () => SystemAdminRouteRoute,
 } as any)
 const OSlugRoute = OSlugRouteImport.update({
   id: '/o/$slug',
@@ -447,6 +471,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
+  '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
+  '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin/': typeof SystemAdminIndexRoute
@@ -509,6 +537,10 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
+  '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
+  '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin': typeof SystemAdminIndexRoute
@@ -569,6 +601,10 @@ export interface FileRoutesById {
   '/_authenticated/_organizer': typeof AuthenticatedOrganizerRouteRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
+  '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
+  '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
   '/system-admin/': typeof SystemAdminIndexRoute
@@ -634,6 +670,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/c/$slug'
     | '/o/$slug'
+    | '/system-admin/assinaturas'
+    | '/system-admin/campeonatos'
+    | '/system-admin/organizacoes'
+    | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin/'
@@ -696,6 +736,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/c/$slug'
     | '/o/$slug'
+    | '/system-admin/assinaturas'
+    | '/system-admin/campeonatos'
+    | '/system-admin/organizacoes'
+    | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin'
@@ -755,6 +799,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_organizer'
     | '/c/$slug'
     | '/o/$slug'
+    | '/system-admin/assinaturas'
+    | '/system-admin/campeonatos'
+    | '/system-admin/organizacoes'
+    | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
     | '/system-admin/'
@@ -881,6 +929,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/team-access/$token'
       preLoaderRoute: typeof TeamAccessTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/system-admin/usuarios': {
+      id: '/system-admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/system-admin/usuarios'
+      preLoaderRoute: typeof SystemAdminUsuariosRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
+    }
+    '/system-admin/organizacoes': {
+      id: '/system-admin/organizacoes'
+      path: '/organizacoes'
+      fullPath: '/system-admin/organizacoes'
+      preLoaderRoute: typeof SystemAdminOrganizacoesRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
+    }
+    '/system-admin/campeonatos': {
+      id: '/system-admin/campeonatos'
+      path: '/campeonatos'
+      fullPath: '/system-admin/campeonatos'
+      preLoaderRoute: typeof SystemAdminCampeonatosRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
+    }
+    '/system-admin/assinaturas': {
+      id: '/system-admin/assinaturas'
+      path: '/assinaturas'
+      fullPath: '/system-admin/assinaturas'
+      preLoaderRoute: typeof SystemAdminAssinaturasRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
     }
     '/o/$slug': {
       id: '/o/$slug'
@@ -1551,10 +1627,18 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface SystemAdminRouteRouteChildren {
+  SystemAdminAssinaturasRoute: typeof SystemAdminAssinaturasRoute
+  SystemAdminCampeonatosRoute: typeof SystemAdminCampeonatosRoute
+  SystemAdminOrganizacoesRoute: typeof SystemAdminOrganizacoesRoute
+  SystemAdminUsuariosRoute: typeof SystemAdminUsuariosRoute
   SystemAdminIndexRoute: typeof SystemAdminIndexRoute
 }
 
 const SystemAdminRouteRouteChildren: SystemAdminRouteRouteChildren = {
+  SystemAdminAssinaturasRoute: SystemAdminAssinaturasRoute,
+  SystemAdminCampeonatosRoute: SystemAdminCampeonatosRoute,
+  SystemAdminOrganizacoesRoute: SystemAdminOrganizacoesRoute,
+  SystemAdminUsuariosRoute: SystemAdminUsuariosRoute,
   SystemAdminIndexRoute: SystemAdminIndexRoute,
 }
 
