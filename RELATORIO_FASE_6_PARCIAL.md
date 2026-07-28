@@ -167,5 +167,55 @@ Continuações de `F6-RF04`:
 
 - Ações privilegiadas de plataforma continuam bloqueadas até serem modeladas
   com confirmação, justificativa e auditoria.
-- As rotas de suporte, auditoria e configurações permanecem desabilitadas e
-  pertencem às próximas entregas `F6-RF05` a `F6-RF07`.
+- As rotas de auditoria e configurações permanecem desabilitadas e pertencem
+  às próximas entregas `F6-RF06` e `F6-RF07`.
+
+## F6-RF05 — Modo suporte auditado (primeira fatia)
+
+Implementado em 28/07/2026:
+
+- Sessões de suporte vinculadas ao administrador e a uma única organização,
+  com justificativa obrigatória e duração entre 5 minutos e 2 horas.
+- Apenas uma sessão ativa por administrador, protegida também por índice único
+  parcial no banco.
+- Expiração automática efetiva em todas as RPCs do fluxo, além de encerramento
+  manual com justificativa.
+- Contexto sanitizado e somente leitura com identificação da organização,
+  métricas agregadas, assinatura e os dez campeonatos mais recentes.
+- Sem impersonação de usuário, ampliação de RLS, escrita em dados do tenant ou
+  operações financeiras.
+- Início, consulta, expiração e encerramento registrados em
+  `admin_audit_logs`.
+- Tabela canônica sem acesso direto por `anon` ou `authenticated`; todas as
+  operações passam por RPCs `SECURITY DEFINER` que revalidam o administrador de
+  plataforma.
+- Banner persistente enquanto houver uma sessão ativa e tela administrativa em
+  `/system-admin/suporte`.
+- Migration
+  `supabase/migrations/20260728090000_phase6_support_mode_foundation.sql`.
+- Verificação estrutural, de privilégios e de bloqueio a usuário comum em
+  `supabase/tests/phase6_support_mode_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260728090000_phase6_support_mode_foundation.sql`.
+2. Executar `phase6_support_mode_verification.sql`.
+3. Validar em sessão autenticada que usuário comum recebe bloqueio e que um
+   administrador consegue iniciar, consultar e encerrar uma sessão.
+4. Confirmar no banco os eventos de início, consulta, expiração e encerramento
+   em `admin_audit_logs`.
+
+Continuação de `F6-RF05`:
+
+- Qualquer futura operação de escrita em nome do suporte exige requisito
+  separado, autorização explícita, confirmação reforçada e RPC própria
+  auditada; esta primeira fatia permanece deliberadamente somente leitura.

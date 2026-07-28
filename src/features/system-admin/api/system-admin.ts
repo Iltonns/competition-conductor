@@ -8,6 +8,8 @@ import type {
   SystemAdminPage,
   SystemAdminSubscriptionRow,
   SystemAdminUserRow,
+  SupportSession,
+  SupportSessionContext,
 } from "../types/system-admin.types";
 
 async function rpc<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
@@ -46,3 +48,32 @@ export function listSystemAdminDirectory<K extends SystemAdminDirectoryKind>(
 }
 
 export type AnySystemAdminPage = SystemAdminPage<SystemAdminDirectoryRow>;
+
+export function getMyActiveSupportSession() {
+  return rpc<SupportSession | null>("get_my_active_support_session");
+}
+
+export function startSupportSession(input: {
+  organizationId: string;
+  reason: string;
+  durationMinutes: number;
+}) {
+  return rpc<SupportSession>("start_support_session", {
+    p_organization_id: input.organizationId,
+    p_reason: input.reason,
+    p_duration_minutes: input.durationMinutes,
+  });
+}
+
+export function getSupportSessionContext(sessionId: string) {
+  return rpc<SupportSessionContext>("get_support_session_context", {
+    p_session_id: sessionId,
+  });
+}
+
+export function endSupportSession(sessionId: string, reason: string) {
+  return rpc<void>("end_support_session", {
+    p_session_id: sessionId,
+    p_reason: reason,
+  });
+}

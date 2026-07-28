@@ -75,3 +75,51 @@ export interface SystemAdminPage<T extends SystemAdminDirectoryRow> {
   limit: number;
   offset: number;
 }
+
+export interface SupportSession {
+  id: string;
+  organization_id: string;
+  organization_name: string;
+  reason: string;
+  started_at: string;
+  expires_at: string;
+}
+
+export interface SupportSessionContext {
+  session: {
+    id: string;
+    organization_id: string;
+    reason: string;
+    started_at: string;
+    expires_at: string;
+    read_only: true;
+  };
+  organization: {
+    id: string;
+    name: string;
+    slug: string | null;
+    city: string | null;
+    state: string | null;
+    created_at: string;
+  };
+  metrics: {
+    members: number;
+    championships: number;
+    active_championships: number;
+    teams: number;
+  };
+  subscription: {
+    status: string;
+    plan_code: string;
+    plan_name: string;
+    plan_version: number;
+    current_period_ends_at: string | null;
+  } | null;
+  recent_championships: Array<{
+    id: string;
+    name: string;
+    status: string;
+    is_public: boolean;
+    created_at: string;
+  }>;
+}

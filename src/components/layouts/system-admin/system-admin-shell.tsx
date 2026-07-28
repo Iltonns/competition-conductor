@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SystemAdminSidebar } from "@/components/layouts/system-admin/system-admin-sidebar";
+import { SystemAdminSupportBanner } from "@/features/system-admin/components/SystemAdminSupportBanner";
 
 /**
  * System Admin Shell (plano seção 3.6).
@@ -24,6 +25,7 @@ export function SystemAdminShell({ children }: { children: ReactNode }) {
               Administração do sistema
             </p>
           </header>
+          <SystemAdminSupportBanner />
           <main
             id="main-content"
             className="mx-auto w-full max-w-[var(--layout-max-width)] px-[var(--content-padding-x)] py-[var(--content-padding-y)]"

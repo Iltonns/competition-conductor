@@ -39,7 +39,7 @@ export const SYSTEM_ADMIN_NAV = [
     icon: CreditCard,
     available: true,
   },
-  { to: "/system-admin/suporte", label: "Modo suporte", icon: LifeBuoy, available: false },
+  { to: "/system-admin/suporte", label: "Modo suporte", icon: LifeBuoy, available: true },
   { to: "/system-admin/auditoria", label: "Auditoria", icon: History, available: false },
   {
     to: "/system-admin/configuracoes",

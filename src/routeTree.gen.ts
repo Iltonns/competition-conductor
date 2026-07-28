@@ -18,6 +18,7 @@ import { Route as SystemAdminIndexRouteImport } from './routes/system-admin/inde
 import { Route as TeamAccessSessionRouteImport } from './routes/team-access.session'
 import { Route as TeamAccessTokenRouteImport } from './routes/team-access.$token'
 import { Route as SystemAdminUsuariosRouteImport } from './routes/system-admin/usuarios'
+import { Route as SystemAdminSuporteRouteImport } from './routes/system-admin/suporte'
 import { Route as SystemAdminOrganizacoesRouteImport } from './routes/system-admin/organizacoes'
 import { Route as SystemAdminCampeonatosRouteImport } from './routes/system-admin/campeonatos'
 import { Route as SystemAdminAssinaturasRouteImport } from './routes/system-admin/assinaturas'
@@ -119,6 +120,11 @@ const TeamAccessTokenRoute = TeamAccessTokenRouteImport.update({
 const SystemAdminUsuariosRoute = SystemAdminUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
+  getParentRoute: () => SystemAdminRouteRoute,
+} as any)
+const SystemAdminSuporteRoute = SystemAdminSuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => SystemAdminRouteRoute,
 } as any)
 const SystemAdminOrganizacoesRoute = SystemAdminOrganizacoesRouteImport.update({
@@ -474,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/suporte': typeof SystemAdminSuporteRoute
   '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
@@ -540,6 +547,7 @@ export interface FileRoutesByTo {
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/suporte': typeof SystemAdminSuporteRoute
   '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
@@ -604,6 +612,7 @@ export interface FileRoutesById {
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
+  '/system-admin/suporte': typeof SystemAdminSuporteRoute
   '/system-admin/usuarios': typeof SystemAdminUsuariosRoute
   '/team-access/$token': typeof TeamAccessTokenRoute
   '/team-access/session': typeof TeamAccessSessionRoute
@@ -673,6 +682,7 @@ export interface FileRouteTypes {
     | '/system-admin/assinaturas'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
+    | '/system-admin/suporte'
     | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
@@ -739,6 +749,7 @@ export interface FileRouteTypes {
     | '/system-admin/assinaturas'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
+    | '/system-admin/suporte'
     | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
@@ -802,6 +813,7 @@ export interface FileRouteTypes {
     | '/system-admin/assinaturas'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
+    | '/system-admin/suporte'
     | '/system-admin/usuarios'
     | '/team-access/$token'
     | '/team-access/session'
@@ -935,6 +947,13 @@ declare module '@tanstack/react-router' {
       path: '/usuarios'
       fullPath: '/system-admin/usuarios'
       preLoaderRoute: typeof SystemAdminUsuariosRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
+    }
+    '/system-admin/suporte': {
+      id: '/system-admin/suporte'
+      path: '/suporte'
+      fullPath: '/system-admin/suporte'
+      preLoaderRoute: typeof SystemAdminSuporteRouteImport
       parentRoute: typeof SystemAdminRouteRoute
     }
     '/system-admin/organizacoes': {
@@ -1630,6 +1649,7 @@ interface SystemAdminRouteRouteChildren {
   SystemAdminAssinaturasRoute: typeof SystemAdminAssinaturasRoute
   SystemAdminCampeonatosRoute: typeof SystemAdminCampeonatosRoute
   SystemAdminOrganizacoesRoute: typeof SystemAdminOrganizacoesRoute
+  SystemAdminSuporteRoute: typeof SystemAdminSuporteRoute
   SystemAdminUsuariosRoute: typeof SystemAdminUsuariosRoute
   SystemAdminIndexRoute: typeof SystemAdminIndexRoute
 }
@@ -1638,6 +1658,7 @@ const SystemAdminRouteRouteChildren: SystemAdminRouteRouteChildren = {
   SystemAdminAssinaturasRoute: SystemAdminAssinaturasRoute,
   SystemAdminCampeonatosRoute: SystemAdminCampeonatosRoute,
   SystemAdminOrganizacoesRoute: SystemAdminOrganizacoesRoute,
+  SystemAdminSuporteRoute: SystemAdminSuporteRoute,
   SystemAdminUsuariosRoute: SystemAdminUsuariosRoute,
   SystemAdminIndexRoute: SystemAdminIndexRoute,
 }
