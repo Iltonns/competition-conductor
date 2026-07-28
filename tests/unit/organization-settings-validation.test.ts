@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { OrganizationProfileInput } from "../types/organization-settings.types";
-import { assignableRoles, validateOrganizationProfile } from "./organization-settings-validation";
+import type { OrganizationProfileInput } from "@/features/organization-settings/types/organization-settings.types";
+import {
+  assignableRoles,
+  validateOrganizationProfile,
+} from "@/features/organization-settings/utils/organization-settings-validation";
 
 const validProfile: OrganizationProfileInput = {
   name: "IS Arena",

@@ -142,3 +142,28 @@ Permanecem necessários: aplicar
 `supabase/tests/phase5_organization_users_verification.sql`, regenerar os tipos
 Supabase e validar em ambiente autenticado os perfis owner, admin, editor,
 viewer, outro tenant, último owner e entrega real de e-mail pelo SMTP.
+
+## Incremento de continuidade — Visões globais de equipes e atletas
+
+- `/teams` e `/athletes` deixaram de ser placeholders no Organizer Shell;
+- seleção explícita entre todas as organizações das quais o usuário é membro,
+  incluindo acesso somente leitura de `viewer`;
+- busca normalizada, filtro por status e campeonato e paginação com contagem
+  real;
+- detalhes em `/teams/$teamId` e `/athletes/$athleteId`, preservando a
+  organização no contexto da navegação;
+- participações consultadas exclusivamente em `championship_teams` e
+  `championship_team_athletes`, sem criar cadastros paralelos;
+- navegação direta de cada vínculo para o campeonato correspondente;
+- consultas sempre combinam `organization_id` com o recurso solicitado e
+  continuam protegidas pelo RLS existente;
+- dados sensíveis de atletas, como documentos e contatos privados, não são
+  selecionados pela visão global;
+- nenhuma migration adicional foi necessária para este incremento;
+- testes unitários dos helpers de paginação, idade e apresentação dos vínculos.
+
+## Gate do incremento Visões globais
+
+Permanecem necessários os testes autenticados com owner, admin, editor, viewer e
+usuário de outro tenant, além da validação visual responsiva com volume real de
+equipes, atletas e participações.

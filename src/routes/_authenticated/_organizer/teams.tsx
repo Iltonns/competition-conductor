@@ -1,11 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ComingSoon } from "@/components/coming-soon";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/_organizer/teams")({
-  component: () => (
-    <ComingSoon
-      title="Equipes"
-      description="Centralize inscrições, escudos, comissões técnicas e elencos das equipes participantes."
-    />
-  ),
+  component: Outlet,
 });
