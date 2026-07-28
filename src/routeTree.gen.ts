@@ -21,6 +21,7 @@ import { Route as SystemAdminUsuariosRouteImport } from './routes/system-admin/u
 import { Route as SystemAdminSuporteRouteImport } from './routes/system-admin/suporte'
 import { Route as SystemAdminOrganizacoesRouteImport } from './routes/system-admin/organizacoes'
 import { Route as SystemAdminCampeonatosRouteImport } from './routes/system-admin/campeonatos'
+import { Route as SystemAdminAuditoriaRouteImport } from './routes/system-admin/auditoria'
 import { Route as SystemAdminAssinaturasRouteImport } from './routes/system-admin/assinaturas'
 import { Route as OSlugRouteImport } from './routes/o.$slug'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
@@ -135,6 +136,11 @@ const SystemAdminOrganizacoesRoute = SystemAdminOrganizacoesRouteImport.update({
 const SystemAdminCampeonatosRoute = SystemAdminCampeonatosRouteImport.update({
   id: '/campeonatos',
   path: '/campeonatos',
+  getParentRoute: () => SystemAdminRouteRoute,
+} as any)
+const SystemAdminAuditoriaRoute = SystemAdminAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
   getParentRoute: () => SystemAdminRouteRoute,
 } as any)
 const SystemAdminAssinaturasRoute = SystemAdminAssinaturasRouteImport.update({
@@ -478,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/auditoria': typeof SystemAdminAuditoriaRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
   '/system-admin/suporte': typeof SystemAdminSuporteRoute
@@ -545,6 +552,7 @@ export interface FileRoutesByTo {
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/auditoria': typeof SystemAdminAuditoriaRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
   '/system-admin/suporte': typeof SystemAdminSuporteRoute
@@ -610,6 +618,7 @@ export interface FileRoutesById {
   '/c/$slug': typeof CSlugRoute
   '/o/$slug': typeof OSlugRoute
   '/system-admin/assinaturas': typeof SystemAdminAssinaturasRoute
+  '/system-admin/auditoria': typeof SystemAdminAuditoriaRoute
   '/system-admin/campeonatos': typeof SystemAdminCampeonatosRoute
   '/system-admin/organizacoes': typeof SystemAdminOrganizacoesRoute
   '/system-admin/suporte': typeof SystemAdminSuporteRoute
@@ -680,6 +689,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/o/$slug'
     | '/system-admin/assinaturas'
+    | '/system-admin/auditoria'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
     | '/system-admin/suporte'
@@ -747,6 +757,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/o/$slug'
     | '/system-admin/assinaturas'
+    | '/system-admin/auditoria'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
     | '/system-admin/suporte'
@@ -811,6 +822,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/o/$slug'
     | '/system-admin/assinaturas'
+    | '/system-admin/auditoria'
     | '/system-admin/campeonatos'
     | '/system-admin/organizacoes'
     | '/system-admin/suporte'
@@ -968,6 +980,13 @@ declare module '@tanstack/react-router' {
       path: '/campeonatos'
       fullPath: '/system-admin/campeonatos'
       preLoaderRoute: typeof SystemAdminCampeonatosRouteImport
+      parentRoute: typeof SystemAdminRouteRoute
+    }
+    '/system-admin/auditoria': {
+      id: '/system-admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/system-admin/auditoria'
+      preLoaderRoute: typeof SystemAdminAuditoriaRouteImport
       parentRoute: typeof SystemAdminRouteRoute
     }
     '/system-admin/assinaturas': {
@@ -1647,6 +1666,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface SystemAdminRouteRouteChildren {
   SystemAdminAssinaturasRoute: typeof SystemAdminAssinaturasRoute
+  SystemAdminAuditoriaRoute: typeof SystemAdminAuditoriaRoute
   SystemAdminCampeonatosRoute: typeof SystemAdminCampeonatosRoute
   SystemAdminOrganizacoesRoute: typeof SystemAdminOrganizacoesRoute
   SystemAdminSuporteRoute: typeof SystemAdminSuporteRoute
@@ -1656,6 +1676,7 @@ interface SystemAdminRouteRouteChildren {
 
 const SystemAdminRouteRouteChildren: SystemAdminRouteRouteChildren = {
   SystemAdminAssinaturasRoute: SystemAdminAssinaturasRoute,
+  SystemAdminAuditoriaRoute: SystemAdminAuditoriaRoute,
   SystemAdminCampeonatosRoute: SystemAdminCampeonatosRoute,
   SystemAdminOrganizacoesRoute: SystemAdminOrganizacoesRoute,
   SystemAdminSuporteRoute: SystemAdminSuporteRoute,

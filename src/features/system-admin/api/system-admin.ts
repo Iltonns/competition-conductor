@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type {
+  AdminAuditFilters,
+  AdminAuditPage,
   SystemAdminChampionshipRow,
   SystemAdminDashboardData,
   SystemAdminDirectoryKind,
@@ -75,5 +77,19 @@ export function endSupportSession(sessionId: string, reason: string) {
   return rpc<void>("end_support_session", {
     p_session_id: sessionId,
     p_reason: reason,
+  });
+}
+
+export function getSystemAdminAuditLogs(filters: AdminAuditFilters, limit: number, offset: number) {
+  return rpc<AdminAuditPage>("get_system_admin_audit_logs", {
+    p_search: filters.search || null,
+    p_actor_user_id: filters.actorUserId || null,
+    p_action: filters.action || null,
+    p_target_type: filters.targetType || null,
+    p_alert_category: filters.alertCategory || null,
+    p_date_from: filters.dateFrom ? `${filters.dateFrom}T00:00:00` : null,
+    p_date_to: filters.dateTo ? `${filters.dateTo}T23:59:59.999` : null,
+    p_limit: limit,
+    p_offset: offset,
   });
 }

@@ -219,3 +219,54 @@ Continuação de `F6-RF05`:
 - Qualquer futura operação de escrita em nome do suporte exige requisito
   separado, autorização explícita, confirmação reforçada e RPC própria
   auditada; esta primeira fatia permanece deliberadamente somente leitura.
+
+## F6-RF06 — Auditoria administrativa
+
+Implementado em 28/07/2026:
+
+- Consulta paginada e pesquisável de `admin_audit_logs`, separada da auditoria
+  de domínio dos campeonatos.
+- Filtros por texto, responsável, ação, tipo de alvo, categoria de alerta e
+  período.
+- Alertas classificados para plano/assinatura, suspensão, modo suporte e
+  alterações privilegiadas, com severidades informativa, atenção e crítica.
+- Dados antigos, novos e de contexto sanitizados recursivamente antes de sair
+  do banco; chaves de senha, segredo, token, autorização, cookie e chaves de API
+  ou privadas são mascaradas.
+- Tabela bruta permanece sem acesso direto por `anon` ou `authenticated`; a
+  leitura ocorre exclusivamente por RPC `SECURITY DEFINER` que revalida o
+  administrador geral.
+- Imutabilidade preservada por trigger e novo índice por ação e data para os
+  filtros operacionais.
+- Política de retenção definida como preservação indefinida, sem exclusão
+  automática, até aprovação de prazo jurídico e operacional.
+- Tela habilitada em `/system-admin/auditoria`.
+- Migration
+  `supabase/migrations/20260728120000_phase6_admin_audit_directory.sql`.
+- Verificação estrutural, de privilégios, sanitização recursiva e bloqueio a
+  usuário comum em
+  `supabase/tests/phase6_admin_audit_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260728120000_phase6_admin_audit_directory.sql`.
+2. Executar `phase6_admin_audit_verification.sql`.
+3. Validar que um usuário comum recebe bloqueio e que o administrador geral
+   consegue pesquisar, combinar filtros e paginar os registros.
+4. Confirmar a classificação dos eventos existentes de System Admin e modo
+   suporte e o mascaramento de campos sensíveis em objetos aninhados.
+
+Continuação de `F6-RF06`:
+
+- Um prazo finito de retenção e qualquer rotina de expurgo dependem de decisão
+  jurídica/operacional explícita e devem preservar evidências ou gerar arquivo
+  imutável antes de qualquer exclusão.

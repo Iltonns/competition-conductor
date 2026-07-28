@@ -3,11 +3,12 @@ import {
   endSupportSession,
   getMyActiveSupportSession,
   getSupportSessionContext,
+  getSystemAdminAuditLogs,
   getSystemAdminDashboard,
   listSystemAdminDirectory,
   startSupportSession,
 } from "../api/system-admin";
-import type { SystemAdminDirectoryKind } from "../types/system-admin.types";
+import type { AdminAuditFilters, SystemAdminDirectoryKind } from "../types/system-admin.types";
 
 export function useSystemAdminDashboard() {
   return useQuery({
@@ -72,4 +73,12 @@ export function useSupportSessionActions() {
       },
     }),
   };
+}
+
+export function useSystemAdminAudit(filters: AdminAuditFilters, page: number, limit = 25) {
+  return useQuery({
+    queryKey: ["system-admin", "audit", filters, page, limit],
+    queryFn: () => getSystemAdminAuditLogs(filters, limit, page * limit),
+    placeholderData: keepPreviousData,
+  });
 }

@@ -40,7 +40,7 @@ export const SYSTEM_ADMIN_NAV = [
     available: true,
   },
   { to: "/system-admin/suporte", label: "Modo suporte", icon: LifeBuoy, available: true },
-  { to: "/system-admin/auditoria", label: "Auditoria", icon: History, available: false },
+  { to: "/system-admin/auditoria", label: "Auditoria", icon: History, available: true },
   {
     to: "/system-admin/configuracoes",
     label: "Configuração da plataforma",
