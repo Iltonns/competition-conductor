@@ -1,0 +1,258 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CreditCard,
+  Database,
+  Gauge,
+  Loader2,
+  ShieldAlert,
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useManageableOrganizations } from "@/features/organization-settings/hooks/useOrganizationSettings";
+import { useOrganizationSubscription } from "../hooks/useSubscription";
+import type {
+  OrganizationSubscriptionContext,
+  ResourceUsage,
+  SubscriptionStatus,
+} from "../types/subscription.types";
+
+const STATUS_LABEL: Record<SubscriptionStatus, string> = {
+  trial: "Período de teste",
+  active: "Ativa",
+  past_due: "Pagamento pendente",
+  cancelled: "Cancelada",
+  suspended: "Suspensa",
+};
+
+const MODULE_LABEL: Record<string, string> = {
+  competition: "Competições",
+  sports: "Operação esportiva",
+  publishing: "Publicação",
+  finance: "Financeiro",
+  notifications: "Notificações",
+};
+
+export function SubscriptionPage() {
+  const organizations = useManageableOrganizations();
+  const ownedOrganizations = useMemo(
+    () => organizations.data?.filter((organization) => organization.role === "owner") ?? [],
+    [organizations.data],
+  );
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const subscription = useOrganizationSubscription(organizationId);
+
+  useEffect(() => {
+    if (
+      ownedOrganizations.length > 0 &&
+      !ownedOrganizations.some((organization) => organization.id === organizationId)
+    ) {
+      setOrganizationId(ownedOrganizations[0].id);
+    }
+  }, [organizationId, ownedOrganizations]);
+
+  if (organizations.isLoading) return <LoadingState />;
+  if (organizations.isError) {
+    return <ErrorState message="Não foi possível carregar suas organizações." />;
+  }
+  if (ownedOrganizations.length === 0) {
+    return (
+      <Alert>
+        <ShieldAlert className="h-4 w-4" />
+        <AlertTitle>Acesso do proprietário necessário</AlertTitle>
+        <AlertDescription>
+          Assinatura, consumo e limites são visíveis somente para proprietários da organização.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="max-w-md space-y-2">
+        <Label htmlFor="subscription-organization">Organização</Label>
+        <Select value={organizationId ?? ""} onValueChange={setOrganizationId}>
+          <SelectTrigger id="subscription-organization">
+            <SelectValue placeholder="Selecione uma organização" />
+          </SelectTrigger>
+          <SelectContent>
+            {ownedOrganizations.map((organization) => (
+              <SelectItem key={organization.id} value={organization.id}>
+                {organization.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {subscription.isLoading ? (
+        <LoadingState />
+      ) : subscription.isError || !subscription.data ? (
+        <ErrorState message="Não foi possível carregar a assinatura e o consumo." />
+      ) : (
+        <SubscriptionContent context={subscription.data} />
+      )}
+    </div>
+  );
+}
+
+function SubscriptionContent({ context }: { context: OrganizationSubscriptionContext }) {
+  const subscriptionWarning =
+    context.subscription.status === "past_due" || context.subscription.status === "suspended";
+
+  return (
+    <>
+      {subscriptionWarning && (
+        <Alert variant={context.subscription.status === "suspended" ? "destructive" : "default"}>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{STATUS_LABEL[context.subscription.status]}</AlertTitle>
+          <AlertDescription>
+            {context.subscription.status === "suspended"
+              ? "Novos recursos sujeitos a limite estão bloqueados no backend."
+              : "A assinatura exige atenção. O acesso não é alterado pelo estado do frontend."}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              {context.plan.name}
+            </CardTitle>
+            <CardDescription>
+              Versão {context.plan.version} · {STATUS_LABEL[context.subscription.status]}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {context.plan.description && (
+              <p className="text-sm text-muted-foreground">{context.plan.description}</p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {context.plan.modules.map((module) => (
+                <Badge key={module} variant="secondary">
+                  {MODULE_LABEL[module] ?? module}
+                </Badge>
+              ))}
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+              {context.subscription.provider_connected
+                ? "Provedor de cobrança conectado."
+                : "Cobrança online ainda não conectada. O estado exibido vem do backend."}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gauge className="h-5 w-5" /> Consumo e limites
+            </CardTitle>
+            <CardDescription>
+              Medição calculada no banco. Limites não definidos são exibidos como ilimitados.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <UsageItem label="Organizações" usage={context.usage.organizations} />
+            <UsageItem label="Campeonatos ativos" usage={context.usage.active_championships} />
+            <UsageItem label="Equipes ativas" usage={context.usage.teams} />
+            <UsageItem label="Usuários e convites" usage={context.usage.users} />
+            <UsageItem
+              label="Armazenamento"
+              usage={context.usage.storage_bytes}
+              format={formatBytes}
+              icon={<Database className="h-4 w-4" />}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}
+
+function UsageItem({
+  label,
+  usage,
+  format = (value) => String(value),
+  icon,
+}: {
+  label: string;
+  usage: ResourceUsage;
+  format?: (value: number) => string;
+  icon?: React.ReactNode;
+}) {
+  const warning = usage.state === "warning" || usage.state === "blocked";
+  return (
+    <div className="space-y-2 rounded-lg border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2 text-sm font-medium">
+          {icon}
+          {label}
+        </span>
+        {usage.state === "unlimited" ? (
+          <Badge variant="outline">Ilimitado</Badge>
+        ) : warning ? (
+          <AlertTriangle className="h-4 w-4 text-amber-500" aria-label="Limite em atenção" />
+        ) : (
+          <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-label="Consumo normal" />
+        )}
+      </div>
+      <div className="text-lg font-semibold">
+        {format(usage.used)}
+        {usage.limit !== null && (
+          <span className="text-sm font-normal text-muted-foreground">
+            {" "}
+            de {format(usage.limit)}
+          </span>
+        )}
+      </div>
+      {usage.limit !== null && (
+        <Progress
+          value={Math.min(100, usage.percentage ?? 0)}
+          aria-label={`${label}: ${usage.percentage ?? 0}% utilizado`}
+        />
+      )}
+    </div>
+  );
+}
+
+function formatBytes(value: number) {
+  if (value < 1024) return `${value} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let amount = value / 1024;
+  let index = 0;
+  while (amount >= 1024 && index < units.length - 1) {
+    amount /= 1024;
+    index += 1;
+  }
+  return `${amount.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ${units[index]}`;
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-40 items-center justify-center text-muted-foreground">
+      <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Carregando assinatura...
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return (
+    <Alert variant="destructive">
+      <AlertTitle>Falha ao carregar</AlertTitle>
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  );
+}

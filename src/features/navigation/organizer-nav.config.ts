@@ -19,6 +19,11 @@ export const ORGANIZER_NAV = [
   { to: "/teams", label: "Equipes", icon: Shield, available: true },
   { to: "/athletes", label: "Atletas", icon: Users, available: true },
   { to: "/settings", label: "Organização e usuários", icon: Building2, available: true },
-  { to: "/settings", label: "Assinatura e limites", icon: CreditCard, available: false },
+  {
+    to: "/settings/subscription",
+    label: "Assinatura e limites",
+    icon: CreditCard,
+    available: true,
+  },
   { to: "/settings", label: "Página do organizador", icon: Globe2, available: false },
 ] as const satisfies NavItem[];

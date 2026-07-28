@@ -55,6 +55,7 @@ import { Route as AuthenticatedOrganizerTeamsTeamIdRouteImport } from './routes/
 import { Route as AuthenticatedOrganizerSettingsUsersRouteImport } from './routes/_authenticated/_organizer/settings.users'
 import { Route as AuthenticatedOrganizerSettingsOrganizationRouteImport } from './routes/_authenticated/_organizer/settings.organization'
 import { Route as AuthenticatedOrganizerSettingsNotificationsRouteImport } from './routes/_authenticated/_organizer/settings.notifications'
+import { Route as AuthenticatedOrganizerSettingsSubscriptionRouteImport } from './routes/_authenticated/_organizer/settings.subscription'
 import { Route as AuthenticatedOrganizerAthletesAthleteIdRouteImport } from './routes/_authenticated/_organizer/athletes.$athleteId'
 import { Route as AuthenticatedChampionshipsIdTeamsIndexRouteImport } from './routes/_authenticated/championships_.$id.teams.index'
 import { Route as AuthenticatedChampionshipsIdTeamsNewRouteImport } from './routes/_authenticated/championships_.$id.teams.new'
@@ -335,6 +336,12 @@ const AuthenticatedOrganizerSettingsNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
   } as any)
+const AuthenticatedOrganizerSettingsSubscriptionRoute =
+  AuthenticatedOrganizerSettingsSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
+  } as any)
 const AuthenticatedOrganizerAthletesAthleteIdRoute =
   AuthenticatedOrganizerAthletesAthleteIdRouteImport.update({
     id: '/$athleteId',
@@ -445,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
@@ -500,6 +508,7 @@ export interface FileRoutesByTo {
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
   '/championships/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
@@ -561,6 +570,7 @@ export interface FileRoutesById {
   '/_authenticated/_organizer/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
   '/_authenticated/_organizer/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/_authenticated/_organizer/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  '/_authenticated/_organizer/settings/subscription': typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   '/_authenticated/_organizer/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/_authenticated/_organizer/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
   '/_authenticated/championships_/$id/athletes': typeof AuthenticatedChampionshipsIdAthletesRoute
@@ -623,6 +633,7 @@ export interface FileRouteTypes {
     | '/athletes/$athleteId'
     | '/settings/notifications'
     | '/settings/organization'
+    | '/settings/subscription'
     | '/settings/users'
     | '/teams/$teamId'
     | '/championships/$id/athletes'
@@ -678,6 +689,7 @@ export interface FileRouteTypes {
     | '/athletes/$athleteId'
     | '/settings/notifications'
     | '/settings/organization'
+    | '/settings/subscription'
     | '/settings/users'
     | '/teams/$teamId'
     | '/championships/$id/athletes'
@@ -738,6 +750,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_organizer/athletes/$athleteId'
     | '/_authenticated/_organizer/settings/notifications'
     | '/_authenticated/_organizer/settings/organization'
+    | '/_authenticated/_organizer/settings/subscription'
     | '/_authenticated/_organizer/settings/users'
     | '/_authenticated/_organizer/teams/$teamId'
     | '/_authenticated/championships_/$id/athletes'
@@ -1109,6 +1122,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizerSettingsNotificationsRouteImport
       parentRoute: typeof AuthenticatedOrganizerSettingsRoute
     }
+    '/_authenticated/_organizer/settings/subscription': {
+      id: '/_authenticated/_organizer/settings/subscription'
+      path: '/subscription'
+      fullPath: '/settings/subscription'
+      preLoaderRoute: typeof AuthenticatedOrganizerSettingsSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedOrganizerSettingsRoute
+    }
     '/_authenticated/_organizer/athletes/$athleteId': {
       id: '/_authenticated/_organizer/athletes/$athleteId'
       path: '/$athleteId'
@@ -1231,6 +1251,7 @@ const AuthenticatedOrganizerAthletesRouteWithChildren =
 interface AuthenticatedOrganizerSettingsRouteChildren {
   AuthenticatedOrganizerSettingsNotificationsRoute: typeof AuthenticatedOrganizerSettingsNotificationsRoute
   AuthenticatedOrganizerSettingsOrganizationRoute: typeof AuthenticatedOrganizerSettingsOrganizationRoute
+  AuthenticatedOrganizerSettingsSubscriptionRoute: typeof AuthenticatedOrganizerSettingsSubscriptionRoute
   AuthenticatedOrganizerSettingsUsersRoute: typeof AuthenticatedOrganizerSettingsUsersRoute
   AuthenticatedOrganizerSettingsIndexRoute: typeof AuthenticatedOrganizerSettingsIndexRoute
 }
@@ -1241,6 +1262,8 @@ const AuthenticatedOrganizerSettingsRouteChildren: AuthenticatedOrganizerSetting
       AuthenticatedOrganizerSettingsNotificationsRoute,
     AuthenticatedOrganizerSettingsOrganizationRoute:
       AuthenticatedOrganizerSettingsOrganizationRoute,
+    AuthenticatedOrganizerSettingsSubscriptionRoute:
+      AuthenticatedOrganizerSettingsSubscriptionRoute,
     AuthenticatedOrganizerSettingsUsersRoute:
       AuthenticatedOrganizerSettingsUsersRoute,
     AuthenticatedOrganizerSettingsIndexRoute:

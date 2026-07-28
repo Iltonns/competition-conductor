@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { BellRing, Building2, Users } from "lucide-react";
+import { BellRing, Building2, CreditCard, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_organizer/settings")({
@@ -12,6 +12,7 @@ function SettingsLayout() {
     { to: "/settings/organization", label: "Organização", icon: Building2 },
     { to: "/settings/users", label: "Usuários e acessos", icon: Users },
     { to: "/settings/notifications", label: "Notificações", icon: BellRing },
+    { to: "/settings/subscription", label: "Assinatura e limites", icon: CreditCard },
   ] as const;
 
   return (
