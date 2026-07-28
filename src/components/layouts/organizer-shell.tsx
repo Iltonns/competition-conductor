@@ -1,12 +1,13 @@
 import { type ReactNode, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, CalendarDays, Menu, MoreHorizontal, Plus, Shield, Trophy } from "lucide-react";
+import { CalendarDays, Menu, MoreHorizontal, Plus, Shield, Trophy } from "lucide-react";
 import { IsArenaLogo } from "@/components/is-arena-logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrganizerSidebar } from "@/components/layouts/organizer-sidebar";
 import { MobileBottomNav } from "@/components/layouts/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
+import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 const ROUTE_COPY: Record<string, { title: string; subtitle: string }> = {
   championships: {
@@ -110,14 +111,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/20 hover:text-foreground"
-            aria-label="Notificações"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_var(--color-neon)]" />
-          </button>
+          <NotificationCenter />
           <Button
             className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex"
             asChild

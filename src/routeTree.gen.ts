@@ -54,6 +54,7 @@ import { Route as AuthenticatedChampionshipsIdAthletesRouteImport } from './rout
 import { Route as AuthenticatedOrganizerTeamsTeamIdRouteImport } from './routes/_authenticated/_organizer/teams.$teamId'
 import { Route as AuthenticatedOrganizerSettingsUsersRouteImport } from './routes/_authenticated/_organizer/settings.users'
 import { Route as AuthenticatedOrganizerSettingsOrganizationRouteImport } from './routes/_authenticated/_organizer/settings.organization'
+import { Route as AuthenticatedOrganizerSettingsNotificationsRouteImport } from './routes/_authenticated/_organizer/settings.notifications'
 import { Route as AuthenticatedOrganizerAthletesAthleteIdRouteImport } from './routes/_authenticated/_organizer/athletes.$athleteId'
 import { Route as AuthenticatedChampionshipsIdTeamsIndexRouteImport } from './routes/_authenticated/championships_.$id.teams.index'
 import { Route as AuthenticatedChampionshipsIdTeamsNewRouteImport } from './routes/_authenticated/championships_.$id.teams.new'
@@ -328,6 +329,12 @@ const AuthenticatedOrganizerSettingsOrganizationRoute =
     path: '/organization',
     getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
   } as any)
+const AuthenticatedOrganizerSettingsNotificationsRoute =
+  AuthenticatedOrganizerSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedOrganizerSettingsRoute,
+  } as any)
 const AuthenticatedOrganizerAthletesAthleteIdRoute =
   AuthenticatedOrganizerAthletesAthleteIdRouteImport.update({
     id: '/$athleteId',
@@ -436,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/teams': typeof AuthenticatedOrganizerTeamsRouteWithChildren
   '/championships/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
+  '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -490,6 +498,7 @@ export interface FileRoutesByTo {
   '/standings': typeof AuthenticatedOrganizerStandingsRoute
   '/stats': typeof AuthenticatedOrganizerStatsRoute
   '/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
+  '/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
   '/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -550,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/_organizer/teams': typeof AuthenticatedOrganizerTeamsRouteWithChildren
   '/_authenticated/championships_/$id': typeof AuthenticatedChampionshipsIdRouteWithChildren
   '/_authenticated/_organizer/athletes/$athleteId': typeof AuthenticatedOrganizerAthletesAthleteIdRoute
+  '/_authenticated/_organizer/settings/notifications': typeof AuthenticatedOrganizerSettingsNotificationsRoute
   '/_authenticated/_organizer/settings/organization': typeof AuthenticatedOrganizerSettingsOrganizationRoute
   '/_authenticated/_organizer/settings/users': typeof AuthenticatedOrganizerSettingsUsersRoute
   '/_authenticated/_organizer/teams/$teamId': typeof AuthenticatedOrganizerTeamsTeamIdRoute
@@ -611,6 +621,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/championships/$id'
     | '/athletes/$athleteId'
+    | '/settings/notifications'
     | '/settings/organization'
     | '/settings/users'
     | '/teams/$teamId'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/standings'
     | '/stats'
     | '/athletes/$athleteId'
+    | '/settings/notifications'
     | '/settings/organization'
     | '/settings/users'
     | '/teams/$teamId'
@@ -724,6 +736,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_organizer/teams'
     | '/_authenticated/championships_/$id'
     | '/_authenticated/_organizer/athletes/$athleteId'
+    | '/_authenticated/_organizer/settings/notifications'
     | '/_authenticated/_organizer/settings/organization'
     | '/_authenticated/_organizer/settings/users'
     | '/_authenticated/_organizer/teams/$teamId'
@@ -1089,6 +1102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizerSettingsOrganizationRouteImport
       parentRoute: typeof AuthenticatedOrganizerSettingsRoute
     }
+    '/_authenticated/_organizer/settings/notifications': {
+      id: '/_authenticated/_organizer/settings/notifications'
+      path: '/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AuthenticatedOrganizerSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedOrganizerSettingsRoute
+    }
     '/_authenticated/_organizer/athletes/$athleteId': {
       id: '/_authenticated/_organizer/athletes/$athleteId'
       path: '/$athleteId'
@@ -1209,6 +1229,7 @@ const AuthenticatedOrganizerAthletesRouteWithChildren =
   )
 
 interface AuthenticatedOrganizerSettingsRouteChildren {
+  AuthenticatedOrganizerSettingsNotificationsRoute: typeof AuthenticatedOrganizerSettingsNotificationsRoute
   AuthenticatedOrganizerSettingsOrganizationRoute: typeof AuthenticatedOrganizerSettingsOrganizationRoute
   AuthenticatedOrganizerSettingsUsersRoute: typeof AuthenticatedOrganizerSettingsUsersRoute
   AuthenticatedOrganizerSettingsIndexRoute: typeof AuthenticatedOrganizerSettingsIndexRoute
@@ -1216,6 +1237,8 @@ interface AuthenticatedOrganizerSettingsRouteChildren {
 
 const AuthenticatedOrganizerSettingsRouteChildren: AuthenticatedOrganizerSettingsRouteChildren =
   {
+    AuthenticatedOrganizerSettingsNotificationsRoute:
+      AuthenticatedOrganizerSettingsNotificationsRoute,
     AuthenticatedOrganizerSettingsOrganizationRoute:
       AuthenticatedOrganizerSettingsOrganizationRoute,
     AuthenticatedOrganizerSettingsUsersRoute:

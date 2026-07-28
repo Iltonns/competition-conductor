@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChampionshipSwitcher } from "@/components/layouts/championship-switcher";
 import type { Championship } from "@/features/championships/types/championship.types";
 import { CHAMPIONSHIP_STATUS_LABELS } from "@/features/championships/utils/championship-display";
+import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 /**
  * Cabeçalho persistente do cockpit (plano seção 3.3):
@@ -57,6 +58,7 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
           </span>
 
           <ChampionshipSwitcher currentId={championship.id} />
+          <NotificationCenter />
 
           {championship.is_public && (
             <Button variant="outline" size="sm" className="hidden h-8 sm:inline-flex" asChild>

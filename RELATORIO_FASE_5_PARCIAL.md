@@ -65,11 +65,11 @@ O schema remoto já possuía `financial_transactions` com as colunas
 - decidir e implementar integrações opcionais com inscrições, patrocinadores e
   arbitragem sem duplicar lançamentos.
 
-## Próximas fatias da Fase 5
+## Fatias funcionais da Fase 5
 
-- organização, convites, papéis e proteção do último owner;
-- visões globais reais de equipes e atletas;
-- notificações internas idempotentes e preferências.
+Financeiro, auditoria, configurações do campeonato, organização e usuários,
+visões globais e notificações internas foram implementados. Os gates remotos e
+autenticados ainda necessários são consolidados ao final deste relatório.
 
 ## Incremento de continuidade — Auditoria
 
@@ -137,11 +137,10 @@ e a verificação remotas em 27/07/2026. As migrations `20260727150000` e
 
 ## Gate do incremento Organização e usuários
 
-Permanecem necessários: aplicar
-`20260727213000_phase5_organization_users.sql`, executar
-`supabase/tests/phase5_organization_users_verification.sql`, regenerar os tipos
-Supabase e validar em ambiente autenticado os perfis owner, admin, editor,
-viewer, outro tenant, último owner e entrega real de e-mail pelo SMTP.
+A migration `20260727213000_phase5_organization_users.sql` e sua verificação SQL
+foram executadas com sucesso diretamente no banco. O histórico local/remoto
+também foi reconciliado. Permanecem a regeneração oficial dos tipos Supabase e
+os testes autenticados com todos os papéis e outro tenant.
 
 ## Incremento de continuidade — Visões globais de equipes e atletas
 
@@ -167,3 +166,39 @@ viewer, outro tenant, último owner e entrega real de e-mail pelo SMTP.
 Permanecem necessários os testes autenticados com owner, admin, editor, viewer e
 usuário de outro tenant, além da validação visual responsiva com volume real de
 equipes, atletas e participações.
+
+## Incremento de conclusão — Notificações
+
+- tabela remota `notifications` reconciliada de forma aditiva, preservando
+  registros existentes;
+- preferências por usuário e organização para os seis eventos mínimos do PRD;
+- convites, inscrições enviadas, revisão solicitada, alteração de partida,
+  escala de arbitragem e publicação relevante conectados por triggers;
+- chave idempotente única por destinatário, canal e evento para impedir
+  duplicidade causada por retry;
+- payloads sanitizados antes da persistência;
+- leitura isolada ao próprio destinatário e tenant por RLS;
+- marcação individual e em lote por RPC, sem liberar update direto;
+- sino com contador real e caixa de entrada nos shells do organizador e do
+  campeonato;
+- rota `/settings/notifications` para preferências pessoais;
+- canal interno ativo; e-mail bloqueado até existir SMTP explicitamente
+  validado, sem armazenar credenciais no banco;
+- verificação SQL de tabelas, funções, privilégios, idempotência e triggers;
+- teste unitário para impedir navegação externa por `action_url`.
+
+## Estado de conclusão da Fase 5
+
+A implementação local dos requisitos F5-RF01 a F5-RF06 está completa. Para
+aprovação operacional da fase ainda é obrigatório:
+
+1. aplicar `20260727230000_phase5_internal_notifications.sql`;
+2. executar `supabase/tests/phase5_notifications_verification.sql`;
+3. reconciliar a migration `20260727230000` no histórico remoto;
+4. regenerar oficialmente `src/integrations/supabase/types.ts`;
+5. executar testes autenticados de RLS com owner, admin, editor, viewer, equipe
+   e usuário de outro tenant;
+6. validar concorrência e idempotência dos fluxos financeiros e de
+   notificações;
+7. executar E2E e validação visual responsiva com dados reais;
+8. configurar e validar SMTP antes de habilitar qualquer envio por e-mail.
