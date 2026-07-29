@@ -2,6 +2,42 @@
 
 Data: 27/07/2026
 
+## F6-RF07 — Telemetria de cobrança no servidor (29/07/2026)
+
+- Webhook InfinitePay instrumentado para registrar confirmações, duplicidades,
+  rejeições e falhas com duração, código normalizado e rota sem parâmetros.
+- Falhas do checkout e das RPCs de assinatura passam a alimentar o painel
+  operacional sem registrar e-mail, valores, NSU, recibo, payload ou stack trace.
+- A RPC de escrita é exclusiva do `service_role`; `anon` e `authenticated` não
+  possuem permissão de execução.
+- Eventos idênticos são serializados e limitados a 100 por hora, com índice
+  dedicado para evitar varredura crescente da tabela.
+- A indisponibilidade da telemetria não altera a resposta do webhook nem
+  substitui o erro original do checkout.
+- Falhas transitórias de verificação externa e processamento usam respostas
+  `5xx`, permitindo retentativa; payload inválido e rejeição de negócio
+  permanecem `4xx`.
+- Migration
+  `supabase/migrations/20260729060000_phase6_service_observability.sql`.
+- Verificação estrutural, de privilégios, concorrência e gravação em
+  `supabase/tests/phase6_service_observability_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260729060000_phase6_service_observability.sql`.
+2. Executar `phase6_service_observability_verification.sql`.
+3. Confirmar no painel de administrador geral um checkout com falha controlada
+   e um webhook válido, sem qualquer dado financeiro ou pessoal no evento.
+
 ## Correção de segurança — autorização owner fail-closed (29/07/2026)
 
 - Corrigida comparação SQL que permitia `NULL <> 'owner'` avançar sem bloqueio.
