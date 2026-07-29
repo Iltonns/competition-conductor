@@ -27,7 +27,7 @@ export function ChampionshipSwitcher({ currentId }: { currentId: string }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 text-[10px] font-semibold text-muted-foreground transition hover:border-neon/25 hover:text-foreground"
+          className="flex h-8 items-center gap-1.5 rounded-lg border border-white/25 bg-[#f0f2f5] px-2.5 text-[10px] font-semibold text-[#1c2733] transition hover:bg-white"
           aria-label="Trocar de campeonato"
         >
           <Trophy className="h-3.5 w-3.5" />

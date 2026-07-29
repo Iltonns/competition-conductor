@@ -11,12 +11,12 @@
 
   --background: #eef1f5;
   --foreground: #1c2733;
-  --surface: #f7f9fb;
+  --surface: #0e7c66;
 
-  --card: #ffffff;
-  --card-foreground: #1c2733;
-  --popover: #ffffff;
-  --popover-foreground: #1c2733;
+  --card: #0e7c66;
+  --card-foreground: #ffffff;
+  --popover: #0e7c66;
+  --popover-foreground: #ffffff;
 
   --primary: #0e7c66;
   --primary-foreground: #ffffff;
@@ -62,20 +62,20 @@
 
   --arena-glow: rgb(14 124 102 / 0.08);
   --arena-grid-line: rgb(14 124 102 / 0.045);
-  --panel-background: rgb(255 255 255 / 0.92);
-  --glass-background: rgb(255 255 255 / 0.82);
+  --panel-background: #0e7c66;
+  --glass-background: rgb(14 124 102 / 0.94);
 }
 
 .dark {
   color-scheme: dark;
   --background: #202531;
   --foreground: #f1f5f9;
-  --surface: #232936;
+  --surface: #0e7c66;
 
-  --card: #262c3a;
-  --card-foreground: #f1f5f9;
-  --popover: #262c3a;
-  --popover-foreground: #f1f5f9;
+  --card: #0e7c66;
+  --card-foreground: #ffffff;
+  --popover: #0e7c66;
+  --popover-foreground: #ffffff;
 
   --primary: #36b896;
   --primary-foreground: #17201e;
@@ -120,6 +120,6 @@
 
   --arena-glow: rgb(54 184 150 / 0.08);
   --arena-grid-line: rgb(255 255 255 / 0.018);
-  --panel-background: rgb(38 44 58 / 0.92);
-  --glass-background: rgb(32 37 49 / 0.82);
+  --panel-background: #0e7c66;
+  --glass-background: rgb(14 124 102 / 0.94);
 }

@@ -36,14 +36,18 @@ export function OrganizerSidebar({
           collapsed ? "justify-center px-2" : "justify-between px-4",
         )}
       >
-        <IsArenaLogo size={32} showWordmark={!collapsed} />
+        <IsArenaLogo
+          size={32}
+          showWordmark={!collapsed}
+          className="[&_span]:!text-primary-foreground"
+        />
         {onToggle && (
           <button
             type="button"
             onClick={onToggle}
             className={cn(
               "grid h-7 w-7 place-items-center rounded-lg border border-sidebar-border bg-sidebar-accent/40 text-muted-foreground transition hover:border-primary/25 hover:text-primary",
-              collapsed && "absolute left-[62px] bg-sidebar",
+              collapsed && "absolute left-[62px] bg-primary",
             )}
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
           >
@@ -96,11 +100,11 @@ export function OrganizerSidebar({
         {!collapsed && (
           <div className="mb-2 rounded-lg border border-sidebar-border bg-sidebar-accent/35 px-3 py-2">
             <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
-              <span className="text-neon">Plano</span>
+              <span className="text-primary-foreground">Plano</span>
               <span className="text-muted-foreground">—</span>
             </div>
             <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
-              <div className="h-full w-0 rounded-full bg-neon" />
+              <div className="h-full w-0 rounded-full bg-primary-foreground" />
             </div>
           </div>
         )}
@@ -111,8 +115,8 @@ export function OrganizerSidebar({
             collapsed ? "justify-center py-1" : "gap-2 px-1 py-1",
           )}
         >
-          <Avatar className="h-8 w-8 shrink-0 border border-neon/20">
-            <AvatarFallback className="bg-neon/10 text-[9px] font-bold text-neon">
+          <Avatar className="h-8 w-8 shrink-0 border border-white/25">
+            <AvatarFallback className="bg-white/15 text-[9px] font-bold text-primary-foreground">
               {initials || "OR"}
             </AvatarFallback>
           </Avatar>

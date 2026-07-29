@@ -38,7 +38,7 @@ export function OrganizerShell({ children }: { children: ReactNode }) {
       <div className="relative flex min-h-screen">
         <aside
           className={cn(
-            "sticky top-0 hidden h-screen shrink-0 border-r border-sidebar-border bg-sidebar/94 shadow-sm backdrop-blur-xl transition-[width] duration-200 lg:flex",
+            "brand-chrome sticky top-0 hidden h-screen shrink-0 border-r border-white/20 shadow-sm transition-[width] duration-200 lg:flex",
             collapsed ? "w-[76px]" : "w-[var(--sidebar-desktop-width)]",
           )}
         >
@@ -77,7 +77,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+    <header className="brand-chrome sticky top-0 z-30 border-b border-primary">
       <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--content-padding-x)]">
         <div className="flex min-w-0 items-center gap-3">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -85,7 +85,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 lg:hidden"
+                className="h-9 w-9 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground lg:hidden"
                 aria-label="Abrir menu"
               >
                 <Menu className="h-4 w-4" />
@@ -93,7 +93,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[17rem] border-r border-sidebar-border bg-sidebar p-0"
+              className="brand-chrome w-[17rem] border-r border-white/20 p-0"
             >
               <OrganizerSidebar onNavigate={() => setMenuOpen(false)} />
             </SheetContent>
@@ -104,7 +104,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
             <h1 className="truncate font-display text-base font-extrabold tracking-[-0.025em] sm:text-lg">
               {copy.title}
             </h1>
-            <p className="hidden truncate text-[10px] text-muted-foreground sm:block">
+            <p className="hidden truncate text-[10px] text-primary-foreground/75 sm:block">
               {copy.subtitle}
             </p>
           </div>
@@ -113,7 +113,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
         <div className="flex shrink-0 items-center gap-2">
           <NotificationCenter />
           <Button
-            className="hidden h-8 bg-neon px-3 text-[10px] text-neon-foreground hover:bg-neon/90 sm:inline-flex"
+            className="hidden h-8 bg-[#f0f2f5] px-3 text-[10px] text-[#1c2733] hover:bg-white sm:inline-flex"
             asChild
           >
             <Link to="/championships">

@@ -22,7 +22,7 @@ export function NotificationCenter() {
       <SheetTrigger asChild>
         <button
           type="button"
-          className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/20 hover:text-foreground"
+          className="relative grid h-8 w-8 place-items-center rounded-lg border border-white/25 bg-[#f0f2f5] text-[#1c2733] transition hover:bg-white"
           aria-label={unread ? `Notificações: ${unread} não lidas` : "Notificações"}
         >
           <Bell className="h-3.5 w-3.5" />

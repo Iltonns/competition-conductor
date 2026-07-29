@@ -52,7 +52,7 @@ export function navRowClassName({
   collapsed,
   available,
   active,
-  activeClassName = "bg-neon text-neon-foreground shadow-[0_9px_24px_-14px_var(--color-neon)]",
+  activeClassName = "bg-[#f0f2f5] text-[#1c2733] shadow-sm",
 }: {
   collapsed: boolean;
   available: boolean;
@@ -70,7 +70,7 @@ export function navRowClassName({
     collapsed ? "justify-center px-2" : "gap-2 px-3",
     active
       ? activeClassName
-      : "text-sidebar-foreground/78 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+      : "text-sidebar-foreground/85 hover:bg-white/12 hover:text-sidebar-foreground",
   );
 }
 

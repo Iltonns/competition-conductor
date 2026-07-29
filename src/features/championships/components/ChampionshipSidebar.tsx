@@ -42,9 +42,9 @@ export function ChampionshipSidebar({ championshipId }: { championshipId: string
               <Menu className="h-3.5 w-3.5" /> Mais
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[18rem] bg-sidebar p-3">
+          <SheetContent side="left" className="brand-chrome w-[18rem] border-r border-white/20 p-3">
             <SheetHeader className="px-2 pb-3">
-              <SheetTitle>Navegação do campeonato</SheetTitle>
+              <SheetTitle className="text-primary-foreground">Navegação do campeonato</SheetTitle>
             </SheetHeader>
             <ChampionshipNavigation
               championshipId={championshipId}
@@ -57,7 +57,7 @@ export function ChampionshipSidebar({ championshipId }: { championshipId: string
 
       <aside
         className={cn(
-          "hidden shrink-0 self-start rounded-xl border border-border bg-card/85 p-2 shadow-sm transition-[width] lg:block",
+          "brand-chrome hidden shrink-0 self-start rounded-xl border border-white/20 p-2 shadow-md transition-[width] lg:block",
           collapsed ? "w-14" : "w-52",
         )}
         aria-label="Navegação do campeonato"
@@ -66,7 +66,7 @@ export function ChampionshipSidebar({ championshipId }: { championshipId: string
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-7 w-7 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground"
             onClick={() => setCollapsed((value) => !value)}
             aria-label={collapsed ? "Expandir navegação" : "Recolher navegação"}
           >

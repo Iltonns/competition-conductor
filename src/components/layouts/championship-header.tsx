@@ -14,16 +14,21 @@ import { NotificationCenter } from "@/features/notifications/components/Notifica
  */
 export function ChampionshipHeader({ championship }: { championship: Championship }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
+    <header className="brand-chrome sticky top-0 z-30 border-b border-primary">
       <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-3 px-[var(--content-padding-x)]">
         <div className="flex min-w-0 items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground"
+            asChild
+          >
             <Link to="/championships" aria-label="Voltar aos campeonatos">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
 
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-secondary text-primary">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/15 text-primary-foreground">
             <Trophy className="h-4 w-4" />
           </span>
 
@@ -31,7 +36,7 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
             <h1 className="truncate font-display text-sm font-extrabold tracking-[-0.02em] sm:text-base">
               {championship.name}
             </h1>
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-[10px] text-primary-foreground/75">
               <span className="truncate">{championship.season || "Sem temporada"}</span>
               <span aria-hidden>·</span>
               <Badge variant="secondary" className="h-4 px-1.5 py-0 text-[8px]">
@@ -43,12 +48,12 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
 
         <div className="flex shrink-0 items-center gap-2">
           <span
-            className="hidden h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-[9px] font-semibold text-muted-foreground sm:flex"
+            className="hidden h-8 items-center gap-1.5 rounded-lg border border-white/25 bg-[#f0f2f5] px-2.5 text-[9px] font-semibold text-[#1c2733] sm:flex"
             title={championship.is_public ? "Publicado" : "Não publicado"}
           >
             {championship.is_public ? (
               <>
-                <Globe2 className="h-3 w-3 text-neon" /> Publicado
+                <Globe2 className="h-3 w-3 text-primary" /> Publicado
               </>
             ) : (
               <>
@@ -61,7 +66,12 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
           <NotificationCenter />
 
           {championship.is_public && (
-            <Button variant="outline" size="sm" className="hidden h-8 sm:inline-flex" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden h-8 border-white/25 bg-[#f0f2f5] text-[#1c2733] hover:bg-white hover:text-[#1c2733] sm:inline-flex"
+              asChild
+            >
               <a href={`/c/${championship.slug}`} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-3.5 w-3.5" /> Página pública
               </a>
