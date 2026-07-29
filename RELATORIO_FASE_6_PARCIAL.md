@@ -2,6 +2,41 @@
 
 Data: 27/07/2026
 
+## F6-RF02/F6-RF07 — Reconciliação do ciclo da assinatura (29/07/2026)
+
+- Assinaturas `active` vencidas e trials expirados são promovidos
+  automaticamente para `past_due`; o cliente nunca informa o novo estado.
+- Job idempotente executado a cada hora pelo Supabase Cron, sem chamada HTTP,
+  chave de API ou segredo adicional.
+- Processamento limitado a 1.000 assinaturas por execução, com índice parcial,
+  `FOR UPDATE SKIP LOCKED` e trava consultiva contra execuções concorrentes.
+- Cada transição gera auditoria administrativa com estado anterior, vencimento
+  e horário de reconciliação, sem armazenar dados de pagamento.
+- Execuções, backlog e falhas alimentam a telemetria operacional real de jobs,
+  incluindo duração, código sanitizado e rota lógica.
+- RPC restrita ao `service_role`; `anon` e `authenticated` não podem antecipar
+  vencimentos nem alterar o estado da assinatura.
+- Migration
+  `supabase/migrations/20260729070000_phase6_subscription_lifecycle_reconciliation.sql`.
+- Verificação estrutural, de privilégios, agendamento, auditoria e telemetria em
+  `supabase/tests/phase6_subscription_lifecycle_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado.
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes.
+- `npm run test`: 12 arquivos e 50 testes aprovados.
+- `npm run build`: aprovado para cliente e SSR.
+- `npm run security:env`: aprovado.
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260729070000_phase6_subscription_lifecycle_reconciliation.sql`.
+2. Executar `phase6_subscription_lifecycle_verification.sql`.
+3. Confirmar no Supabase Cron o job `is-arena-subscription-lifecycle` ativo e
+   verificar sua primeira execução no histórico.
+
 ## F6-RF07 — Telemetria de cobrança no servidor (29/07/2026)
 
 - Webhook InfinitePay instrumentado para registrar confirmações, duplicidades,

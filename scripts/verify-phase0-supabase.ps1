@@ -39,7 +39,8 @@ $testFiles = @(
   "supabase/tests/phase6_plan_catalog_administration_verification.sql",
   "supabase/tests/phase6_plan_change_preview_verification.sql",
   "supabase/tests/phase6_owner_authorization_hardening_verification.sql",
-  "supabase/tests/phase6_service_observability_verification.sql"
+  "supabase/tests/phase6_service_observability_verification.sql",
+  "supabase/tests/phase6_subscription_lifecycle_verification.sql"
 )
 
 foreach ($testFile in $testFiles) {
