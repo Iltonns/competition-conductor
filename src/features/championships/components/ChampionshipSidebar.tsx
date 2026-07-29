@@ -57,7 +57,7 @@ export function ChampionshipSidebar({ championshipId }: { championshipId: string
 
       <aside
         className={cn(
-          "hidden shrink-0 self-start rounded-xl border border-white/[0.07] bg-card/65 p-2 transition-[width] lg:block",
+          "hidden shrink-0 self-start rounded-xl border border-border bg-card/85 p-2 shadow-sm transition-[width] lg:block",
           collapsed ? "w-14" : "w-52",
         )}
         aria-label="Navegação do campeonato"

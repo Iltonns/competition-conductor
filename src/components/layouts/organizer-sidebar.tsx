@@ -32,7 +32,7 @@ export function OrganizerSidebar({
     <div className="flex h-full min-w-0 flex-1 flex-col">
       <div
         className={cn(
-          "flex h-16 items-center border-b border-white/[0.06]",
+          "flex h-16 items-center border-b border-sidebar-border",
           collapsed ? "justify-center px-2" : "justify-between px-4",
         )}
       >
@@ -42,7 +42,7 @@ export function OrganizerSidebar({
             type="button"
             onClick={onToggle}
             className={cn(
-              "grid h-7 w-7 place-items-center rounded-lg border border-white/[0.07] bg-white/[0.025] text-muted-foreground transition hover:border-neon/25 hover:text-neon",
+              "grid h-7 w-7 place-items-center rounded-lg border border-sidebar-border bg-sidebar-accent/40 text-muted-foreground transition hover:border-primary/25 hover:text-primary",
               collapsed && "absolute left-[62px] bg-sidebar",
             )}
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
@@ -92,14 +92,14 @@ export function OrganizerSidebar({
         </div>
       </nav>
 
-      <div className={cn("border-t border-white/[0.06]", collapsed ? "p-2" : "p-3")}>
+      <div className={cn("border-t border-sidebar-border", collapsed ? "p-2" : "p-3")}>
         {!collapsed && (
-          <div className="mb-2 rounded-lg border border-white/[0.055] bg-white/[0.02] px-3 py-2">
+          <div className="mb-2 rounded-lg border border-sidebar-border bg-sidebar-accent/35 px-3 py-2">
             <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.12em]">
               <span className="text-neon">Plano</span>
               <span className="text-muted-foreground">—</span>
             </div>
-            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
               <div className="h-full w-0 rounded-full bg-neon" />
             </div>
           </div>
@@ -128,7 +128,7 @@ export function OrganizerSidebar({
                   await supabase.auth.signOut();
                   navigate({ to: "/auth", replace: true });
                 }}
-                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-sidebar-accent hover:text-foreground"
                 aria-label="Sair"
               >
                 <LogOut className="h-3.5 w-3.5" />

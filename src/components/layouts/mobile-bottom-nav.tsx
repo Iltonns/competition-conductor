@@ -24,7 +24,7 @@ export function MobileBottomNav({ items }: { items: MobileNavEntry[] }) {
 
   return (
     <nav
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.075] bg-background/94 px-2 pt-1.5 backdrop-blur-xl lg:hidden"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/94 px-2 pt-1.5 backdrop-blur-xl lg:hidden"
       aria-label="Navegação inferior"
     >
       <div

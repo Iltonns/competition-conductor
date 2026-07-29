@@ -96,7 +96,7 @@ export function SectionHeader({
         </h2>
       </div>
       {action && (
-        <button className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-muted-foreground transition hover:bg-white/5 hover:text-neon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <button className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-muted-foreground transition hover:bg-secondary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {action}
           <ChevronRight className="h-3 w-3" />
         </button>
@@ -129,7 +129,7 @@ export function KpiCard({
     <article className="card-arena card-interactive flex min-h-[94px] items-center gap-3.5 p-4">
       <span
         className={cn(
-          "grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/5",
+          "grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border",
           tones[tone],
         )}
       >
@@ -168,7 +168,7 @@ export function MatchRow({
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-white/[0.07] bg-black/15 transition hover:border-neon/20 hover:bg-white/[0.025]",
+        "group relative overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/20 hover:bg-secondary/35",
         compact ? "p-3" : "p-4",
       )}
     >
@@ -227,65 +227,59 @@ export function StandingsTable({
       <table className="w-full min-w-[440px] border-separate border-spacing-0 text-[10px]">
         <thead>
           <tr className="text-[8px] uppercase tracking-[0.12em] text-muted-foreground">
-            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">Pos</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-left font-medium">Equipe</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">Pts</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">J</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">V</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">E</th>
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">D</th>
+            <th className="border-b border-border px-2 py-2 text-left font-medium">Pos</th>
+            <th className="border-b border-border px-2 py-2 text-left font-medium">Equipe</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">Pts</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">J</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">V</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">E</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">D</th>
             {!compact && (
-              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">GP</th>
+              <th className="border-b border-border px-2 py-2 text-center font-medium">GP</th>
             )}
             {!compact && (
-              <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">GC</th>
+              <th className="border-b border-border px-2 py-2 text-center font-medium">GC</th>
             )}
-            <th className="border-b border-white/[0.07] px-2 py-2 text-center font-medium">SG</th>
+            <th className="border-b border-border px-2 py-2 text-center font-medium">SG</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.team.id} className="group">
-              <td className="border-b border-white/[0.055] px-2 py-2.5">
+              <td className="border-b border-border px-2 py-2.5">
                 <span
                   className={cn(
                     "grid h-5 w-5 place-items-center rounded text-[9px] font-bold",
                     row.position === 1
                       ? "bg-neon text-neon-foreground"
-                      : "bg-white/5 text-muted-foreground",
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   {row.position}
                 </span>
               </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5">
+              <td className="border-b border-border px-2 py-2.5">
                 <span className="flex items-center gap-2 font-semibold">
                   <TeamCrest team={row.team} size="xs" />
                   {row.team.name}
                 </span>
               </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center font-display text-xs font-extrabold text-neon">
+              <td className="border-b border-border px-2 py-2.5 text-center font-display text-xs font-extrabold text-primary">
                 {row.points}
               </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                {row.played}
-              </td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">{row.wins}</td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">{row.draws}</td>
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                {row.losses}
-              </td>
+              <td className="border-b border-border px-2 py-2.5 text-center">{row.played}</td>
+              <td className="border-b border-border px-2 py-2.5 text-center">{row.wins}</td>
+              <td className="border-b border-border px-2 py-2.5 text-center">{row.draws}</td>
+              <td className="border-b border-border px-2 py-2.5 text-center">{row.losses}</td>
               {!compact && (
-                <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
-                  {row.goalsFor}
-                </td>
+                <td className="border-b border-border px-2 py-2.5 text-center">{row.goalsFor}</td>
               )}
               {!compact && (
-                <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
+                <td className="border-b border-border px-2 py-2.5 text-center">
                   {row.goalsAgainst}
                 </td>
               )}
-              <td className="border-b border-white/[0.055] px-2 py-2.5 text-center">
+              <td className="border-b border-border px-2 py-2.5 text-center">
                 {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
               </td>
             </tr>

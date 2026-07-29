@@ -14,7 +14,7 @@ import { NotificationCenter } from "@/features/notifications/components/Notifica
  */
 export function ChampionshipHeader({ championship }: { championship: Championship }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.065] bg-background/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-3 px-[var(--content-padding-x)]">
         <div className="flex min-w-0 items-center gap-3">
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
@@ -23,7 +23,7 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
             </Link>
           </Button>
 
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-neon">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-secondary text-primary">
             <Trophy className="h-4 w-4" />
           </span>
 
@@ -43,7 +43,7 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
 
         <div className="flex shrink-0 items-center gap-2">
           <span
-            className="hidden h-8 items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 text-[9px] font-semibold text-muted-foreground sm:flex"
+            className="hidden h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-[9px] font-semibold text-muted-foreground sm:flex"
             title={championship.is_public ? "Publicado" : "Não publicado"}
           >
             {championship.is_public ? (

@@ -1,0 +1,125 @@
+/*
+ * IS Arena — tema claro suave (verde).
+ *
+ * Este arquivo contém somente os tokens de cor. O mapeamento do Tailwind v4
+ * permanece centralizado em `src/styles.css`, junto dos tokens de tipografia,
+ * espaçamento e das utilities próprias do produto.
+ */
+:root {
+  color-scheme: light;
+  --radius: 0.65rem;
+
+  --background: #eef1f5;
+  --foreground: #1c2733;
+  --surface: #f7f9fb;
+
+  --card: #ffffff;
+  --card-foreground: #1c2733;
+  --popover: #ffffff;
+  --popover-foreground: #1c2733;
+
+  --primary: #0e7c66;
+  --primary-foreground: #ffffff;
+  --secondary: #e6f4f0;
+  --secondary-foreground: #0e705d;
+  --muted: #f0f2f5;
+  --muted-foreground: #64748b;
+  --accent: #e6f4f0;
+  --accent-foreground: #0e705d;
+
+  /* Alias legado: mantém componentes existentes na nova cor de marca. */
+  --neon: #0e7c66;
+  --neon-foreground: #ffffff;
+  --neon-soft: rgb(14 124 102 / 0.1);
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --warning-background: #fef3e2;
+  --info: #2563eb;
+  --violet: #7c3aed;
+
+  --border: #dce1e8;
+  --input: #dce1e8;
+  --ring: #0e7c66;
+
+  --chart-1: #0e7c66;
+  --chart-2: #b45309;
+  --chart-3: #2563eb;
+  --chart-4: #9333ea;
+  --chart-5: #dc2626;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c2733;
+  --sidebar-primary: #0e7c66;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6f4f0;
+  --sidebar-accent-foreground: #0e705d;
+  --sidebar-border: #dce1e8;
+  --sidebar-ring: #0e7c66;
+
+  --arena-glow: rgb(14 124 102 / 0.08);
+  --arena-grid-line: rgb(14 124 102 / 0.045);
+  --panel-background: rgb(255 255 255 / 0.92);
+  --glass-background: rgb(255 255 255 / 0.82);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #202531;
+  --foreground: #f1f5f9;
+  --surface: #232936;
+
+  --card: #262c3a;
+  --card-foreground: #f1f5f9;
+  --popover: #262c3a;
+  --popover-foreground: #f1f5f9;
+
+  --primary: #36b896;
+  --primary-foreground: #17201e;
+  --secondary: #343b4a;
+  --secondary-foreground: #f1f5f9;
+  --muted: #343b4a;
+  --muted-foreground: #9da8b8;
+  --accent: #343b4a;
+  --accent-foreground: #f1f5f9;
+
+  --neon: #36b896;
+  --neon-foreground: #17201e;
+  --neon-soft: rgb(54 184 150 / 0.12);
+
+  --destructive: #e05252;
+  --destructive-foreground: #f1f5f9;
+  --success: #4ade80;
+  --warning: #f1ad2f;
+  --warning-foreground: #202531;
+  --warning-background: #47381f;
+  --info: #60a5fa;
+  --violet: #a78bfa;
+
+  --border: #3d4554;
+  --input: #3d4554;
+  --ring: #36b896;
+
+  --chart-1: #36b896;
+  --chart-2: #f1ad2f;
+  --chart-3: #60a5fa;
+  --chart-4: #a78bfa;
+  --chart-5: #e05252;
+
+  --sidebar: #232936;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #36b896;
+  --sidebar-primary-foreground: #17201e;
+  --sidebar-accent: #343b4a;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #3d4554;
+  --sidebar-ring: #36b896;
+
+  --arena-glow: rgb(54 184 150 / 0.08);
+  --arena-grid-line: rgb(255 255 255 / 0.018);
+  --panel-background: rgb(38 44 58 / 0.92);
+  --glass-background: rgb(32 37 49 / 0.82);
+}

@@ -70,7 +70,7 @@ export function navRowClassName({
     collapsed ? "justify-center px-2" : "gap-2 px-3",
     active
       ? activeClassName
-      : "text-sidebar-foreground/78 hover:bg-white/[0.045] hover:text-foreground",
+      : "text-sidebar-foreground/78 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
   );
 }
 

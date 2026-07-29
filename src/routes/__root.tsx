@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Organize campeonatos, equipes, atletas, súmula digital, financeiro e página pública com o IS Arena.",
       },
-      { name: "theme-color", content: "#0b1220" },
+      { name: "theme-color", content: "#eef1f5" },
       { property: "og:title", content: "IS Arena — Gestão premium para grandes competições" },
       {
         property: "og:description",
@@ -130,7 +130,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -173,7 +173,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
-        <Toaster theme="dark" richColors position="top-right" />
+        <Toaster theme="light" richColors position="top-right" />
       </AuthProvider>
     </QueryClientProvider>
   );

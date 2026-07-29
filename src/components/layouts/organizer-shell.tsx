@@ -38,7 +38,7 @@ export function OrganizerShell({ children }: { children: ReactNode }) {
       <div className="relative flex min-h-screen">
         <aside
           className={cn(
-            "sticky top-0 hidden h-screen shrink-0 border-r border-white/[0.07] bg-sidebar/94 shadow-[18px_0_50px_-38px_rgba(0,0,0,.9)] backdrop-blur-xl transition-[width] duration-200 lg:flex",
+            "sticky top-0 hidden h-screen shrink-0 border-r border-sidebar-border bg-sidebar/94 shadow-sm backdrop-blur-xl transition-[width] duration-200 lg:flex",
             collapsed ? "w-[76px]" : "w-[var(--sidebar-desktop-width)]",
           )}
         >
@@ -77,7 +77,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.065] bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--content-padding-x)]">
         <div className="flex min-w-0 items-center gap-3">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -93,7 +93,7 @@ function OrganizerHeader({ pathname }: { pathname: string }) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[17rem] border-r border-white/[0.07] bg-sidebar p-0"
+              className="w-[17rem] border-r border-sidebar-border bg-sidebar p-0"
             >
               <OrganizerSidebar onNavigate={() => setMenuOpen(false)} />
             </SheetContent>
