@@ -2,6 +2,23 @@
 
 Data: 27/07/2026
 
+## F6-RF01/F6-RF04 — Administração do catálogo de planos (29/07/2026)
+
+- Catálogo comercial ativo disponível na rota `/system-admin/assinaturas`.
+- Publicação imediata de nova versão restrita ao administrador geral.
+- Preço sempre em BRL, limites completos e módulos validados novamente no banco.
+- Módulos essenciais não podem ser removidos; módulos desconhecidos são rejeitados.
+- Confirmação explícita e justificativa obrigatória de 10 a 1000 caracteres.
+- Lock por código e versão esperada impedem publicações concorrentes ou baseadas
+  em catálogo desatualizado.
+- A versão anterior é aposentada apenas para novas contratações.
+- Assinaturas existentes não são migradas automaticamente e preservam preço,
+  limites e módulos contratados até renovação ou troca paga.
+- Alteração registrada em `admin_audit_logs`, com estado anterior, novo estado,
+  responsável, justificativa e indicação de que assinaturas não foram migradas.
+- Tabela de planos continua sem escrita direta por `authenticated`; toda
+  publicação passa pela RPC auditada.
+
 ## F6-RF02 — Cobrança InfinitePay (28/07/2026)
 
 - InfiniteTag configurável no servidor por `INFINITEPAY_HANDLE`.

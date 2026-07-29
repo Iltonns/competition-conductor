@@ -9,10 +9,12 @@ import type {
   SystemAdminDirectoryRow,
   SystemAdminOrganizationRow,
   SystemAdminPage,
+  SystemAdminPlanCatalogItem,
   SystemAdminSubscriptionRow,
   SystemAdminUserRow,
   SupportSession,
   SupportSessionContext,
+  PublishSystemAdminPlanVersionInput,
 } from "../types/system-admin.types";
 
 async function rpc<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
@@ -97,4 +99,24 @@ export function getSystemAdminAuditLogs(filters: AdminAuditFilters, limit: numbe
 
 export function getPlatformOperationalStatus() {
   return rpc<PlatformOperationalStatus>("get_platform_operational_status");
+}
+
+export function getSystemAdminPlanCatalog() {
+  return rpc<SystemAdminPlanCatalogItem[]>("get_system_admin_plan_catalog");
+}
+
+export function publishSystemAdminPlanVersion(input: PublishSystemAdminPlanVersionInput) {
+  return rpc<{ id: string; code: string; version: number; effective_from: string }>(
+    "publish_system_admin_plan_version",
+    {
+      p_code: input.code,
+      p_expected_active_version: input.expectedActiveVersion,
+      p_name: input.name,
+      p_description: input.description || null,
+      p_monthly_price_cents: input.monthlyPriceCents,
+      p_limits: input.limits,
+      p_modules: input.modules,
+      p_reason: input.reason,
+    },
+  );
 }

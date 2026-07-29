@@ -63,6 +63,41 @@ export interface SystemAdminSubscriptionRow {
   updated_at: string;
 }
 
+export interface SystemAdminPlanLimits {
+  organizations: number | null;
+  active_championships: number | null;
+  teams: number | null;
+  users: number | null;
+  storage_bytes: number | null;
+  athletes_per_championship: number | null;
+  sponsors_per_championship: number | null;
+}
+
+export interface SystemAdminPlanCatalogItem {
+  id: string;
+  code: string;
+  version: number;
+  name: string;
+  description: string | null;
+  monthly_price_cents: number;
+  currency: "BRL";
+  limits: SystemAdminPlanLimits;
+  modules: string[];
+  effective_from: string;
+  subscriptions_count: number;
+}
+
+export interface PublishSystemAdminPlanVersionInput {
+  code: string;
+  expectedActiveVersion: number;
+  name: string;
+  description: string;
+  monthlyPriceCents: number;
+  limits: SystemAdminPlanLimits;
+  modules: string[];
+  reason: string;
+}
+
 export type SystemAdminDirectoryRow =
   | SystemAdminOrganizationRow
   | SystemAdminUserRow

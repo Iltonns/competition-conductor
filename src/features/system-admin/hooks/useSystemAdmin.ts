@@ -3,10 +3,12 @@ import {
   endSupportSession,
   getMyActiveSupportSession,
   getPlatformOperationalStatus,
+  getSystemAdminPlanCatalog,
   getSupportSessionContext,
   getSystemAdminAuditLogs,
   getSystemAdminDashboard,
   listSystemAdminDirectory,
+  publishSystemAdminPlanVersion,
   startSupportSession,
 } from "../api/system-admin";
 import type { AdminAuditFilters, SystemAdminDirectoryKind } from "../types/system-admin.types";
@@ -89,5 +91,26 @@ export function usePlatformOperationalStatus() {
     queryKey: ["system-admin", "operational-status"],
     queryFn: getPlatformOperationalStatus,
     refetchInterval: 60_000,
+  });
+}
+
+export function useSystemAdminPlanCatalog() {
+  return useQuery({
+    queryKey: ["system-admin", "plan-catalog"],
+    queryFn: getSystemAdminPlanCatalog,
+  });
+}
+
+export function usePublishSystemAdminPlanVersion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: publishSystemAdminPlanVersion,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["system-admin", "plan-catalog"] }),
+        queryClient.invalidateQueries({ queryKey: ["system-admin", "subscriptions"] }),
+        queryClient.invalidateQueries({ queryKey: ["available-subscription-plans"] }),
+      ]);
+    },
   });
 }
