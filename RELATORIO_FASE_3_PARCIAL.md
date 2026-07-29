@@ -42,6 +42,42 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 - a integração financeira das designações, antes pendente neste relatório, foi
   entregue na Fase 5 com origem idempotente por `referee_assignment_id`.
 
+### Privacidade e detalhe administrativo de árbitros — 29/07/2026
+
+- implementada a rota prevista no PRD
+  `/championships/$id/referees/$refereeId`;
+- diretório de arbitragem limitado a identificação, função, foto e status;
+- leitura direta de documento, e-mail, telefone, valor padrão, disponibilidade e
+  metadados revogada de usuários autenticados;
+- detalhe completo exposto somente pela RPC
+  `get_referee_management_detail`, protegida pelo contexto administrativo do
+  campeonato e pelo vínculo com a organização;
+- edição de nome, função, status, contatos, documento e valor padrão reaproveita
+  a RPC auditada `save_referee`;
+- usuário anônimo não possui acesso ao detalhe e usuário autenticado sem vínculo
+  administrativo falha de forma fechada;
+- migration
+  `supabase/migrations/20260729080000_phase3_referee_privacy_and_detail.sql`;
+- verificação estrutural, de privilégios por coluna e de bloqueio em
+  `supabase/tests/phase3_referee_privacy_verification.sql`.
+
+Validação local desta entrega:
+
+- `npm run typecheck`: aprovado;
+- `npm run lint`: aprovado com 0 erros e 8 avisos preexistentes;
+- `npm run test`: 12 arquivos e 50 testes aprovados;
+- `npm run build`: aprovado para cliente e SSR;
+- `npm run security:env`: aprovado;
+- `git diff --check`: aprovado.
+
+Gate remoto pendente:
+
+1. Aplicar `20260729080000_phase3_referee_privacy_and_detail.sql`.
+2. Executar `phase3_referee_privacy_verification.sql`.
+3. Validar com um administrador a leitura e edição do detalhe.
+4. Validar com viewer e usuário de outro tenant que os dados pessoais não podem
+   ser consultados.
+
 ## Validação local
 
 - `npm run typecheck`: aprovado;

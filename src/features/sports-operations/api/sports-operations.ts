@@ -4,6 +4,10 @@ import type { Database, Json } from "@/integrations/supabase/types";
 export type LineupRow = Database["public"]["Tables"]["lineups"]["Row"];
 export type SubstitutionRow = Database["public"]["Tables"]["substitutions"]["Row"];
 export type RefereeRow = Database["public"]["Tables"]["referees"]["Row"];
+export type RefereeDirectoryRow = Pick<
+  RefereeRow,
+  "id" | "organization_id" | "full_name" | "default_role" | "photo_url" | "status"
+>;
 export type RefereeAssignmentRow = Database["public"]["Tables"]["referee_assignments"]["Row"];
 export type RefereeUnavailabilityRow =
   Database["public"]["Tables"]["referee_unavailability"]["Row"];
@@ -383,7 +387,7 @@ export function reopenMatchReport(championshipId: string, matchId: string, reaso
   });
 }
 
-export async function listReferees(championshipId: string): Promise<RefereeRow[]> {
+export async function listReferees(championshipId: string): Promise<RefereeDirectoryRow[]> {
   const { data: championship, error: championshipError } = await supabase
     .from("championships")
     .select("organization_id")
@@ -392,11 +396,18 @@ export async function listReferees(championshipId: string): Promise<RefereeRow[]
   if (championshipError) throw championshipError;
   const { data, error } = await supabase
     .from("referees")
-    .select("*")
+    .select("id, organization_id, full_name, default_role, photo_url, status")
     .eq("organization_id", championship.organization_id)
     .order("full_name");
   if (error) throw error;
   return data ?? [];
+}
+
+export function getReferee(championshipId: string, refereeId: string) {
+  return callRpc<RefereeRow>("get_referee_management_detail", {
+    p_championship_id: championshipId,
+    p_referee_id: refereeId,
+  });
 }
 
 export function saveReferee(championshipId: string, refereeId: string | null, payload: object) {

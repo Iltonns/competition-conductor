@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { CalendarClock, Check, Flag, Plus, Trash2, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CalendarClock, Check, FilePenLine, Flag, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -280,17 +281,27 @@ export function RefereesPage({ championshipId }: { championshipId: string }) {
         {(referees.data ?? []).map((referee) => (
           <div
             key={referee.id}
-            className="flex items-center justify-between border-b border-white/5 px-4 py-3"
+            className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-4 py-3"
           >
             <div>
               <strong className="text-sm">{referee.full_name}</strong>
               <p className="text-[10px] text-muted-foreground">
-                {referee.email || referee.phone || "Sem contato"}
+                Dados pessoais disponíveis somente no detalhe administrativo.
               </p>
             </div>
-            <Badge variant={referee.status === "active" ? "default" : "secondary"}>
-              {referee.default_role} · {referee.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={referee.status === "active" ? "default" : "secondary"}>
+                {referee.default_role} · {referee.status}
+              </Badge>
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  to="/championships/$id/referees/$refereeId"
+                  params={{ id: championshipId, refereeId: referee.id }}
+                >
+                  <FilePenLine className="h-3.5 w-3.5" /> Detalhes
+                </Link>
+              </Button>
+            </div>
           </div>
         ))}
         {(referees.data?.length ?? 0) === 0 && (

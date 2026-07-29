@@ -4,6 +4,7 @@ import {
   deleteMatchReportAttachment,
   deleteSubstitution,
   deleteRefereeUnavailability,
+  getReferee,
   getMatchReport,
   homologateMatchReport,
   listEligibleAthletes,
@@ -43,6 +44,8 @@ const sportsKeys = {
   eligibleStaff: (championshipId: string, teamId: string) =>
     ["sports", "eligible-staff", championshipId, teamId] as const,
   referees: (championshipId: string) => ["sports", "referees", championshipId] as const,
+  referee: (championshipId: string, refereeId: string) =>
+    ["sports", "referees", championshipId, refereeId] as const,
   assignments: (championshipId: string) => ["sports", "assignments", championshipId] as const,
   unavailability: (championshipId: string) =>
     ["sports", "referee-unavailability", championshipId] as const,
@@ -171,6 +174,13 @@ export function useReferees(championshipId: string) {
     enabled: Boolean(championshipId),
   });
 }
+export function useReferee(championshipId: string, refereeId: string) {
+  return useQuery({
+    queryKey: sportsKeys.referee(championshipId, refereeId),
+    queryFn: () => getReferee(championshipId, refereeId),
+    enabled: Boolean(championshipId && refereeId),
+  });
+}
 export function useRefereeAssignments(championshipId: string) {
   return useQuery({
     queryKey: sportsKeys.assignments(championshipId),
@@ -191,11 +201,13 @@ export function useRefereeActions(championshipId: string) {
     client.invalidateQueries({ queryKey: sportsKeys.assignments(championshipId) });
   const refreshUnavailability = () =>
     client.invalidateQueries({ queryKey: sportsKeys.unavailability(championshipId) });
+  const refreshReferees = () =>
+    client.invalidateQueries({ queryKey: sportsKeys.referees(championshipId) });
   return {
     save: useMutation({
       mutationFn: ({ id, payload }: { id: string | null; payload: object }) =>
         saveReferee(championshipId, id, payload),
-      onSuccess: () => client.invalidateQueries({ queryKey: sportsKeys.referees(championshipId) }),
+      onSuccess: refreshReferees,
     }),
     assign: useMutation({
       mutationFn: (input: { matchId: string; refereeId: string; role: string; fee: number }) =>
