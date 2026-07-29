@@ -14,6 +14,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -28,10 +37,12 @@ import {
   useAvailablePlans,
   useCreateInfinitePayCheckout,
   useOrganizationSubscription,
+  usePlanChangePreview,
 } from "../hooks/useSubscription";
 import type {
   CommercialPlan,
   OrganizationSubscriptionContext,
+  PlanChangePreview,
   ResourceUsage,
   SubscriptionStatus,
 } from "../types/subscription.types";
@@ -58,6 +69,14 @@ const MODULE_LABEL: Record<string, string> = {
   report_printing: "Impressão de relatórios",
   html_embed: "Incorporação HTML",
   json_api: "Acesso à API JSON",
+};
+
+const RESOURCE_LABEL: Record<PlanChangePreview["resource_impacts"][number]["resource"], string> = {
+  organizations: "Organizações",
+  active_championships: "Campeonatos ativos",
+  teams: "Equipes",
+  users: "Usuários e convites",
+  storage_bytes: "Storage",
 };
 
 export function SubscriptionPage() {
@@ -126,7 +145,10 @@ export function SubscriptionPage() {
 function SubscriptionContent({ context }: { context: OrganizationSubscriptionContext }) {
   const availablePlans = useAvailablePlans();
   const checkout = useCreateInfinitePayCheckout();
+  const planPreview = usePlanChangePreview();
   const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<CommercialPlan | null>(null);
+  const [preview, setPreview] = useState<PlanChangePreview | null>(null);
   const subscriptionWarning =
     context.subscription.status === "past_due" || context.subscription.status === "suspended";
 
@@ -220,18 +242,21 @@ function SubscriptionContent({ context }: { context: OrganizationSubscriptionCon
                 plan={plan}
                 current={plan.code === context.plan.code}
                 featured={index % 2 === 1}
-                loading={checkout.isPending && checkoutPlanId === plan.id}
+                loading={
+                  (checkout.isPending || planPreview.isPending) && checkoutPlanId === plan.id
+                }
                 onSubscribe={async () => {
                   setCheckoutPlanId(plan.id);
                   try {
-                    const result = await checkout.mutateAsync({
+                    const result = await planPreview.mutateAsync({
                       organizationId: context.organization.id,
-                      planVersionId: plan.id,
-                      clientRequestId: crypto.randomUUID(),
+                      targetPlanVersionId: plan.id,
                     });
-                    window.location.assign(result.url);
+                    setSelectedPlan(plan);
+                    setPreview(result);
                   } catch {
-                    toast.error("Não foi possível iniciar o checkout. Tente novamente.");
+                    toast.error("Não foi possível calcular o impacto da troca de plano.");
+                  } finally {
                     setCheckoutPlanId(null);
                   }
                 }}
@@ -240,7 +265,182 @@ function SubscriptionContent({ context }: { context: OrganizationSubscriptionCon
           </div>
         )}
       </section>
+
+      <PlanChangePreviewDialog
+        plan={selectedPlan}
+        preview={preview}
+        loading={checkout.isPending}
+        onClose={() => {
+          if (checkout.isPending) return;
+          setSelectedPlan(null);
+          setPreview(null);
+        }}
+        onConfirm={async () => {
+          if (!selectedPlan) return;
+          setCheckoutPlanId(selectedPlan.id);
+          try {
+            const result = await checkout.mutateAsync({
+              organizationId: context.organization.id,
+              planVersionId: selectedPlan.id,
+              clientRequestId: crypto.randomUUID(),
+            });
+            window.location.assign(result.url);
+          } catch {
+            toast.error("Não foi possível iniciar o checkout. Tente novamente.");
+            setCheckoutPlanId(null);
+          }
+        }}
+      />
     </>
+  );
+}
+
+function PlanChangePreviewDialog({
+  plan,
+  preview,
+  loading,
+  onClose,
+  onConfirm,
+}: {
+  plan: CommercialPlan | null;
+  preview: PlanChangePreview | null;
+  loading: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const [acknowledged, setAcknowledged] = useState(false);
+
+  useEffect(() => setAcknowledged(false), [preview]);
+
+  if (!plan || !preview) return null;
+
+  const impactedResources = preview.resource_impacts.filter(
+    (impact) => impact.limit_reduced || impact.exceeds_target,
+  );
+  const championshipImpact = preview.championship_impacts;
+  const title =
+    preview.change_type === "renewal"
+      ? "Revisar renovação"
+      : preview.change_type === "downgrade"
+        ? "Revisar redução de plano"
+        : "Revisar upgrade";
+  const requiresAcknowledgement = preview.has_restrictions;
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {preview.current_plan.name} → {preview.target_plan.name} por{" "}
+            {formatCurrency(plan.monthly_price_cents, plan.currency)}/mês
+          </DialogDescription>
+        </DialogHeader>
+
+        <Alert>
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle>Nenhum dado será apagado</AlertTitle>
+          <AlertDescription>
+            Equipes, atletas, patrocinadores, arquivos e campeonatos existentes serão preservados.
+            Quando houver excesso, somente novas inclusões sujeitas ao limite ficarão bloqueadas.
+          </AlertDescription>
+        </Alert>
+
+        {requiresAcknowledgement ? (
+          <div className="space-y-4">
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Este plano reduz recursos contratados</AlertTitle>
+              <AlertDescription>
+                Revise os impactos abaixo antes de continuar para o pagamento.
+              </AlertDescription>
+            </Alert>
+
+            {impactedResources.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Limites da organização</h3>
+                {impactedResources.map((impact) => (
+                  <div
+                    key={impact.resource}
+                    className="flex items-center justify-between gap-4 rounded-lg border p-3 text-sm"
+                  >
+                    <span>{RESOURCE_LABEL[impact.resource]}</span>
+                    <span className="text-right">
+                      {formatImpactValue(impact.resource, impact.used)} usados ·{" "}
+                      {impact.target_limit === null
+                        ? "ilimitado"
+                        : `novo limite ${formatImpactValue(impact.resource, impact.target_limit)}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(championshipImpact.athletes_per_championship_limit !== null ||
+              championshipImpact.sponsors_per_championship_limit !== null) && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Limites por campeonato</h3>
+                {championshipImpact.athletes_per_championship_limit !== null && (
+                  <p className="rounded-lg border p-3 text-sm">
+                    Atletas: limite de {championshipImpact.athletes_per_championship_limit};{" "}
+                    {championshipImpact.championships_over_athlete_limit} campeonato(s) já estão
+                    acima desse valor.
+                  </p>
+                )}
+                {championshipImpact.sponsors_per_championship_limit !== null && (
+                  <p className="rounded-lg border p-3 text-sm">
+                    Patrocinadores: limite de {championshipImpact.sponsors_per_championship_limit};{" "}
+                    {championshipImpact.championships_over_sponsor_limit} campeonato(s) já estão
+                    acima desse valor.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {preview.lost_modules.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Recursos que deixam de ser contratados</h3>
+                <div className="flex flex-wrap gap-2">
+                  {preview.lost_modules.map((module) => (
+                    <Badge key={module} variant="outline">
+                      {MODULE_LABEL[module] ?? module}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <label className="flex items-start gap-3 rounded-lg border p-4 text-sm">
+              <Checkbox
+                checked={acknowledged}
+                onCheckedChange={(checked) => setAcknowledged(checked === true)}
+              />
+              <span>
+                Entendi que os dados serão preservados, mas novas inclusões e recursos não
+                contratados poderão ficar bloqueados após a confirmação do pagamento.
+              </span>
+            </label>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma redução de limite ou módulo foi identificada para esta alteração.
+          </p>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" disabled={loading} onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            disabled={loading || (requiresAcknowledgement && !acknowledged)}
+            onClick={() => void onConfirm()}
+          >
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Continuar para o pagamento
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -387,6 +587,13 @@ function formatBytes(value: number) {
     index += 1;
   }
   return `${amount.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ${units[index]}`;
+}
+
+function formatImpactValue(
+  resource: PlanChangePreview["resource_impacts"][number]["resource"],
+  value: number,
+) {
+  return resource === "storage_bytes" ? formatBytes(value) : value.toLocaleString("pt-BR");
 }
 
 function LoadingState() {

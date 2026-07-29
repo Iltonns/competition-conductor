@@ -53,3 +53,43 @@ export interface OrganizationSubscriptionContext {
     storage_bytes: ResourceUsage;
   };
 }
+
+export type PlanChangeType = "renewal" | "upgrade" | "downgrade";
+
+export interface PlanChangePreview {
+  change_type: PlanChangeType;
+  has_restrictions: boolean;
+  data_preserved: true;
+  enforcement: "new_writes_only";
+  current_plan: {
+    id: string;
+    code: string;
+    version: number;
+    name: string;
+    monthly_price_cents: number;
+  };
+  target_plan: {
+    id: string;
+    code: string;
+    version: number;
+    name: string;
+    monthly_price_cents: number;
+  };
+  lost_modules: string[];
+  resource_impacts: Array<{
+    resource: "organizations" | "active_championships" | "teams" | "users" | "storage_bytes";
+    used: number;
+    current_limit: number | null;
+    target_limit: number | null;
+    limit_reduced: boolean;
+    exceeds_target: boolean;
+  }>;
+  championship_impacts: {
+    athletes_per_championship_limit: number | null;
+    sponsors_per_championship_limit: number | null;
+    championships_over_athlete_limit: number;
+    championships_over_sponsor_limit: number;
+    max_athletes_in_championship: number;
+    max_sponsors_in_championship: number;
+  };
+}

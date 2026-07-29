@@ -2,6 +2,33 @@
 
 Data: 27/07/2026
 
+## Correção de segurança — autorização owner fail-closed (29/07/2026)
+
+- Corrigida comparação SQL que permitia `NULL <> 'owner'` avançar sem bloqueio.
+- Nova asserção central `assert_organization_owner` usa `IS DISTINCT FROM`.
+- Contexto da assinatura, preparação do checkout e prévia de troca passam pela
+  mesma autorização fail-closed.
+- Gestão de convites e operações de alteração/remoção de membros agora usam
+  verificação de administrador que nunca retorna `NULL`.
+- Implementações anteriores foram encapsuladas como funções internas sem
+  `EXECUTE` para `anon` ou `authenticated`.
+- Verificação cobre chamada direta das três RPCs por usuário autenticado sem
+  vínculo e exige erro `42501`.
+
+## F6-RF01/F6-RF02 — Prévia de troca e downgrade (29/07/2026)
+
+- Prévia autoritativa calculada no banco antes de qualquer checkout.
+- Comparação entre plano contratado e versão escolhida para renovação, upgrade
+  ou downgrade.
+- Medição real dos limites de organização, campeonatos, equipes, usuários e
+  storage.
+- Contagem de campeonatos acima dos futuros limites de atletas e patrocinadores.
+- Identificação de módulos que deixarão de ser contratados.
+- Garantia explícita de preservação dos dados existentes.
+- Bloqueio somente de novas inclusões sujeitas aos limites após a confirmação.
+- Downgrade exige ciência explícita do proprietário antes de abrir o pagamento.
+- RPC restrita ao owner, somente leitura e sem confiar em cálculos do frontend.
+
 ## F6-RF01/F6-RF04 — Administração do catálogo de planos (29/07/2026)
 
 - Catálogo comercial ativo disponível na rota `/system-admin/assinaturas`.

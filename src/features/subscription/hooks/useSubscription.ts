@@ -1,6 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createInfinitePayCheckout } from "../api/billing.functions";
-import { getOrganizationSubscriptionContext, listAvailablePlans } from "../api/subscription";
+import {
+  getOrganizationSubscriptionContext,
+  listAvailablePlans,
+  previewOrganizationPlanChange,
+} from "../api/subscription";
 
 export function useAvailablePlans() {
   return useQuery({
@@ -17,6 +21,13 @@ export function useCreateInfinitePayCheckout() {
       planVersionId: string;
       clientRequestId: string;
     }) => createInfinitePayCheckout({ data: input }),
+  });
+}
+
+export function usePlanChangePreview() {
+  return useMutation({
+    mutationFn: (input: { organizationId: string; targetPlanVersionId: string }) =>
+      previewOrganizationPlanChange(input.organizationId, input.targetPlanVersionId),
   });
 }
 
