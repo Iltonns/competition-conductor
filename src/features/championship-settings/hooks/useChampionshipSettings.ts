@@ -6,6 +6,10 @@ import {
   saveChampionshipOperationalSettings,
   type SaveChampionshipSettingsInput,
 } from "../api/championship-settings";
+import {
+  removeChampionshipLogo,
+  uploadChampionshipLogo,
+} from "../services/championship-logo.service";
 
 const settingsKey = (championshipId: string) => ["championship-settings", championshipId] as const;
 
@@ -28,6 +32,14 @@ export function useChampionshipSettings(championshipId: string) {
     save: useMutation({
       mutationFn: (input: SaveChampionshipSettingsInput) =>
         saveChampionshipOperationalSettings(championshipId, input),
+      onSuccess: invalidate,
+    }),
+    uploadLogo: useMutation({
+      mutationFn: (file: File) => uploadChampionshipLogo(championshipId, file),
+      onSuccess: invalidate,
+    }),
+    removeLogo: useMutation({
+      mutationFn: () => removeChampionshipLogo(championshipId),
       onSuccess: invalidate,
     }),
     archive: useMutation({

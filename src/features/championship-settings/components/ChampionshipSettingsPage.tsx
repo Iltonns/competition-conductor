@@ -4,12 +4,14 @@ import {
   Archive,
   BellRing,
   Globe2,
+  ImagePlus,
   Link2,
   Loader2,
   Save,
   Settings2,
   ShieldAlert,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -218,6 +220,64 @@ export function ChampionshipSettingsPage({ championshipId }: { championshipId: s
         title="Identidade e contato"
         description="Dados administrativos. A publicação pública continua controlada pela página pública."
       >
+        <div className="space-y-2 sm:col-span-2">
+          <Label className="text-xs">Logo do campeonato</Label>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-xl border border-dashed border-white/15 bg-white/[0.03]">
+              {data.identity.logo_url ? (
+                <img
+                  src={data.identity.logo_url}
+                  alt={`Logo de ${data.identity.name}`}
+                  className="h-full w-full object-contain p-1"
+                />
+              ) : (
+                <ImagePlus className="h-7 w-7 text-muted-foreground" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <Input
+                id="championship-logo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="max-w-sm file:mr-3 file:border-0 file:bg-transparent file:text-xs"
+                disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  try {
+                    await settings.uploadLogo.mutateAsync(file);
+                    toast.success("Logo do campeonato atualizada.");
+                  } catch (error) {
+                    toast.error(settingsErrorMessage(error));
+                  }
+                }}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                JPG, PNG ou WebP, até 5 MB. A imagem será usada no painel e na página pública.
+              </p>
+              {data.identity.logo_url && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
+                  onClick={async () => {
+                    try {
+                      await settings.removeLogo.mutateAsync();
+                      toast.success("Logo do campeonato removida.");
+                    } catch (error) {
+                      toast.error(settingsErrorMessage(error));
+                    }
+                  }}
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Remover logo
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
         <TextField
           label="Nome"
           value={identity.name}

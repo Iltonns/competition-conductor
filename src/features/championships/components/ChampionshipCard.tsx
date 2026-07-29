@@ -37,6 +37,13 @@ export function ChampionshipCard({ championship, onEdit }: ChampionshipCardProps
             {championship.is_public ? "Público" : "Privado"}
           </Badge>
         </div>
+        {championship.logo_url && (
+          <img
+            src={championship.logo_url}
+            alt=""
+            className="absolute bottom-3 left-3 h-12 w-12 rounded-xl border border-white/20 bg-black/20 object-contain p-1 backdrop-blur"
+          />
+        )}
       </div>
 
       <div className="p-4">

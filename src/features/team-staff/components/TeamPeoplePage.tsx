@@ -43,8 +43,10 @@ export function TeamPeoplePage({
         .select("id")
         .eq("championship_id", championshipId)
         .eq("team_id", teamId)
-        .single();
+        .neq("status", "archived")
+        .maybeSingle();
       if (linkError) throw linkError;
+      if (!link) throw new Error("A equipe não possui uma inscrição ativa neste campeonato.");
       if (kind === "responsibles") {
         const { data, error } = await db
           .from("team_responsibles")
@@ -57,11 +59,24 @@ export function TeamPeoplePage({
       }
       const { data, error } = await db
         .from("championship_team_staff")
-        .select("team_staff!inner(id,full_name,role,phone,email)")
+        .select("staff_id,role")
         .eq("championship_team_id", link.id)
         .eq("active", true);
       if (error) throw error;
-      return (data ?? []).map((r) => r.team_staff as unknown as Person);
+      const registrations = (data ?? []) as Array<{ staff_id: string; role: string }>;
+      if (!registrations.length) return [];
+
+      const { data: staff, error: staffError } = await db
+        .from("team_staff")
+        .select("id,full_name,role,phone,email")
+        .eq("team_id", teamId)
+        .in(
+          "id",
+          registrations.map((item) => item.staff_id),
+        )
+        .is("archived_at", null);
+      if (staffError) throw staffError;
+      return staff as Person[];
     },
   });
   const mutation = useMutation({
@@ -75,6 +90,7 @@ export function TeamPeoplePage({
               p_team_id: teamId,
               p_full_name: form.full_name,
               p_role: form.role,
+              p_custom_role: null,
               p_phone: form.phone || null,
               p_email: form.email || null,
             }
@@ -95,6 +111,9 @@ export function TeamPeoplePage({
       setOpen(false);
       setForm({ ...form, full_name: "", phone: "", email: "" });
       toast.success("Cadastro salvo.");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o cadastro.");
     },
   });
   if (query.isLoading)

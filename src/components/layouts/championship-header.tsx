@@ -28,8 +28,16 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
             </Link>
           </Button>
 
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/15 text-primary-foreground">
-            <Trophy className="h-4 w-4" />
+          <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/20 bg-white/15 text-primary-foreground">
+            {championship.logo_url ? (
+              <img
+                src={championship.logo_url}
+                alt=""
+                className="h-full w-full object-contain p-0.5"
+              />
+            ) : (
+              <Trophy className="h-4 w-4" />
+            )}
           </span>
 
           <div className="min-w-0">

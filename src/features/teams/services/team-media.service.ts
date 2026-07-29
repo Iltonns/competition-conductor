@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { createUuid } from "@/lib/uuid";
 
 const TEAM_MEDIA_BUCKET = "team-media";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -27,7 +28,7 @@ export async function uploadTeamImage(file: File, kind: "crest" | "cover"): Prom
       .pop()
       ?.toLowerCase()
       .replace(/[^a-z0-9]/g, "") || "jpg";
-  const path = `${data.user.id}/${kind}-${crypto.randomUUID()}.${extension}`;
+  const path = `${data.user.id}/${kind}-${createUuid()}.${extension}`;
   const { error } = await supabase.storage.from(TEAM_MEDIA_BUCKET).upload(path, file, {
     cacheControl: "31536000",
     contentType: file.type,
