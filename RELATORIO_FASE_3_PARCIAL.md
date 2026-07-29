@@ -30,11 +30,23 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 - comissão, substituições, arbitragem e anexos incorporados ao snapshot imutável da súmula homologada;
 - correção de uma ambiguidade legada na RPC de escalações identificada pelo lint remoto.
 
+### Incremento de continuidade — 29/07/2026
+
+- removido o último estado global “Em breve” de Arbitragem e o componente de
+  placeholder que ficou sem consumidores;
+- a rota legada `/referees` agora encaminha para a seleção de campeonatos;
+- o módulo permanece canônico em `/championships/$id/referees`, preservando o
+  isolamento por organização e campeonato;
+- não foi criado marketplace nem um segundo fluxo global de árbitros, conforme
+  os limites de escopo e navegação do PRD;
+- a integração financeira das designações, antes pendente neste relatório, foi
+  entregue na Fase 5 com origem idempotente por `referee_assignment_id`.
+
 ## Validação local
 
 - `npm run typecheck`: aprovado;
 - `npm run lint`: zero erros e oito avisos preexistentes de Fast Refresh;
-- `npm run test`: 32 testes aprovados;
+- `npm run test`: 50 testes aprovados;
 - `npm run build`: aprovado;
 - `git diff --check`: aprovado, com apenas avisos de normalização LF/CRLF.
 
@@ -52,7 +64,6 @@ As Fases 0, 1 e 2 estavam implementadas localmente. Este incremento inicia a Fas
 
 ## Itens ainda necessários para concluir a Fase 3
 
-- integração do pagamento de arbitragem ao módulo financeiro da Fase 5;
 - E2E autenticado da jornada completa e conferência visual do PDF homologado.
 
 ## Gate remoto
