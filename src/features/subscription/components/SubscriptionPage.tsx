@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   Check,
@@ -23,7 +24,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useManageableOrganizations } from "@/features/organization-settings/hooks/useOrganizationSettings";
-import { useAvailablePlans, useOrganizationSubscription } from "../hooks/useSubscription";
+import {
+  useAvailablePlans,
+  useCreateInfinitePayCheckout,
+  useOrganizationSubscription,
+} from "../hooks/useSubscription";
 import type {
   CommercialPlan,
   OrganizationSubscriptionContext,
@@ -120,6 +125,8 @@ export function SubscriptionPage() {
 
 function SubscriptionContent({ context }: { context: OrganizationSubscriptionContext }) {
   const availablePlans = useAvailablePlans();
+  const checkout = useCreateInfinitePayCheckout();
+  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
   const subscriptionWarning =
     context.subscription.status === "past_due" || context.subscription.status === "suspended";
 
@@ -213,6 +220,21 @@ function SubscriptionContent({ context }: { context: OrganizationSubscriptionCon
                 plan={plan}
                 current={plan.code === context.plan.code}
                 featured={index % 2 === 1}
+                loading={checkout.isPending && checkoutPlanId === plan.id}
+                onSubscribe={async () => {
+                  setCheckoutPlanId(plan.id);
+                  try {
+                    const result = await checkout.mutateAsync({
+                      organizationId: context.organization.id,
+                      planVersionId: plan.id,
+                      clientRequestId: crypto.randomUUID(),
+                    });
+                    window.location.assign(result.url);
+                  } catch {
+                    toast.error("Não foi possível iniciar o checkout. Tente novamente.");
+                    setCheckoutPlanId(null);
+                  }
+                }}
               />
             ))}
           </div>
@@ -226,10 +248,14 @@ function PlanCard({
   plan,
   current,
   featured,
+  loading,
+  onSubscribe,
 }: {
   plan: CommercialPlan;
   current: boolean;
   featured: boolean;
+  loading: boolean;
+  onSubscribe: () => Promise<void>;
 }) {
   const athleteLimit = plan.limits.athletes_per_championship;
   const sponsorLimit = plan.limits.sponsors_per_championship;
@@ -281,14 +307,17 @@ function PlanCard({
             </li>
           ))}
         </ul>
-        <Button type="button" disabled className={featured ? "bg-orange-500" : undefined}>
-          {current ? "Plano atual" : "Assinar plano"}
+        <Button
+          type="button"
+          disabled={loading}
+          className={featured ? "bg-orange-500 hover:bg-orange-600" : undefined}
+          onClick={() => void onSubscribe()}
+        >
+          {loading ? "Abrindo checkout..." : current ? "Renovar plano" : "Assinar plano"}
         </Button>
-        {!current && (
-          <p className="text-center text-xs text-muted-foreground">
-            Disponível após a conexão do provedor de cobrança.
-          </p>
-        )}
+        <p className="text-center text-xs text-muted-foreground">
+          Pagamento seguro via InfinitePay.
+        </p>
       </CardContent>
     </Card>
   );

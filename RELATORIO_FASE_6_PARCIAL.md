@@ -2,6 +2,23 @@
 
 Data: 27/07/2026
 
+## F6-RF02 — Cobrança InfinitePay (28/07/2026)
+
+- InfiniteTag configurável no servidor por `INFINITEPAY_HANDLE`.
+- Checkout mensal avulso pelos links oficiais da InfinitePay.
+- Pedido canônico criado no banco com preço derivado do plano, nunca do cliente.
+- Idempotência por requisição, pedido e transação do provedor.
+- Webhook sem confiança implícita: o servidor confirma o pagamento pela API
+  `payment_check` antes de alterar a assinatura.
+- Ativação do plano e período mensal somente após confirmação de pedido e valor.
+- Renovação do mesmo plano preserva os dias já pagos e acrescenta um mês ao período vigente.
+- Eventos do provedor e confirmação de pagamento auditados sem armazenar dados
+  de cartão ou payloads com PII.
+- Tabelas de cobrança sem acesso direto por `anon` ou `authenticated`.
+- Botões dos planos conectados ao checkout; o plano atual permite renovação avulsa.
+- A InfinitePay não oferece no contrato documentado um portal recorrente equivalente
+  ao Stripe; renovação e troca usam um novo checkout mensal.
+
 ## Atualização — catálogo comercial e limites por campeonato (28/07/2026)
 
 - Quatro planos comerciais versionados:

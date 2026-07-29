@@ -44,6 +44,7 @@ import { Route as AuthenticatedChampionshipsIdIndexRouteImport } from './routes/
 import { Route as AuthenticatedOrganizerTeamsIndexRouteImport } from './routes/_authenticated/_organizer/teams.index'
 import { Route as AuthenticatedOrganizerSettingsIndexRouteImport } from './routes/_authenticated/_organizer/settings.index'
 import { Route as AuthenticatedOrganizerAthletesIndexRouteImport } from './routes/_authenticated/_organizer/athletes.index'
+import { Route as ApiBillingInfinitepayWebhookRouteImport } from './routes/api.billing.infinitepay.webhook'
 import { Route as AuthenticatedChampionshipsIdTeamsRouteImport } from './routes/_authenticated/championships_.$id.teams'
 import { Route as AuthenticatedChampionshipsIdStructureRouteImport } from './routes/_authenticated/championships_.$id.structure'
 import { Route as AuthenticatedChampionshipsIdStatsRouteImport } from './routes/_authenticated/championships_.$id.stats'
@@ -271,6 +272,12 @@ const AuthenticatedOrganizerAthletesIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedOrganizerAthletesRoute,
+  } as any)
+const ApiBillingInfinitepayWebhookRoute =
+  ApiBillingInfinitepayWebhookRouteImport.update({
+    id: '/api/billing/infinitepay/webhook',
+    path: '/api/billing/infinitepay/webhook',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedChampionshipsIdTeamsRoute =
   AuthenticatedChampionshipsIdTeamsRouteImport.update({
@@ -535,6 +542,7 @@ export interface FileRoutesByFullPath {
   '/championships/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/championships/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
   '/championships/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRouteWithChildren
+  '/api/billing/infinitepay/webhook': typeof ApiBillingInfinitepayWebhookRoute
   '/athletes/': typeof AuthenticatedOrganizerAthletesIndexRoute
   '/settings/': typeof AuthenticatedOrganizerSettingsIndexRoute
   '/teams/': typeof AuthenticatedOrganizerTeamsIndexRoute
@@ -599,6 +607,7 @@ export interface FileRoutesByTo {
   '/championships/$id/standings': typeof AuthenticatedChampionshipsIdStandingsRoute
   '/championships/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/championships/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
+  '/api/billing/infinitepay/webhook': typeof ApiBillingInfinitepayWebhookRoute
   '/athletes': typeof AuthenticatedOrganizerAthletesIndexRoute
   '/settings': typeof AuthenticatedOrganizerSettingsIndexRoute
   '/teams': typeof AuthenticatedOrganizerTeamsIndexRoute
@@ -671,6 +680,7 @@ export interface FileRoutesById {
   '/_authenticated/championships_/$id/stats': typeof AuthenticatedChampionshipsIdStatsRoute
   '/_authenticated/championships_/$id/structure': typeof AuthenticatedChampionshipsIdStructureRouteWithChildren
   '/_authenticated/championships_/$id/teams': typeof AuthenticatedChampionshipsIdTeamsRouteWithChildren
+  '/api/billing/infinitepay/webhook': typeof ApiBillingInfinitepayWebhookRoute
   '/_authenticated/_organizer/athletes/': typeof AuthenticatedOrganizerAthletesIndexRoute
   '/_authenticated/_organizer/settings/': typeof AuthenticatedOrganizerSettingsIndexRoute
   '/_authenticated/_organizer/teams/': typeof AuthenticatedOrganizerTeamsIndexRoute
@@ -743,6 +753,7 @@ export interface FileRouteTypes {
     | '/championships/$id/stats'
     | '/championships/$id/structure'
     | '/championships/$id/teams'
+    | '/api/billing/infinitepay/webhook'
     | '/athletes/'
     | '/settings/'
     | '/teams/'
@@ -807,6 +818,7 @@ export interface FileRouteTypes {
     | '/championships/$id/standings'
     | '/championships/$id/stats'
     | '/championships/$id/structure'
+    | '/api/billing/infinitepay/webhook'
     | '/athletes'
     | '/settings'
     | '/teams'
@@ -878,6 +890,7 @@ export interface FileRouteTypes {
     | '/_authenticated/championships_/$id/stats'
     | '/_authenticated/championships_/$id/structure'
     | '/_authenticated/championships_/$id/teams'
+    | '/api/billing/infinitepay/webhook'
     | '/_authenticated/_organizer/athletes/'
     | '/_authenticated/_organizer/settings/'
     | '/_authenticated/_organizer/teams/'
@@ -907,6 +920,7 @@ export interface RootRouteChildren {
   OSlugRoute: typeof OSlugRoute
   TeamAccessTokenRoute: typeof TeamAccessTokenRoute
   TeamAccessSessionRoute: typeof TeamAccessSessionRoute
+  ApiBillingInfinitepayWebhookRoute: typeof ApiBillingInfinitepayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1155,6 +1169,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/athletes/'
       preLoaderRoute: typeof AuthenticatedOrganizerAthletesIndexRouteImport
       parentRoute: typeof AuthenticatedOrganizerAthletesRoute
+    }
+    '/api/billing/infinitepay/webhook': {
+      id: '/api/billing/infinitepay/webhook'
+      path: '/api/billing/infinitepay/webhook'
+      fullPath: '/api/billing/infinitepay/webhook'
+      preLoaderRoute: typeof ApiBillingInfinitepayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/championships_/$id/teams': {
       id: '/_authenticated/championships_/$id/teams'
@@ -1719,6 +1740,7 @@ const rootRouteChildren: RootRouteChildren = {
   OSlugRoute: OSlugRoute,
   TeamAccessTokenRoute: TeamAccessTokenRoute,
   TeamAccessSessionRoute: TeamAccessSessionRoute,
+  ApiBillingInfinitepayWebhookRoute: ApiBillingInfinitepayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
