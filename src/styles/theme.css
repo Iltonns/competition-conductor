@@ -1,125 +1,130 @@
 /*
- * IS Arena — tema claro suave (verde).
- *
- * Este arquivo contém somente os tokens de cor. O mapeamento do Tailwind v4
- * permanece centralizado em `src/styles.css`, junto dos tokens de tipografia,
- * espaçamento e das utilities próprias do produto.
+ * IS Arena — tema azul/dourado (fundo branco).
  */
 :root {
   color-scheme: light;
   --radius: 0.65rem;
 
-  --background: #eef1f5;
+  --background: #ffffff;
   --foreground: #1c2733;
-  --surface: #0e7c66;
+  --surface: #f5f7fa;
 
-  --card: #0e7c66;
-  --card-foreground: #ffffff;
-  --popover: #0e7c66;
-  --popover-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #1c2733;
+  --popover: #ffffff;
+  --popover-foreground: #1c2733;
 
-  --primary: #0e7c66;
+  --primary: oklch(47% 0.17 258);
   --primary-foreground: #ffffff;
-  --secondary: #e6f4f0;
-  --secondary-foreground: #0e705d;
+  --primary-tint: oklch(94% 0.03 258);
+
+  --secondary: oklch(94% 0.03 258);
+  --secondary-foreground: oklch(47% 0.17 258);
   --muted: #f0f2f5;
   --muted-foreground: #64748b;
-  --accent: #e6f4f0;
-  --accent-foreground: #0e705d;
+  --accent: oklch(94% 0.03 258);
+  --accent-foreground: oklch(47% 0.17 258);
 
-  /* Alias legado: mantém componentes existentes na nova cor de marca. */
-  --neon: #0e7c66;
+  --accent-gold: oklch(80% 0.13 85);
+  --accent-gold-dark: oklch(55% 0.13 75);
+
+  --neon: oklch(47% 0.17 258);
   --neon-foreground: #ffffff;
-  --neon-soft: rgb(14 124 102 / 0.1);
+  --neon-soft: oklch(47% 0.17 258 / 0.1);
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --success: #15803d;
+  --success: oklch(60% 0.15 150);
   --warning: #b45309;
   --warning-foreground: #ffffff;
   --warning-background: #fef3e2;
   --info: #2563eb;
   --violet: #7c3aed;
 
-  --border: #dce1e8;
-  --input: #dce1e8;
-  --ring: #0e7c66;
+  --border: #e4e7ee;
+  --input: #e4e7ee;
+  --ring: oklch(47% 0.17 258);
 
-  --chart-1: #0e7c66;
-  --chart-2: #b45309;
-  --chart-3: #2563eb;
+  --chart-1: oklch(47% 0.17 258);
+  --chart-2: oklch(80% 0.13 85);
+  --chart-3: oklch(60% 0.15 150);
   --chart-4: #9333ea;
   --chart-5: #dc2626;
 
   --sidebar: #ffffff;
   --sidebar-foreground: #1c2733;
-  --sidebar-primary: #0e7c66;
+  --sidebar-primary: oklch(47% 0.17 258);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e6f4f0;
-  --sidebar-accent-foreground: #0e705d;
-  --sidebar-border: #dce1e8;
-  --sidebar-ring: #0e7c66;
+  --sidebar-accent: oklch(94% 0.03 258);
+  --sidebar-accent-foreground: oklch(47% 0.17 258);
+  --sidebar-border: #e4e7ee;
+  --sidebar-ring: oklch(47% 0.17 258);
 
-  --arena-glow: rgb(14 124 102 / 0.08);
-  --arena-grid-line: rgb(14 124 102 / 0.045);
-  --panel-background: #0e7c66;
-  --glass-background: rgb(14 124 102 / 0.94);
+  --arena-glow: oklch(47% 0.17 258 / 0.04);
+  --arena-grid-line: oklch(47% 0.17 258 / 0.035);
+  --panel-background: #ffffff;
+  --glass-background: rgb(255 255 255 / 0.94);
 }
 
 .dark {
   color-scheme: dark;
-  --background: #202531;
+  --background: #0f1623;
   --foreground: #f1f5f9;
-  --surface: #0e7c66;
+  --surface: #182135;
 
-  --card: #0e7c66;
-  --card-foreground: #ffffff;
-  --popover: #0e7c66;
-  --popover-foreground: #ffffff;
+  --card: #182135;
+  --card-foreground: #f1f5f9;
+  --popover: #182135;
+  --popover-foreground: #f1f5f9;
 
-  --primary: #36b896;
-  --primary-foreground: #17201e;
-  --secondary: #343b4a;
-  --secondary-foreground: #f1f5f9;
-  --muted: #343b4a;
+  --primary: oklch(62% 0.17 258);
+  --primary-foreground: #0f1623;
+  --primary-tint: oklch(25% 0.06 258);
+
+  --secondary: oklch(25% 0.06 258);
+  --secondary-foreground: oklch(80% 0.1 258);
+  --muted: #1e2a3a;
   --muted-foreground: #9da8b8;
-  --accent: #343b4a;
-  --accent-foreground: #f1f5f9;
+  --accent: oklch(25% 0.06 258);
+  --accent-foreground: oklch(80% 0.1 258);
 
-  --neon: #36b896;
-  --neon-foreground: #17201e;
-  --neon-soft: rgb(54 184 150 / 0.12);
+  --accent-gold: oklch(72% 0.13 85);
+  --accent-gold-dark: oklch(40% 0.1 75);
+
+  --neon: oklch(62% 0.17 258);
+  --neon-foreground: #0f1623;
+  --neon-soft: oklch(62% 0.17 258 / 0.12);
 
   --destructive: #e05252;
   --destructive-foreground: #f1f5f9;
-  --success: #4ade80;
+  --success: oklch(65% 0.15 150);
   --warning: #f1ad2f;
-  --warning-foreground: #202531;
-  --warning-background: #47381f;
+  --warning-foreground: #0f1623;
+  --warning-background: #3a2e1a;
   --info: #60a5fa;
   --violet: #a78bfa;
 
-  --border: #3d4554;
-  --input: #3d4554;
-  --ring: #36b896;
+  --border: #253145;
+  --input: #253145;
+  --ring: oklch(62% 0.17 258);
 
-  --chart-1: #36b896;
-  --chart-2: #f1ad2f;
-  --chart-3: #60a5fa;
+  --chart-1: oklch(62% 0.17 258);
+  --chart-2: oklch(72% 0.13 85);
+  --chart-3: oklch(65% 0.15 150);
   --chart-4: #a78bfa;
   --chart-5: #e05252;
 
-  --sidebar: #232936;
+  --sidebar: #182135;
   --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #36b896;
-  --sidebar-primary-foreground: #17201e;
-  --sidebar-accent: #343b4a;
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #3d4554;
-  --sidebar-ring: #36b896;
+  --sidebar-primary: oklch(62% 0.17 258);
+  --sidebar-primary-foreground: #0f1623;
+  --sidebar-accent: oklch(25% 0.06 258);
+  --sidebar-accent-foreground: oklch(80% 0.1 258);
+  --sidebar-border: #253145;
+  --sidebar-ring: oklch(62% 0.17 258);
 
-  --arena-glow: rgb(54 184 150 / 0.08);
-  --arena-grid-line: rgb(255 255 255 / 0.018);
-  --panel-background: #0e7c66;
-  --glass-background: rgb(14 124 102 / 0.94);
+  --arena-glow: oklch(62% 0.17 258 / 0.07);
+  --arena-grid-line: oklch(100% 0 0 / 0.02);
+  --panel-background: #182135;
+  --glass-background: rgb(24 33 53 / 0.94);
 }

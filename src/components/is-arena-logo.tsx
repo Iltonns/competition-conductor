@@ -26,8 +26,8 @@ export function IsArenaLogo({
       >
         <defs>
           <linearGradient id="isa-neon" x1="0" y1="0" x2="40" y2="40">
-            <stop offset="0" stopColor="oklch(0.95 0.24 128)" />
-            <stop offset="1" stopColor="oklch(0.82 0.22 140)" />
+            <stop offset="0" stopColor="oklch(0.72 0.22 258)" />
+            <stop offset="1" stopColor="oklch(0.52 0.18 258)" />
           </linearGradient>
         </defs>
         <path
