@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2f4bd6; }
+    a:hover { color: #24399f; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#ffffff;font-family:'Manrope',sans-serif;color:#161b26;">
+
+  <div style="background:#161b26;color:#ffffff;padding:14px 32px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+    <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8b93a3;white-space:nowrap;">Novo layout — telas:</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <sc-for list="{{ screens }}" as="sc" hint-placeholder-count="6">
+        <button style="{{ sc.pillStyle }}" onClick="{{ sc.onClick }}">{{ sc.label }}</button>
+      </sc-for>
+    </div>
+    <span style="margin-left:auto;font-size:12px;color:#8b93a3;max-width:480px;text-align:right;">Estrutura inspirada em painéis de gestão de campeonatos amadores — fundo branco, paleta azul/dourado.</span>
+  </div>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+    <header style="background:#fff;border-bottom:1px solid #e4e7ee;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:oklch(47% 0.17 258);display:flex;align-items:center;justify-content:center;color:#fff;font-family:Sora,sans-serif;font-weight:800;font-size:13px;">IS</div>
+        <span style="font-family:Sora,sans-serif;font-weight:800;font-size:15px;">IS <span style="color:oklch(47% 0.17 258);">Arena</span></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button style="padding:9px 16px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">Meus campeonatos</button>
+        <div style="width:34px;height:34px;border-radius:999px;background:oklch(94% 0.03 258);color:oklch(40% 0.15 258);display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:12px;">AN</div>
+      </div>
+    </header>
+
+    <main style="max-width:1100px;margin:0 auto;padding:40px 32px 80px;">
+      <h1 style="font-family:Sora,sans-serif;font-weight:800;font-size:24px;margin:0 0 24px;">Seja bem-vindo(a), <span>Ana Souza</span></h1>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px;">
+        <sc-for list="{{ orgKpis }}" as="k" hint-placeholder-count="5">
+          <div style="{{ k.cardStyle }}">
+            <p style="margin:0;font-size:12px;font-weight:700;color:{{ k.labelColor }};text-transform:uppercase;letter-spacing:.03em;">{{ k.label }}</p>
+            <p style="margin:8px 0 0;font-family:Sora,sans-serif;font-weight:800;font-size:26px;color:{{ k.valueColor }};">{{ k.value }}</p>
+            <sc-if value="{{ k.sub }}" hint-placeholder-val="{{ false }}"><p style="margin:4px 0 0;font-size:11px;color:{{ k.subColor }};">{{ k.sub }}</p></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;justify-content:center;margin-bottom:28px;">
+        <button style="padding:13px 28px;border-radius:10px;border:none;background:oklch(47% 0.17 258);color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">+ Criar novo campeonato</button>
+      </div>
+
+      <div style="border:1px solid #e4e7ee;border-radius:14px;background:#fff;overflow:hidden;max-width:340px;margin:0 auto;">
+        <div style="height:6px;background:oklch(47% 0.17 258);"></div>
+        <div style="padding:22px;text-align:center;">
+          <div style="width:60px;height:60px;border-radius:14px;background:oklch(94% 0.03 258);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:13px;color:oklch(45% 0.16 258);">CB</div>
+          <button onClick="{{ goHome }}" style="background:none;border:none;padding:0;font-family:Sora,sans-serif;font-weight:800;font-size:16px;color:#161b26;cursor:pointer;text-decoration:underline;">Copa da Baixada</button>
+          <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+            <span style="padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:oklch(94% 0.03 258);color:oklch(40% 0.15 258);">1 categoria</span>
+            <span style="padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:oklch(90% 0.1 85);color:oklch(45% 0.1 70);">Gratuito</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ hasSidebar }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:stretch;min-height:100vh;">
+      <aside style="width:250px;flex-shrink:0;background:#fff;border-right:1px solid #e4e7ee;display:flex;flex-direction:column;">
+        <div style="padding:22px 20px 16px;text-align:center;border-bottom:1px solid #eef0f4;">
+          <button onClick="{{ goList }}" style="background:none;border:none;padding:0;cursor:pointer;">
+            <div style="width:52px;height:52px;border-radius:12px;background:oklch(94% 0.03 258);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:13px;color:oklch(45% 0.16 258);">CB</div>
+          </button>
+          <p style="margin:0;font-family:Sora,sans-serif;font-weight:800;font-size:14px;">Copa da Baixada</p>
+          <span style="display:inline-block;margin-top:6px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:oklch(90% 0.1 85);color:oklch(45% 0.1 70);">Gratuito</span>
+        </div>
+
+        <nav style="flex:1;padding:12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;">
+          <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="10">
+            <button style="{{ n.style }}" onClick="{{ n.onClick }}">
+              <span style="{{ n.iconStyle }}">{{ n.icon }}</span>{{ n.label }}
+            </button>
+          </sc-for>
+        </nav>
+
+        <div style="padding:14px 20px;border-top:1px solid #eef0f4;display:flex;align-items:center;gap:10px;">
+          <div style="width:30px;height:30px;border-radius:999px;background:oklch(94% 0.03 258);color:oklch(40% 0.15 258);display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:11px;flex-shrink:0;">AN</div>
+          <div style="min-width:0;">
+            <p style="margin:0;font-size:12px;font-weight:700;">Ana Souza</p>
+            <p style="margin:1px 0 0;font-size:11px;color:#8b93a3;">Organizadora</p>
+          </div>
+        </div>
+      </aside>
+
+      <main style="flex:1;min-width:0;padding:32px 40px 80px;">
+
+        <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:48px;height:48px;border-radius:12px;background:oklch(94% 0.03 258);display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:12px;color:oklch(45% 0.16 258);">CB</div>
+              <div>
+                <h1 style="font-family:Sora,sans-serif;font-weight:800;font-size:22px;margin:0;">Copa da Baixada</h1>
+                <div style="display:flex;gap:8px;margin-top:6px;">
+                  <span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:oklch(90% 0.1 85);color:oklch(45% 0.1 70);">Em criação</span>
+                  <span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:oklch(94% 0.03 258);color:oklch(40% 0.15 258);">Campo</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button style="padding:9px 14px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">Regras</button>
+              <button style="padding:9px 14px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">Fases</button>
+              <button style="padding:9px 14px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">+ Categoria</button>
+            </div>
+          </div>
+
+          <div style="border:1px dashed #c7cdd8;border-radius:14px;background:#f6f7fb;min-height:200px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:12px;color:#8b93a3;">banner do campeonato</div>
+
+          <div style="border:1px solid oklch(85% 0.09 85);background:oklch(97% 0.03 85);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+            <p style="margin:0;font-size:13px;font-weight:600;color:oklch(38% 0.09 70);">Tenha o app e o site do seu campeonato — disponível nos planos Prata e Ouro.</p>
+            <button style="padding:9px 16px;border-radius:8px;border:none;background:oklch(55% 0.13 75);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Conhecer planos</button>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h2 style="margin:0;font-family:Sora,sans-serif;font-weight:700;font-size:16px;">Classificação</h2>
+            <div style="display:flex;gap:8px;">
+              <button onClick="{{ goStandings }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;cursor:pointer;">‹</button>
+              <button onClick="{{ goStandings }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;cursor:pointer;">›</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+              <div style="border:1px solid #e4e7ee;border-radius:14px;overflow:hidden;">
+                <p style="margin:0;padding:12px 16px;font-family:Sora,sans-serif;font-weight:700;font-size:13px;border-bottom:1px solid #eef0f4;">{{ g.name }}</p>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid #f2f3f7;">
+                    <span style="width:20px;height:20px;border-radius:5px;background:#161b26;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ r.pos }}</span>
+                    <span style="width:24px;height:24px;border-radius:999px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:8px;color:#fff;background:{{ r.color }};">{{ r.init }}</span>
+                    <span style="flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }}</span>
+                    <span style="font-family:Sora,sans-serif;font-weight:800;font-size:13px;">{{ r.pts }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border:1px solid #e4e7ee;border-radius:14px;padding:20px;">
+            <h2 style="margin:0 0 14px;font-family:Sora,sans-serif;font-weight:700;font-size:15px;">Artilharia</h2>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+              <sc-for list="{{ scorers }}" as="p" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:11px;color:#fff;background:{{ p.color }};">{{ p.init }}</div>
+                  <div style="min-width:0;">
+                    <p style="margin:0;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</p>
+                    <p style="margin:2px 0 0;font-size:11px;color:#8b93a3;">{{ p.goals }} gols</p>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isStandings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button style="padding:9px 16px;border-radius:8px;border:none;background:oklch(80% 0.13 85);color:oklch(30% 0.08 70);font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;">Adicionar times na tabela</button>
+              <button style="padding:9px 16px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;">Editar classificação</button>
+              <button style="padding:9px 16px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;">Mudar para pontos corridos</button>
+            </div>
+          </div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6b7280;margin-bottom:20px;">Como deseja visualizar a classificação?
+            <span style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;max-width:280px;padding:10px 14px;border:1px solid #e4e7ee;border-radius:8px;font-size:14px;font-weight:700;color:#161b26;">Por grupos <span style="color:#8b93a3;">▾</span></span>
+          </label>
+
+          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+                <div style="border:1px solid #e4e7ee;border-radius:14px;overflow:hidden;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #eef0f4;">
+                    <span style="font-family:Sora,sans-serif;font-weight:800;font-size:15px;">{{ g.name }}</span>
+                    <div style="display:flex;gap:10px;font-size:13px;color:#8b93a3;">
+                      <span style="cursor:pointer;">✎</span><span style="cursor:pointer;">🎨</span><span style="cursor:pointer;color:oklch(58% 0.19 25);">🗑</span>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:24px minmax(120px,1fr) repeat(9,28px);gap:4px;padding:8px 18px;font-size:10px;font-weight:700;color:#8b93a3;text-transform:uppercase;">
+                    <span></span><span>Time</span><span>Pts</span><span>J</span><span>V</span><span>E</span><span>D</span><span>GP</span><span>GC</span><span>SG</span><span>%</span>
+                  </div>
+                  <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                    <div style="display:grid;grid-template-columns:24px minmax(120px,1fr) repeat(9,28px);gap:4px;padding:9px 18px;font-size:12px;align-items:center;border-top:1px solid #f2f3f7;">
+                      <span style="width:22px;height:22px;border-radius:999px;background:{{ r.color }};display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:8px;color:#fff;">{{ r.init }}</span>
+                      <span style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }} <a href="#" style="font-size:10px;font-weight:700;text-decoration:none;margin-left:4px;">expandir</a></span>
+                      <span style="font-weight:800;">{{ r.pts }}</span><span>{{ r.j }}</span><span>{{ r.v }}</span><span>{{ r.e }}</span><span>{{ r.d }}</span><span>{{ r.gp }}</span><span>{{ r.gc }}</span><span>{{ r.sg }}</span><span>{{ r.pct }}</span>
+                    </div>
+                  </sc-for>
+                  <div style="padding:12px 18px;">
+                    <button style="padding:7px 14px;border-radius:8px;border:none;background:oklch(80% 0.13 85);color:oklch(30% 0.08 70);font-size:11px;font-weight:800;cursor:pointer;text-transform:uppercase;">+ Adicionar vaga</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div>
+              <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button style="flex:1;padding:10px;border-radius:8px;border:none;background:oklch(47% 0.17 258);color:#fff;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;">Sortear jogos</button>
+                <button style="flex:1;padding:10px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;">Ver jogos</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:#161b26;color:#fff;border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+                <span style="cursor:pointer;">‹</span>
+                <span style="font-family:Sora,sans-serif;font-weight:800;font-size:14px;">Rodada 1</span>
+                <span style="cursor:pointer;">⚙</span>
+              </div>
+              <sc-for list="{{ upcomingMatches }}" as="m" hint-placeholder-count="3">
+                <div style="border:1px solid #e4e7ee;border-radius:12px;padding:14px;margin-bottom:12px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div style="text-align:center;flex:1;min-width:0;">
+                      <div style="width:30px;height:30px;border-radius:999px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:9px;color:#fff;background:{{ m.homeColor }};">{{ m.homeInit }}</div>
+                      <p style="margin:4px 0 0;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ m.home }}</p>
+                    </div>
+                    <span style="font-size:11px;font-weight:700;color:#8b93a3;">x</span>
+                    <div style="text-align:center;flex:1;min-width:0;">
+                      <div style="width:30px;height:30px;border-radius:999px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:9px;color:#fff;background:{{ m.awayColor }};">{{ m.awayInit }}</div>
+                      <p style="margin:4px 0 0;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ m.away }}</p>
+                    </div>
+                  </div>
+                  <p style="margin:8px 0 0;text-align:center;font-size:10px;color:#8b93a3;">{{ m.day }} {{ m.date }} · {{ m.time }}</p>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isTeams }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
+            <h1 style="font-family:Sora,sans-serif;font-weight:800;font-size:22px;margin:0;">{{ teamsTitle }}</h1>
+            <div style="display:flex;gap:8px;background:#f6f7fb;padding:4px;border-radius:10px;">
+              <sc-for list="{{ teamsTabs }}" as="t" hint-placeholder-count="2">
+                <button style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid oklch(85% 0.09 85);background:oklch(97% 0.03 85);border-radius:12px;padding:14px 20px;margin-bottom:18px;">
+            <p style="margin:0;font-size:13px;font-weight:700;color:oklch(38% 0.09 70);">Clique em Permissões dos técnicos para gerenciar a inscrição de atletas e times.</p>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+            <button style="padding:9px 16px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">🔒 Permissões dos técnicos</button>
+            <button style="padding:9px 16px;border-radius:8px;border:1px solid oklch(85% 0.13 30);background:oklch(97% 0.03 30);color:oklch(50% 0.17 25);font-size:12px;font-weight:700;cursor:pointer;">🔒 Inscrever</button>
+            <button style="padding:9px 16px;border-radius:8px;border:1px solid oklch(85% 0.13 30);background:oklch(97% 0.03 30);color:oklch(50% 0.17 25);font-size:12px;font-weight:700;cursor:pointer;">🔒 Editar</button>
+            <button style="padding:9px 16px;border-radius:8px;border:1px solid oklch(85% 0.13 30);background:oklch(97% 0.03 30);color:oklch(50% 0.17 25);font-size:12px;font-weight:700;cursor:pointer;">🔒 Deletar</button>
+          </div>
+
+          <sc-if value="{{ isTeamsTabTeams }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+              <sc-for list="{{ teamsList }}" as="team" hint-placeholder-count="8">
+                <div style="background:#fff;border:1px solid #e4e7ee;border-radius:14px;padding:18px;display:flex;gap:14px;align-items:flex-start;">
+                  <div style="width:44px;height:44px;border-radius:999px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:12px;color:#fff;background:{{ team.color }};">{{ team.init }}</div>
+                  <div style="min-width:0;flex:1;">
+                    <p style="margin:0;font-size:14px;font-weight:700;">{{ team.name }}</p>
+                    <p style="margin:3px 0 8px;font-size:12px;color:#8b93a3;">{{ team.category }} · {{ team.players }} atletas</p>
+                    <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:{{ team.statusBg }};color:{{ team.statusColor }};">{{ team.status }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isTeamsTabAthletes }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #e4e7ee;border-radius:14px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:2fr 1.4fr 1.2fr 1fr;gap:12px;padding:12px 20px;background:#f6f7fb;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;">
+                <span>Atleta</span><span>Equipe</span><span>Posição</span><span>Status</span>
+              </div>
+              <sc-for list="{{ athletesList }}" as="a" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:2fr 1.4fr 1.2fr 1fr;gap:12px;padding:14px 20px;border-top:1px solid #eef0f4;align-items:center;">
+                  <span style="font-size:14px;font-weight:600;">{{ a.name }}</span>
+                  <span style="font-size:13px;color:#6b7280;">{{ a.team }}</span>
+                  <span style="font-size:13px;color:#6b7280;">{{ a.position }}</span>
+                  <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;width:fit-content;background:{{ a.statusBg }};color:{{ a.statusColor }};">{{ a.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+          <h1 style="font-family:Sora,sans-serif;font-weight:800;font-size:22px;margin:0 0 18px;">Configurações</h1>
+          <div style="display:flex;gap:24px;border-bottom:1px solid #e4e7ee;margin-bottom:24px;">
+            <sc-for list="{{ settingsTabs }}" as="t" hint-placeholder-count="3">
+              <button style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ isSettingsGeral }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0 0 16px;font-family:Sora,sans-serif;font-weight:700;font-size:15px;">Informações do campeonato</p>
+            <div style="display:flex;gap:16px;align-items:center;margin-bottom:22px;">
+              <div style="width:64px;height:64px;border-radius:14px;background:oklch(94% 0.03 258);display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:13px;color:oklch(45% 0.16 258);">CB</div>
+              <button style="padding:9px 16px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">Escolher imagem</button>
+            </div>
+            <div style="border:1px solid oklch(85% 0.09 85);background:oklch(97% 0.03 85);border-radius:12px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+              <p style="margin:0;font-size:13px;font-weight:600;color:oklch(38% 0.09 70);">Você está no plano gratuito — faça upgrade para liberar todas as funcionalidades.</p>
+              <button style="padding:9px 16px;border-radius:8px;border:none;background:oklch(55% 0.13 75);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Ver planos</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;">
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#475569;grid-column:1/-1;">Nome do campeonato
+                <input value="Copa da Baixada" style="padding:10px 12px;border-radius:8px;border:1px solid #e4e7ee;font-size:14px;font-family:Manrope,sans-serif;font-weight:400;color:#161b26;"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#475569;">Quando começa?
+                <input value="12/07/2026" style="padding:10px 12px;border-radius:8px;border:1px solid #e4e7ee;font-size:14px;font-family:Manrope,sans-serif;font-weight:400;color:#161b26;"/>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#475569;">E quando termina?
+                <input placeholder="—" style="padding:10px 12px;border-radius:8px;border:1px solid #e4e7ee;font-size:14px;font-family:Manrope,sans-serif;font-weight:400;color:#161b26;"/>
+              </label>
+            </div>
+            <label style="display:block;font-size:13px;font-weight:700;color:#475569;margin-bottom:8px;">Cor de destaque do campeonato</label>
+            <div style="display:flex;gap:10px;margin-bottom:24px;">
+              <sc-for list="{{ swatches }}" as="sw" hint-placeholder-count="6">
+                <button style="{{ sw.style }}" onClick="{{ sw.onClick }}"></button>
+              </sc-for>
+            </div>
+            <label style="display:block;font-size:13px;font-weight:700;color:#475569;margin-bottom:8px;">Regulamento (PDF)</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+              <div style="width:34px;height:40px;border-radius:4px;background:oklch(90% 0.13 25);color:oklch(45% 0.17 25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;">PDF</div>
+              <span style="font-size:13px;color:#8b93a3;">Nenhum regulamento selecionado</span>
+              <button style="padding:8px 14px;border-radius:8px;border:1px solid #e4e7ee;background:#fff;font-size:12px;font-weight:700;cursor:pointer;">Escolher regulamento</button>
+            </div>
+            <button style="padding:11px 20px;border-radius:10px;border:none;background:oklch(47% 0.17 258);color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Salvar alterações</button>
+          </sc-if>
+          <sc-if value="{{ isSettingsOther }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;font-size:14px;color:#8b93a3;">{{ settingsTab }} — não incluído nesta rodada de mockups.</p>
+          </sc-if>
+        </sc-if>
+
+      </main>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSumula }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:56px 20px 80px;">
+      <div style="width:380px;border-radius:44px;border:12px solid #161b26;background:#161b26;overflow:hidden;box-shadow:0 24px 48px -24px rgba(0,0,0,.35);">
+        <div style="width:60px;height:5px;border-radius:999px;background:rgba(255,255,255,.3);margin:10px auto 0;"></div>
+        <div style="background:#fff;border-radius:32px 32px 0 0;margin-top:8px;padding:18px 18px 22px;min-height:640px;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <span style="font-family:Sora,sans-serif;font-weight:800;font-size:14px;">Súmula</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:oklch(58% 0.19 25);">
+              <span style="width:7px;height:7px;border-radius:999px;background:oklch(58% 0.19 25);"></span>AO VIVO · 78'
+            </span>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#f6f7fb;border-radius:14px;padding:16px;margin-bottom:18px;">
+            <div style="text-align:center;">
+              <div style="width:38px;height:38px;border-radius:999px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:11px;color:#fff;background:oklch(47% 0.17 258);">AM</div>
+              <p style="margin:6px 0 0;font-size:11px;font-weight:700;">Amazonas EC</p>
+            </div>
+            <p style="margin:0;font-family:Sora,sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;">2–1</p>
+            <div style="text-align:center;">
+              <div style="width:38px;height:38px;border-radius:999px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:11px;color:#fff;background:oklch(55% 0.09 250);">GU</div>
+              <p style="margin:6px 0 0;font-size:11px;font-weight:700;">Guarani FC</p>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <sc-for list="{{ sumulaActions }}" as="act" hint-placeholder-count="3">
+              <button style="flex:1;min-height:58px;border-radius:12px;border:1px solid #e4e7ee;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-family:Manrope,sans-serif;font-weight:700;font-size:12px;cursor:pointer;">
+                <span style="width:9px;height:9px;border-radius:999px;background:{{ act.color }};"></span>{{ act.label }}
+              </button>
+            </sc-for>
+          </div>
+
+          <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#8b93a3;text-transform:uppercase;letter-spacing:.04em;">Eventos registrados</p>
+          <div style="flex:1;overflow-y:auto;">
+            <sc-for list="{{ sumulaEvents }}" as="ev" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef0f4;">
+                <span style="width:28px;font-size:12px;font-weight:700;color:#8b93a3;">{{ ev.min }}</span>
+                <span style="width:8px;height:8px;border-radius:999px;flex-shrink:0;background:{{ ev.color }};"></span>
+                <span style="font-size:13px;font-weight:600;">{{ ev.type }} — {{ ev.desc }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <button style="margin-top:14px;padding:14px;border-radius:12px;border:none;background:oklch(47% 0.17 258);color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Finalizar súmula</button>
+        </div>
+      </div>
+      <p style="max-width:380px;margin-top:20px;font-size:13px;color:#6b7280;text-align:center;">Botões grandes e uma única lista de eventos — sem menus aninhados para registrar em campo.</p>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const BLUE='oklch(47% 0.17 258)', ORANGE='oklch(60% 0.14 45)', PURPLE='oklch(52% 0.15 300)', OLIVE='oklch(58% 0.1 110)', CYAN='oklch(60% 0.1 210)', ROSE='oklch(58% 0.16 15)';
+
+const TEAMS_RAW = [
+  { name:'Amazonas EC', init:'AM', color:BLUE, category:'Adulto masculino', players:24, status:'Ativa' },
+  { name:'Guarani FC', init:'GU', color:CYAN, category:'Adulto masculino', players:22, status:'Ativa' },
+  { name:'Rio Preto FC', init:'RP', color:ORANGE, category:'Adulto masculino', players:23, status:'Ativa' },
+  { name:'União Atlética', init:'UA', color:PURPLE, category:'Adulto masculino', players:21, status:'Pendente' },
+  { name:'Palmeirinha EC', init:'PA', color:OLIVE, category:'Adulto masculino', players:20, status:'Ativa' },
+  { name:'Sport Baixada', init:'SB', color:ROSE, category:'Adulto masculino', players:19, status:'Ativa' },
+  { name:'Vila Nova AC', init:'VN', color:BLUE, category:'Adulto masculino', players:22, status:'Pendente' },
+  { name:'Estrela do Norte', init:'EN', color:CYAN, category:'Adulto masculino', players:18, status:'Ativa' },
+];
+
+class Component extends DCLogic {
+  state = { screen: 'list', teamsTab: 'teams', settingsTab2: 0, swatch: 0 };
+
+  pillStyle(active) {
+    return `padding:8px 14px;border-radius:8px;border:1px solid ${active ? 'oklch(47% 0.17 258)' : 'rgba(255,255,255,.16)'};background:${active ? 'oklch(47% 0.17 258)' : 'transparent'};color:#fff;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;`;
+  }
+  navStyle(active) {
+    return `display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;border:none;background:${active ? 'oklch(94% 0.03 258)' : 'transparent'};color:${active ? 'oklch(40% 0.15 258)' : '#475569'};font-family:Manrope,sans-serif;font-weight:${active ? '700' : '600'};font-size:14px;cursor:pointer;text-align:left;width:100%;`;
+  }
+  iconStyle(active) {
+    return `width:22px;height:22px;border-radius:6px;background:${active ? 'oklch(88% 0.06 258)' : '#f0f2f5'};display:flex;align-items:center;justify-content:center;font-family:Sora,sans-serif;font-weight:800;font-size:9px;color:${active ? 'oklch(40% 0.15 258)' : '#8b93a3'};flex-shrink:0;`;
+  }
+  toggleStyle(active) {
+    return `padding:8px 16px;border-radius:8px;border:none;background:${active ? '#fff' : 'transparent'};color:${active ? '#161b26' : '#6b7280'};box-shadow:${active ? '0 1px 3px rgba(0,0,0,.08)' : 'none'};font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;`;
+  }
+  settingsTabStyle(active) {
+    return `padding:12px 2px;border:none;border-bottom:2px solid ${active ? 'oklch(47% 0.17 258)' : 'transparent'};background:none;color:${active ? '#161b26' : '#8b93a3'};font-family:Manrope,sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;`;
+  }
+  swatchStyle(color, active) {
+    return `width:30px;height:30px;border-radius:999px;background:${color};border:2px solid ${active ? '#161b26' : 'transparent'};box-shadow:0 0 0 2px #fff, 0 0 0 3px ${active ? '#161b26' : '#e4e7ee'};cursor:pointer;`;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+
+    const screens = [
+      { key: 'list', label: 'Meus campeonatos' },
+      { key: 'home', label: 'Início do campeonato' },
+      { key: 'standings', label: 'Classificação' },
+      { key: 'teams', label: 'Times & Atletas' },
+      { key: 'settings', label: 'Configurações' },
+      { key: 'sumula', label: 'Súmula (mobile)' },
+    ].map((sc) => ({ ...sc, pillStyle: this.pillStyle(s.screen === sc.key), onClick: () => set({ screen: sc.key }) }));
+
+    const isList = s.screen === 'list';
+    const isHome = s.screen === 'home';
+    const isStandings = s.screen === 'standings';
+    const isTeams = s.screen === 'teams';
+    const isSettings = s.screen === 'settings';
+    const isSumula = s.screen === 'sumula';
+    const hasSidebar = isHome || isStandings || isTeams || isSettings;
+
+    const navRaw = [
+      { key: 'home', label: 'Início', screen: 'home', icon: 'IN' },
+      { key: 'standings', label: 'Classificação', screen: 'standings', icon: 'CL' },
+      { key: 'teams', label: 'Times', screen: 'teams', teamsTab: 'teams', icon: 'TI' },
+      { key: 'athletes', label: 'Atletas', screen: 'teams', teamsTab: 'athletes', icon: 'AT' },
+      { key: 'stats', label: 'Estatísticas', screen: null, icon: 'ES' },
+      { key: 'site', label: 'Site de divulgação', screen: null, icon: 'SI' },
+      { key: 'arb', label: 'Arbitragem', screen: null, icon: 'AR' },
+      { key: 'campos', label: 'Campos', screen: null, icon: 'CA' },
+      { key: 'calendario', label: 'Calendário', screen: null, icon: 'CD' },
+      { key: 'settings', label: 'Configurações', screen: 'settings', icon: 'CO' },
+    ];
+    const navItems = navRaw.map((n) => {
+      const active = n.screen && s.screen === n.screen && (!n.teamsTab || n.teamsTab === s.teamsTab);
+      return { ...n, style: this.navStyle(active), iconStyle: this.iconStyle(active), onClick: n.screen ? () => set({ screen: n.screen, ...(n.teamsTab ? { teamsTab: n.teamsTab } : {}) }) : null };
+    });
+
+    const teamsTabs = [
+      { key: 'teams', label: 'Times' },
+      { key: 'athletes', label: 'Atletas' },
+    ].map((t) => ({ ...t, style: this.toggleStyle(s.teamsTab === t.key), onClick: () => set({ teamsTab: t.key }) }));
+
+    const settingsTabsRaw = ['Informações gerais', 'Categorias', 'Tags'];
+    const settingsTabs = settingsTabsRaw.map((label, i) => ({
+      label, style: this.settingsTabStyle(s.settingsTab2 === i), onClick: () => set({ settingsTab2: i }),
+    }));
+
+    const swatchColors = [BLUE, ORANGE, PURPLE, OLIVE, CYAN, ROSE];
+    const swatches = swatchColors.map((c, i) => ({ style: this.swatchStyle(c, s.swatch === i), onClick: () => set({ swatch: i }) }));
+
+    const orgKpis = [
+      { label: 'Campeonatos', value: '3', valueColor: 'oklch(45% 0.16 258)', labelColor: '#6b7280' },
+      { label: 'Times', value: '8', valueColor: 'oklch(55% 0.11 210)', labelColor: '#6b7280', sub: 'ver banco de times', subColor: '#8b93a3' },
+      { label: 'Atletas', value: '186', valueColor: 'oklch(55% 0.13 75)', labelColor: '#6b7280' },
+      { label: 'Jogos', value: '24', valueColor: 'oklch(55% 0.16 20)', labelColor: '#6b7280' },
+    ].map((k) => ({ ...k, cardStyle: 'background:#fff;border:1px solid #e4e7ee;border-radius:14px;padding:18px;' }));
+    orgKpis.push({ label: 'Plano Elite', value: '50% off', valueColor: '#fff', labelColor: 'rgba(255,255,255,.85)', sub: '1º mês', subColor: 'rgba(255,255,255,.85)', cardStyle: `background:oklch(47% 0.17 258);border-radius:14px;padding:18px;` });
+
+    const upcomingMatches = [
+      { day: 'Sáb', date: '09 Ago', time: '16:00', home: 'Amazonas EC', away: 'Guarani FC', homeColor: BLUE, awayColor: CYAN, homeInit: 'AM', awayInit: 'GU' },
+      { day: 'Dom', date: '10 Ago', time: '10:00', home: 'Rio Preto FC', away: 'União Atlética', homeColor: ORANGE, awayColor: PURPLE, homeInit: 'RP', awayInit: 'UA' },
+      { day: 'Dom', date: '10 Ago', time: '15:30', home: 'Palmeirinha EC', away: 'Sport Baixada', homeColor: OLIVE, awayColor: ROSE, homeInit: 'PA', awayInit: 'SB' },
+    ];
+
+    const mkRow = (pos, name, color, init, pts, j, v, e, d, gp, gc) => ({
+      pos, name, color, init, pts, j, v, e, d, gp, gc, sg: gp - gc, pct: Math.round((pts / (j * 3)) * 100),
+    });
+    const groups = [
+      { name: 'Grupo A', rows: [
+        mkRow(1, 'Amazonas EC', BLUE, 'AM', 12, 4, 4, 0, 0, 11, 2),
+        mkRow(2, 'Guarani FC', CYAN, 'GU', 7, 4, 2, 1, 1, 8, 6),
+        mkRow(3, 'Rio Preto FC', ORANGE, 'RP', 4, 4, 1, 1, 2, 5, 7),
+        mkRow(4, 'União Atlética', PURPLE, 'UA', 1, 4, 0, 1, 3, 2, 11),
+      ]},
+      { name: 'Grupo B', rows: [
+        mkRow(1, 'Palmeirinha EC', OLIVE, 'PA', 9, 4, 3, 0, 1, 9, 4),
+        mkRow(2, 'Sport Baixada', ROSE, 'SB', 8, 4, 2, 2, 0, 7, 3),
+        mkRow(3, 'Vila Nova AC', BLUE, 'VN', 5, 4, 1, 2, 1, 6, 6),
+        mkRow(4, 'Estrela do Norte', CYAN, 'EN', 2, 4, 0, 2, 2, 3, 9),
+      ]},
+    ];
+
+    const scorers = [
+      { name: 'João Pedro', goals: 14, init: 'JP', color: BLUE },
+      { name: 'M. Lima', goals: 11, init: 'ML', color: CYAN },
+      { name: 'Vinícius Souza', goals: 9, init: 'VS', color: ORANGE },
+      { name: 'Carlos Neto', goals: 8, init: 'CN', color: PURPLE },
+    ];
+
+    const teamsList = TEAMS_RAW.map((t) => ({
+      ...t,
+      statusBg: t.status === 'Ativa' ? 'oklch(94% 0.05 155)' : 'oklch(94% 0.06 85)',
+      statusColor: t.status === 'Ativa' ? 'oklch(45% 0.13 155)' : 'oklch(48% 0.1 70)',
+    }));
+
+    const athletesList = [
+      { name: 'João Pedro', team: 'Amazonas EC', position: 'Atacante', status: 'Regular' },
+      { name: 'M. Lima', team: 'Guarani FC', position: 'Atacante', status: 'Regular' },
+      { name: 'Vinícius Souza', team: 'Rio Preto FC', position: 'Meio-campo', status: 'Regular' },
+      { name: 'Rafael Torres', team: 'Amazonas EC', position: 'Zagueiro', status: 'Pendente doc.' },
+      { name: 'Bruno Alves', team: 'Vila Nova AC', position: 'Goleiro', status: 'Regular' },
+      { name: 'Carlos Neto', team: 'União Atlética', position: 'Atacante', status: 'Regular' },
+    ].map((a) => ({
+      ...a,
+      statusBg: a.status === 'Regular' ? 'oklch(94% 0.05 155)' : 'oklch(94% 0.06 85)',
+      statusColor: a.status === 'Regular' ? 'oklch(45% 0.13 155)' : 'oklch(48% 0.1 70)',
+    }));
+
+    const sumulaActions = [
+      { label: 'Gol', color: 'oklch(60% 0.15 150)' },
+      { label: 'Cartão', color: 'oklch(80% 0.13 85)' },
+      { label: 'Substituição', color: 'oklch(47% 0.17 258)' },
+    ];
+    const sumulaEvents = [
+      { min: "12'", type: 'Gol', desc: 'João Pedro (Amazonas EC)', color: 'oklch(60% 0.15 150)' },
+      { min: "34'", type: 'Cartão amarelo', desc: 'Vinícius Souza (Guarani FC)', color: 'oklch(80% 0.13 85)' },
+      { min: "61'", type: 'Gol', desc: 'M. Lima (Guarani FC)', color: 'oklch(60% 0.15 150)' },
+      { min: "70'", type: 'Gol', desc: 'João Pedro (Amazonas EC)', color: 'oklch(60% 0.15 150)' },
+    ];
+
+    return {
+      screens, navItems, teamsTabs, settingsTabs, swatches, orgKpis,
+      hasSidebar, isList, isHome, isStandings, isTeams, isSettings, isSumula,
+      isTeamsTabTeams: s.teamsTab === 'teams',
+      isTeamsTabAthletes: s.teamsTab === 'athletes',
+      teamsTitle: s.teamsTab === 'athletes' ? 'Atletas' : 'Times',
+      isSettingsGeral: s.settingsTab2 === 0,
+      isSettingsOther: s.settingsTab2 !== 0,
+      settingsTab: settingsTabsRaw[s.settingsTab2],
+      goList: () => set({ screen: 'list' }),
+      goHome: () => set({ screen: 'home' }),
+      goStandings: () => set({ screen: 'standings' }),
+      upcomingMatches, groups, scorers, teamsList, athletesList,
+      sumulaActions, sumulaEvents,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
