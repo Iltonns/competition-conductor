@@ -52,25 +52,34 @@ export function navRowClassName({
   collapsed,
   available,
   active,
-  activeClassName = "bg-[#f0f2f5] text-[#1c2733] shadow-sm",
+  variant = "dark",
 }: {
   collapsed: boolean;
   available: boolean;
   active?: boolean;
-  activeClassName?: string;
+  /** "dark" = blue/dark sidebar (white text); "light" = white sidebar (dark text) */
+  variant?: "dark" | "light";
 }) {
+  const isLight = variant === "light";
+
   if (!available) {
     return cn(
-      "flex min-h-9 items-center rounded-lg text-[10px] font-semibold text-muted-foreground/55",
-      collapsed ? "justify-center px-2" : "gap-2 px-3",
+      "flex min-h-9 items-center rounded-lg font-semibold",
+      isLight ? "text-foreground/40 text-xs" : "text-[10px] text-white/40",
+      collapsed ? "justify-center px-2" : "gap-2.5 px-3",
     );
   }
   return cn(
-    "group flex min-h-9 items-center rounded-lg text-[10px] font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
-    collapsed ? "justify-center px-2" : "gap-2 px-3",
+    "group flex min-h-9 items-center rounded-lg font-semibold transition focus-visible:ring-2 focus-visible:ring-ring",
+    isLight ? "text-xs" : "text-[10px]",
+    collapsed ? "justify-center px-2" : "gap-2.5 px-3",
     active
-      ? activeClassName
-      : "text-sidebar-foreground/85 hover:bg-white/12 hover:text-sidebar-foreground",
+      ? isLight
+        ? "bg-primary/10 text-primary"
+        : "bg-white/20 text-white shadow-sm"
+      : isLight
+        ? "text-foreground/70 hover:bg-muted hover:text-foreground"
+        : "text-white/80 hover:bg-white/10 hover:text-white",
   );
 }
 

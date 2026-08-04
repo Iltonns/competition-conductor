@@ -154,7 +154,7 @@ function DesktopDashboard({
 
         <div className="card-arena col-span-4 p-4">
           <SectionHeader title="Artilharia" action="Ver ranking" />
-          <ol className="mt-2 divide-y divide-white/[0.055]">
+          <ol className="mt-2 divide-y divide-border">
             {data.scorers.slice(0, 4).map((scorer) => (
               <li key={scorer.name} className="flex items-center gap-2.5 py-2">
                 <span className="w-3 text-center font-display text-[9px] font-bold text-muted-foreground">
@@ -188,7 +188,7 @@ function DesktopDashboard({
             <select
               value={year}
               onChange={(event) => onYearChange(Number(event.target.value))}
-              className="h-7 rounded-lg border border-white/[0.07] bg-white/[0.025] px-2 text-[9px] text-foreground outline-none focus:border-neon/30"
+              className="h-7 rounded-lg border border-border bg-muted px-2 text-[9px] text-foreground outline-none focus:border-primary/40"
             >
               {data.years.map((availableYear) => (
                 <option key={availableYear} value={availableYear}>
@@ -207,16 +207,16 @@ function DesktopDashboard({
               >
                 <defs>
                   <linearGradient id="dashboard-performance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="oklch(0.88 0.22 128)" stopOpacity={0.34} />
-                    <stop offset="100%" stopColor="oklch(0.88 0.22 128)" stopOpacity={0} />
+                    <stop offset="0%" stopColor="oklch(0.47 0.17 258)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="oklch(0.47 0.17 258)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} stroke="oklch(1 0 0 / 0.045)" />
+                <CartesianGrid vertical={false} stroke="oklch(0 0 0 / 0.06)" />
                 <XAxis
                   dataKey="month"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "oklch(0.68 0.012 252)", fontSize: 8 }}
+                  tick={{ fill: "oklch(0.5 0.012 252)", fontSize: 8 }}
                 />
                 <YAxis
                   axisLine={false}
@@ -224,25 +224,26 @@ function DesktopDashboard({
                   tick={{ fill: "oklch(0.5 0.012 252)", fontSize: 8 }}
                 />
                 <Tooltip
-                  cursor={{ stroke: "oklch(0.88 0.22 128 / 0.22)" }}
+                  cursor={{ stroke: "oklch(0.47 0.17 258 / 0.25)" }}
                   contentStyle={{
-                    background: "oklch(0.13 0.018 255 / 0.96)",
-                    border: "1px solid oklch(1 0 0 / 0.08)",
+                    background: "#ffffff",
+                    border: "1px solid oklch(0 0 0 / 0.1)",
                     borderRadius: 10,
                     fontSize: 10,
+                    color: "#1c2733",
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="goals"
-                  stroke="oklch(0.88 0.22 128)"
+                  stroke="oklch(0.47 0.17 258)"
                   strokeWidth={1.8}
                   fill="url(#dashboard-performance)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex flex-col justify-center border-l border-white/[0.06] pl-5">
+          <div className="flex flex-col justify-center border-l border-border pl-5">
             <span className="text-[9px] text-muted-foreground">Total de gols</span>
             <strong className="number-tabular mt-1 font-display text-4xl font-extrabold tracking-[-0.06em]">
               {data.performance.reduce((total, month) => total + month.goals, 0)}
@@ -320,7 +321,7 @@ function MobileDashboard({ data, displayName }: { data: DashboardData; displayNa
 
       <section className="card-arena p-3.5">
         <SectionHeader title="Últimos resultados" action="Ver todos" />
-        <div className="mt-2 divide-y divide-white/[0.06]">
+        <div className="mt-2 divide-y divide-border">
           {data.recentResults.map((result) => (
             <div
               key={result.id}
@@ -377,7 +378,7 @@ function MobileDashboard({ data, displayName }: { data: DashboardData; displayNa
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center text-[10px] text-muted-foreground">
+    <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-[10px] text-muted-foreground">
       {text}
     </p>
   );

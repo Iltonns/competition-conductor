@@ -17,7 +17,7 @@ interface ChampionshipCardProps {
 export function ChampionshipCard({ championship, onEdit }: ChampionshipCardProps) {
   return (
     <article className="card-arena overflow-hidden">
-      <div className="relative h-28 bg-gradient-to-br from-neon/15 via-sky-400/5 to-violet-400/10">
+      <div className="relative h-28 bg-gradient-to-br from-primary/12 via-secondary/60 to-accent/30">
         {championship.cover_url ? (
           <img
             src={championship.cover_url}
@@ -26,7 +26,7 @@ export function ChampionshipCard({ championship, onEdit }: ChampionshipCardProps
           />
         ) : (
           <Trophy
-            className="absolute bottom-4 right-4 h-14 w-14 text-white/10"
+            className="absolute bottom-4 right-4 h-14 w-14 text-primary/15"
             aria-hidden="true"
           />
         )}
@@ -70,7 +70,7 @@ export function ChampionshipCard({ championship, onEdit }: ChampionshipCardProps
           </div>
         </dl>
 
-        <div className="mt-4 flex flex-wrap justify-end gap-1 border-t border-white/[0.06] pt-3">
+        <div className="mt-4 flex flex-wrap justify-end gap-1 border-t border-border pt-3">
           <Button variant="ghost" size="sm" onClick={onEdit}>
             <Pencil className="h-3.5 w-3.5" /> Editar
           </Button>

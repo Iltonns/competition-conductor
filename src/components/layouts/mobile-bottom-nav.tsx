@@ -40,7 +40,7 @@ export function MobileBottomNav({ items }: { items: MobileNavEntry[] }) {
               key={item.to}
               to={item.to}
               onClick={item.onClick}
-              className="mx-auto -mt-5 grid h-12 w-12 place-items-center rounded-2xl border border-neon/40 bg-neon text-neon-foreground shadow-[0_10px_28px_-10px_var(--color-neon)] transition active:scale-95"
+              className="mx-auto -mt-5 grid h-12 w-12 place-items-center rounded-2xl border border-primary/40 bg-primary text-primary-foreground shadow-[0_10px_28px_-10px_var(--color-primary)] transition active:scale-95"
               aria-label={item.label}
             >
               <item.icon className="h-5 w-5" />
@@ -72,7 +72,7 @@ function MobileNavItem({
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg text-[8px] font-semibold transition",
-        active ? "text-neon" : "text-muted-foreground active:text-foreground",
+        active ? "text-primary" : "text-muted-foreground active:text-foreground",
       )}
     >
       <Icon className="h-[18px] w-[18px]" />

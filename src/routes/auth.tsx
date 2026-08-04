@@ -137,7 +137,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="bg-arena flex min-h-screen items-center justify-center px-5 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-5 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
           <Link to="/">
@@ -174,7 +174,7 @@ function AuthPage() {
 
             <TabsContent value="signin">
               {awaitingEmailConfirmation && (
-                <Alert className="mt-4 border-neon/30 bg-neon/5">
+                <Alert className="mt-4 border-primary/30 bg-primary/5">
                   <AlertTitle>Confirme seu e-mail</AlertTitle>
                   <AlertDescription className="mt-1 text-muted-foreground">
                     Abra o link enviado para {email.trim().toLowerCase()} antes de entrar.
@@ -182,7 +182,7 @@ function AuthPage() {
                       type="button"
                       onClick={handleResendConfirmation}
                       disabled={busy}
-                      className="mt-2 block font-medium text-neon hover:underline disabled:opacity-50"
+                      className="mt-2 block font-medium text-primary hover:underline disabled:opacity-50"
                     >
                       Reenviar confirmação
                     </button>
@@ -211,14 +211,14 @@ function AuthPage() {
                 <button
                   type="button"
                   onClick={handleForgot}
-                  className="text-xs text-muted-foreground hover:text-neon"
+                  className="text-xs text-muted-foreground hover:text-primary"
                 >
                   Esqueci minha senha
                 </button>
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="w-full bg-neon text-neon-foreground hover:bg-neon/90"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {busy ? "Entrando..." : "Entrar"}
                 </Button>
@@ -256,7 +256,7 @@ function AuthPage() {
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="w-full bg-neon text-neon-foreground hover:bg-neon/90"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {busy ? "Criando..." : "Criar minha conta"}
                 </Button>

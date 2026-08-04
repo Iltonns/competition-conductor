@@ -188,10 +188,10 @@
   --neon-foreground: #1c2733;
   --neon-soft: rgb(255 255 255 / 0.12);
   --border: rgb(255 255 255 / 0.2);
-  --input: #dce1e8;
+  --input: oklch(94% 0.03 258);
   --ring: #f0f2f5;
-  background-color: var(--card);
-  color: var(--card-foreground);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
 }
 
 @utility text-neon {
@@ -305,26 +305,13 @@
 .bg-card,
 .bg-popover,
 .card-arena,
-.surface-panel,
-.glass-panel {
-  --foreground: #ffffff;
-  --card-foreground: #ffffff;
-  --popover-foreground: #ffffff;
-  --primary: #f0f2f5;
-  --primary-foreground: #1c2733;
-  --secondary: rgb(255 255 255 / 0.14);
-  --secondary-foreground: #ffffff;
-  --muted: rgb(255 255 255 / 0.12);
-  --muted-foreground: rgb(255 255 255 / 0.72);
-  --accent: #f0f2f5;
-  --accent-foreground: #1c2733;
-  --neon: #f0f2f5;
-  --neon-foreground: #1c2733;
-  --neon-soft: rgb(255 255 255 / 0.12);
-  --border: rgb(255 255 255 / 0.2);
-  --input: #dce1e8;
-  --ring: #f0f2f5;
+.surface-panel {
   background: var(--card);
+  color: var(--card-foreground);
+}
+
+.glass-panel {
+  background: var(--glass-background);
   color: var(--card-foreground);
 }
 
