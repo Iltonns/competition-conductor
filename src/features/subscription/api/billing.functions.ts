@@ -22,11 +22,6 @@ const infinitePayLinkSchema = z.object({
   url: z.string().url().startsWith("https://checkout.infinitepay.com.br/"),
 });
 
-type BillingRpc = (
-  name: "prepare_subscription_checkout" | "attach_subscription_checkout_url",
-  args: Record<string, unknown>,
-) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-
 function requiredServerUrl(name: "APP_BASE_URL") {
   const value = process.env[name];
   if (!value) throw new Error(`billing:missing_${name.toLowerCase()}`);
@@ -60,8 +55,7 @@ export const createInfinitePayCheckout = createServerFn({ method: "POST" })
     const startedAt = Date.now();
     let failureKind: "server_error" | "rpc_failure" = "rpc_failure";
     try {
-      const rpc = context.supabase.rpc as unknown as BillingRpc;
-      const { data: preparedData, error: prepareError } = await rpc(
+      const { data: preparedData, error: prepareError } = await context.supabase.rpc(
         "prepare_subscription_checkout",
         {
           p_organization_id: data.organizationId,
@@ -98,10 +92,13 @@ export const createInfinitePayCheckout = createServerFn({ method: "POST" })
 
       const link = infinitePayLinkSchema.parse(await response.json());
       failureKind = "rpc_failure";
-      const { error: attachError } = await rpc("attach_subscription_checkout_url", {
-        p_order_id: prepared.id,
-        p_checkout_url: link.url,
-      });
+      const { error: attachError } = await context.supabase.rpc(
+        "attach_subscription_checkout_url",
+        {
+          p_order_id: prepared.id,
+          p_checkout_url: link.url,
+        },
+      );
       if (attachError) throw new Error(attachError.message);
       return { url: link.url };
     } catch (error) {

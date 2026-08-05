@@ -104,14 +104,8 @@ const planChangePreviewSchema = z.object({
   }),
 });
 
-type PlanCatalogRpc = (
-  name: "list_available_plans" | "preview_organization_plan_change",
-  args?: Record<string, unknown>,
-) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-
 export async function listAvailablePlans(): Promise<CommercialPlan[]> {
-  // Remover o adapter apos aplicar a migration e regenerar os tipos oficiais.
-  const { data, error } = await (supabase.rpc as unknown as PlanCatalogRpc)("list_available_plans");
+  const { data, error } = await supabase.rpc("list_available_plans");
   if (error) throw new Error(error.message);
   return z.array(commercialPlanSchema).parse(data) satisfies CommercialPlan[];
 }
@@ -132,8 +126,7 @@ export async function previewOrganizationPlanChange(
   organizationId: string,
   targetPlanVersionId: string,
 ): Promise<PlanChangePreview> {
-  const rpc = supabase.rpc as unknown as PlanCatalogRpc;
-  const { data, error } = await rpc("preview_organization_plan_change", {
+  const { data, error } = await supabase.rpc("preview_organization_plan_change", {
     p_organization_id: organizationId,
     p_target_plan_version_id: targetPlanVersionId,
   });

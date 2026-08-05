@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+﻿import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import type {
   AdvancementInput,
   CompetitionGroup,
@@ -12,18 +13,35 @@ import type {
   StageTeam,
 } from "../types/engine-records.types";
 
-type RpcResult = { data: unknown; error: { message: string; code?: string } | null };
-type EngineRpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
+type Functions = Database["public"]["Functions"];
+type Json = Database["public"]["Tables"]["audit_logs"]["Row"]["new_data"];
 
-function engineRpc(name: string, args: Record<string, unknown>) {
-  return (supabase.rpc as unknown as EngineRpc)(name, args);
-}
+/**
+ * O gerador de tipos do Supabase nao expressa parametro de RPC anulavel: um
+ * `p_stage_id uuid DEFAULT NULL` vira `p_stage_id?: string`, nunca
+ * `string | null`. Como varias RPCs do motor recebem null de proposito
+ * (etapa sem grupo, ajuste sem etapa), permitir null aqui mantem a checagem
+ * de nome e de chave sem mentir sobre o contrato.
+ */
+type RpcArgs<N extends keyof Functions> = {
+  [K in keyof Functions[N]["Args"]]: Functions[N]["Args"][K] | null;
+};
 
-async function callRpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
-  const { data, error } = await engineRpc(name, args);
+/**
+ * Encaminha para o cliente tipado. Nome, chaves e retorno vem do contrato
+ * gerado do banco.
+ */
+async function callRpc<N extends keyof Functions>(
+  name: N,
+  args: RpcArgs<N>,
+): Promise<Functions[N]["Returns"]> {
+  const { data, error } = await supabase.rpc(name, args as Functions[N]["Args"]);
   if (error) throw error;
-  return data as T;
+  return data;
 }
+
+/** Payload jsonb: o contrato gerado descreve a coluna como Json opaco. */
+const asJson = (value: unknown) => value as Json;
 
 export async function getCompetitionSettings(championshipId: string) {
   const { data, error } = await supabase
@@ -41,9 +59,9 @@ export async function saveCompetitionSettings(
   settings: CompetitionSettingsInput,
   exceptionReason?: string,
 ) {
-  return callRpc<CompetitionSettingsRow>("save_competition_settings", {
+  return callRpc("save_competition_settings", {
     p_championship_id: championshipId,
-    p_settings: settings,
+    p_settings: asJson(settings),
     p_exception_reason: exceptionReason ?? null,
   });
 }
@@ -79,10 +97,10 @@ export function saveCompetitionStage(
   stageId: string | null,
   payload: StageInput,
 ) {
-  return callRpc<CompetitionStage>("save_competition_stage", {
+  return callRpc("save_competition_stage", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
-    p_payload: payload,
+    p_payload: asJson(payload),
   });
 }
 
@@ -120,7 +138,7 @@ export function saveCompetitionGroup(
   name: string,
   sequence: number,
 ) {
-  return callRpc<CompetitionGroup>("save_competition_group", {
+  return callRpc("save_competition_group", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
     p_group_id: groupId,
@@ -134,7 +152,7 @@ export function generateCompetitionGroups(
   stageId: string,
   groupCount: number,
 ) {
-  return callRpc<string>("generate_competition_groups", {
+  return callRpc("generate_competition_groups", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
     p_client_request_id: crypto.randomUUID(),
@@ -156,11 +174,16 @@ export async function listCompetitionRounds(
   return data ?? [];
 }
 
-export function listStageTeams(championshipId: string, stageId: string) {
-  return callRpc<StageTeam[]>("get_competition_stage_teams", {
+export async function listStageTeams(
+  championshipId: string,
+  stageId: string,
+): Promise<StageTeam[]> {
+  const data = await callRpc("get_competition_stage_teams", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
   });
+  // A RPC devolve jsonb, entao o contrato gerado so sabe dizer Json.
+  return (data ?? []) as unknown as StageTeam[];
 }
 
 export function assignTeamToStage(
@@ -170,7 +193,7 @@ export function assignTeamToStage(
   groupId: string | null,
   seed?: number | null,
 ) {
-  return callRpc<StageTeam>("assign_team_to_stage", {
+  return callRpc("assign_team_to_stage", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
     p_team_id: teamId,
@@ -180,24 +203,24 @@ export function assignTeamToStage(
 }
 
 export function commitFixtureGeneration(input: FixtureCommitInput) {
-  return callRpc<string>("commit_fixture_generation", {
+  return callRpc("commit_fixture_generation", {
     p_championship_id: input.championshipId,
     p_stage_id: input.stageId,
     p_group_id: input.groupId,
     p_client_request_id: input.clientRequestId,
-    p_fixtures: input.fixtures,
+    p_fixtures: asJson(input.fixtures),
     p_first_kickoff: input.firstKickoff,
     p_round_interval_hours: input.roundIntervalHours,
   });
 }
 
 export function confirmStageAdvancement(input: AdvancementInput) {
-  return callRpc<string>("confirm_stage_advancement", {
+  return callRpc("confirm_stage_advancement", {
     p_championship_id: input.championshipId,
     p_source_stage_id: input.sourceStageId,
     p_target_stage_id: input.targetStageId,
     p_client_request_id: input.clientRequestId,
-    p_qualified_teams: input.qualifiedTeams,
+    p_qualified_teams: asJson(input.qualifiedTeams),
   });
 }
 
@@ -209,7 +232,7 @@ export function addStandingsAdjustment(
   points: number,
   reason: string,
 ) {
-  return callRpc<string>("add_standings_adjustment", {
+  return callRpc("add_standings_adjustment", {
     p_championship_id: championshipId,
     p_stage_id: stageId,
     p_group_id: groupId,
