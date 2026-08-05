@@ -28,12 +28,7 @@ export function ChampionshipMobileNav({ championshipId }: { championshipId: stri
         const active =
           item.to === "/championships/$id" ? pathname === href : pathname.startsWith(href);
         return (
-          <Button
-            key={item.label}
-            variant={active ? "default" : "outline"}
-            size="sm"
-            asChild
-          >
+          <Button key={item.label} variant={active ? "default" : "outline"} size="sm" asChild>
             <Link to={item.to} params={{ id: championshipId }}>
               <item.icon className="h-3.5 w-3.5" /> {item.label}
             </Link>
@@ -158,7 +153,8 @@ function SidebarUserFooter({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const displayName = (user?.user_metadata?.display_name as string | undefined) ?? user?.email ?? "Organizador";
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined) ?? user?.email ?? "Organizador";
   const initials = displayName
     .split(" ")
     .slice(0, 2)
@@ -167,12 +163,7 @@ function SidebarUserFooter({ collapsed }: { collapsed: boolean }) {
     .toUpperCase();
 
   return (
-    <div
-      className={cn(
-        "border-t border-border",
-        collapsed ? "px-2 py-3" : "px-4 py-3",
-      )}
-    >
+    <div className={cn("border-t border-border", collapsed ? "px-2 py-3" : "px-4 py-3")}>
       <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-2.5")}>
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarFallback className="bg-secondary text-[9px] font-bold text-primary">

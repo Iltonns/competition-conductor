@@ -74,12 +74,7 @@ export function ChampionshipHeader({ championship }: { championship: Championshi
           <NotificationCenter />
 
           {championship.is_public && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden h-8 sm:inline-flex"
-              asChild
-            >
+            <Button variant="outline" size="sm" className="hidden h-8 sm:inline-flex" asChild>
               <a href={`/c/${championship.slug}`} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-3.5 w-3.5" /> Página pública
               </a>

@@ -71,9 +71,7 @@ function ChampionshipsPage() {
         aria-label="Indicadores gerais"
       >
         {dashboard.isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
-          ))
+          Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
         ) : dashboard.data ? (
           <>
             <KpiCard
@@ -82,18 +80,8 @@ function ChampionshipsPage() {
               label="Campeonatos ativos"
               tone="violet"
             />
-            <KpiCard
-              icon={Shield}
-              value={dashboard.data.teams}
-              label="Equipes"
-              tone="emerald"
-            />
-            <KpiCard
-              icon={Users}
-              value={dashboard.data.athletes}
-              label="Atletas"
-              tone="amber"
-            />
+            <KpiCard icon={Shield} value={dashboard.data.teams} label="Equipes" tone="emerald" />
+            <KpiCard icon={Users} value={dashboard.data.athletes} label="Atletas" tone="amber" />
             <KpiCard
               icon={CalendarDays}
               value={dashboard.data.finishedMatches}
@@ -137,16 +125,14 @@ function ChampionshipsPage() {
         />
       )}
 
-      {!championships.isLoading &&
-        !championships.error &&
-        championships.data?.length === 0 && (
-          <EmptyState
-            icon={Trophy}
-            title="Nenhum campeonato criado"
-            description="Crie a primeira competição para começar a configurar categorias e regulamento."
-            action={<Button onClick={openCreate}>Criar primeiro campeonato</Button>}
-          />
-        )}
+      {!championships.isLoading && !championships.error && championships.data?.length === 0 && (
+        <EmptyState
+          icon={Trophy}
+          title="Nenhum campeonato criado"
+          description="Crie a primeira competição para começar a configurar categorias e regulamento."
+          action={<Button onClick={openCreate}>Criar primeiro campeonato</Button>}
+        />
+      )}
 
       {championships.data && championships.data.length > 0 && (
         <section
