@@ -36,9 +36,14 @@ BEGIN
       AND policyname='match_report_attachments_admin_insert'
   ) THEN RAISE EXCEPTION 'Report attachment storage policy is missing'; END IF;
 
+  -- Uma expressao com cast nao e valida na clausula FROM; precisa de subconsulta.
   IF NOT EXISTS(
-    SELECT 1 FROM pg_get_functiondef('public.homologate_match_report(uuid,uuid)'::regprocedure)::text definition
-    WHERE definition LIKE '%substitutions%' AND definition LIKE '%match_report_attachments%'
+    SELECT 1 FROM (
+      SELECT pg_get_functiondef(
+        'public.homologate_match_report(uuid,uuid)'::regprocedure
+      )::text AS definition
+    ) d
+    WHERE d.definition LIKE '%substitutions%' AND d.definition LIKE '%match_report_attachments%'
   ) THEN RAISE EXCEPTION 'Homologation snapshot does not contain the complete report'; END IF;
 END $$;
 

@@ -9,18 +9,18 @@
  * algum arquivo deixar de respeita-la.
  *
  * Conexao: variavel SUPABASE_DB_URL (ambiente ou .env). Nunca e impressa.
- * Executor: psql do PATH; se ausente, psql via imagem Docker do Postgres.
+ * Executor: driver pg, direto do Node. Sem psql e sem Docker, para que a
+ * verificacao nao dependa de daemon local nem de binario no PATH.
  *
  *   node scripts/run-rls-matrix.mjs            # todos os scripts
  *   node scripts/run-rls-matrix.mjs 2a phase5  # so os que casam com o filtro
  */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { join } from "node:path";
+import pg from "pg";
 
 const DIR_TESTES = "supabase/tests";
 const DIR_SAIDA = "docs/closure/p1-matriz-rls";
-const IMAGEM_PG = "public.ecr.aws/supabase/postgres:17.6.1.141";
 
 function conexao() {
   if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
@@ -65,30 +65,38 @@ function auditarSeguranca(caminho) {
   return { seguro: true, motivo: "transacional com ROLLBACK" };
 }
 
-function temPsqlLocal() {
-  const r = spawnSync("psql", ["--version"], { encoding: "utf8", shell: true });
-  return r.status === 0;
-}
-
-function executar(url, caminhoRelativo, usarDocker) {
-  const args = usarDocker
-    ? [
-        "run", "--rm", "-i",
-        "-v", `${resolve(DIR_TESTES)}:/tests:ro`,
-        IMAGEM_PG,
-        "psql", url, "-v", "ON_ERROR_STOP=1", "-X", "-q",
-        "-f", `/tests/${caminhoRelativo}`,
-      ]
-    : [url, "-v", "ON_ERROR_STOP=1", "-X", "-q", "-f", join(DIR_TESTES, caminhoRelativo)];
-
-  const r = spawnSync(usarDocker ? "docker" : "psql", args, {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
+/**
+ * Cada script roda numa conexao propria e descartavel. Assim um ROLLBACK ou
+ * um erro em um arquivo nao contamina o estado de sessao do seguinte.
+ */
+async function executar(url, caminho) {
+  const cliente = new pg.Client({
+    connectionString: url,
+    ssl: { rejectUnauthorized: false },
+    application_name: "is-arena-matriz-rls",
   });
-  return {
-    status: r.status,
-    saida: [r.stdout ?? "", r.stderr ?? ""].join("").trim(),
-  };
+  const sql = readFileSync(caminho, "utf8");
+  try {
+    await cliente.connect();
+    const resultados = await cliente.query(sql);
+    const linhas = (Array.isArray(resultados) ? resultados : [resultados])
+      .filter((r) => r?.rows?.length)
+      .map((r) => JSON.stringify(r.rows));
+    return { ok: true, saida: linhas.join("\n") || "(sem linhas de retorno)" };
+  } catch (erro) {
+    const partes = [
+      `ERRO: ${erro.message}`,
+      erro.code ? `codigo: ${erro.code}` : null,
+      erro.detail ? `detalhe: ${erro.detail}` : null,
+      erro.hint ? `dica: ${erro.hint}` : null,
+      erro.where ? `contexto: ${erro.where}` : null,
+    ].filter(Boolean);
+    return { ok: false, saida: partes.join("\n") };
+  } finally {
+    // Se o script abriu transacao e morreu antes do ROLLBACK, encerrar a
+    // conexao ja descarta tudo: o Postgres nao promove transacao aberta.
+    await cliente.end().catch(() => {});
+  }
 }
 
 const url = conexao();
@@ -120,19 +128,17 @@ if (inseguros.length) {
 }
 console.log("Todos seguros: transacionais com ROLLBACK ou somente leitura.\n");
 
-const usarDocker = !temPsqlLocal();
-console.log(`Executor: ${usarDocker ? "psql via Docker" : "psql local"}\n`);
+console.log("Executor: driver pg (sem psql, sem Docker)\n");
 
 mkdirSync(DIR_SAIDA, { recursive: true });
 const resultados = [];
 for (const f of arquivos) {
   process.stdout.write(f.padEnd(56));
-  const r = executar(url, f, usarDocker);
-  const ok = r.status === 0;
-  resultados.push({ f, ok, saida: r.saida });
+  const r = await executar(url, join(DIR_TESTES, f));
+  resultados.push({ f, ok: r.ok, saida: r.saida });
   writeFileSync(join(DIR_SAIDA, f.replace(/\.sql$/, ".log")), r.saida + "\n", "utf8");
-  console.log(ok ? "PASSOU" : "FALHOU");
-  if (!ok) console.log("  " + r.saida.split("\n").slice(-6).join("\n  "));
+  console.log(r.ok ? "PASSOU" : "FALHOU");
+  if (!r.ok) console.log("  " + r.saida.split("\n").join("\n  "));
 }
 
 const falhas = resultados.filter((r) => !r.ok);
