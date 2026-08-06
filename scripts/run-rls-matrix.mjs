@@ -29,7 +29,10 @@ function conexao() {
     if (linha.startsWith("#") || !linha.includes("=")) continue;
     const i = linha.indexOf("=");
     if (linha.slice(0, i).trim() === "SUPABASE_DB_URL") {
-      return linha.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+      return linha
+        .slice(i + 1)
+        .trim()
+        .replace(/^["']|["']$/g, "");
     }
   }
   return null;

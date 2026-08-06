@@ -62,11 +62,13 @@ VALUES
   ('42000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', 'Equipe Roster A', 'equipe-roster-a'),
   ('42000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', 'Equipe Roster B', 'equipe-roster-b');
 
+-- 'approved' e o vocabulario real da coluna. 'active' nunca foi aceito pelo
+-- check constraint; a fixture so nao acusava porque este script nunca rodou.
 INSERT INTO public.championship_teams (
   id, organization_id, championship_id, team_id, status
 ) VALUES
-  ('52000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', '32000000-0000-0000-0000-000000000001', '42000000-0000-0000-0000-000000000001', 'active'),
-  ('52000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', '32000000-0000-0000-0000-000000000002', '42000000-0000-0000-0000-000000000002', 'active');
+  ('52000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', '32000000-0000-0000-0000-000000000001', '42000000-0000-0000-0000-000000000001', 'approved'),
+  ('52000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', '32000000-0000-0000-0000-000000000002', '42000000-0000-0000-0000-000000000002', 'approved');
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', '12000000-0000-0000-0000-000000000001', true);
@@ -114,6 +116,62 @@ BEGIN
       AND is_primary
   ) THEN
     RAISE EXCEPTION 'FAIL: responsavel principal nao foi criado';
+  END IF;
+END
+$$;
+
+-- Arquivar nao pode destruir o estado de inscricao nem violar o constraint.
+-- Guarda de regressao do defeito que este script encontrou: a RPC gravava
+-- status='archived', valor que championship_teams_status_check rejeita.
+DO $$
+DECLARE arquivada public.championship_teams%ROWTYPE;
+BEGIN
+  arquivada := public.set_team_championship_archived(
+    '32000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000001',
+    true
+  );
+  IF arquivada.archived_at IS NULL THEN
+    RAISE EXCEPTION 'FAIL: arquivar nao preencheu archived_at';
+  END IF;
+  IF arquivada.status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: arquivar sobrescreveu o estado de inscricao (%)', arquivada.status;
+  END IF;
+
+  arquivada := public.set_team_championship_archived(
+    '32000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000001',
+    false
+  );
+  IF arquivada.archived_at IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: desarquivar nao limpou archived_at';
+  END IF;
+  IF arquivada.status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: desarquivar reescreveu o estado de inscricao (%)', arquivada.status;
+  END IF;
+END
+$$;
+
+-- Nenhuma funcao pode voltar a tratar 'archived' como estado de inscricao:
+-- e exatamente o valor que championship_teams_status_check rejeita. Os apelidos
+-- abaixo sao os que o schema usa para linhas de championship_teams.
+DO $$
+DECLARE ofensora text;
+BEGIN
+  SELECT string_agg(p.oid::regprocedure::text, ', ' ORDER BY p.oid::regprocedure::text)
+  INTO ofensora
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public' AND p.prokind = 'f'
+    AND pg_get_functiondef(p.oid) ~
+      '\m(ct|v_link|v_participation)\.status\s*(=|<>|IN|NOT IN)[^;]{0,30}''archived''';
+  IF ofensora IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: vocabulario de arquivamento voltou a championship_teams.status em %', ofensora;
+  END IF;
+
+  IF pg_get_functiondef(
+       'public.set_team_championship_archived(uuid,uuid,boolean)'::regprocedure
+     ) LIKE '%''archived''%' THEN
+    RAISE EXCEPTION 'FAIL: set_team_championship_archived voltou a gravar status=archived';
   END IF;
 END
 $$;

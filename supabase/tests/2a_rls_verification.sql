@@ -169,6 +169,12 @@ RESET ROLE;
 DROP TRIGGER force_settings_failure ON public.championship_settings;
 
 -- 9. Exclusao com historico/equipe vinculada e bloqueada.
+--
+-- A exclusao verificada aqui e delete_championship_permanently, nao a antiga
+-- delete_championship: a migration 20260727200000 revogou a legada de
+-- authenticated justamente por nao exigir confirmacao digitada nem
+-- justificativa. Chamar a legada retornava 42501 antes de chegar a regra de
+-- preservacao, entao a assercao passava a testar permissao em vez de historico.
 INSERT INTO public.teams (organization_id, championship_id, name)
 SELECT organization_id, id, 'Equipe Historica' FROM public.championships WHERE slug = 'copa-rls-test';
 SET LOCAL ROLE authenticated;
@@ -178,11 +184,25 @@ DO $$
 DECLARE target_id uuid;
 BEGIN
   SELECT id INTO target_id FROM public.championships WHERE slug = 'copa-rls-test';
+
+  -- A exclusao legada permanece inalcancavel por cliente autenticado.
   BEGIN
     PERFORM public.delete_championship(target_id);
-    RAISE EXCEPTION 'FAIL: campeonato com historico excluido';
-  EXCEPTION WHEN raise_exception THEN NULL;
+    RAISE EXCEPTION 'FAIL: exclusao legada voltou a ser alcancavel por authenticated';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
+
+  -- A exclusao vigente recusa campeonato com dependencia vinculada (55000).
+  BEGIN
+    PERFORM public.delete_championship_permanently(
+      target_id,
+      'Copa RLS',
+      'Verificacao de bloqueio por dependencia vinculada ao campeonato.'
+    );
+    RAISE EXCEPTION 'FAIL: campeonato com historico excluido';
+  EXCEPTION WHEN SQLSTATE '55000' THEN NULL;
+  END;
+
   IF NOT EXISTS (SELECT 1 FROM public.championships WHERE id = target_id) THEN
     RAISE EXCEPTION 'FAIL: campeonato historico nao foi preservado';
   END IF;
