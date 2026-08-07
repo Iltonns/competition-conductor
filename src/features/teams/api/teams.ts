@@ -48,23 +48,54 @@ async function getChampionshipOrganizationId(championshipId: string) {
   return data.organization_id;
 }
 
-async function upsertRegistration(
+// championship_teams.status so aceita o vocabulario de inscricao
+// (draft, submitted, under_review, approved, rejected, cancelled, withdrawn).
+// Este arquivo gravava "active" e "archived", que sao o vocabulario de
+// `teams.status` — valores que o check constraint rejeita com 23514. Criar,
+// editar e arquivar equipe pela interface falhavam em producao.
+//
+// As tres operacoes abaixo substituem o upsert unico que existia: ele
+// reescrevia status a cada edicao, o que reaprovaria uma inscricao que o
+// portal publico ja tinha enviado para revisao.
+
+/** Equipe criada pela administracao ja entra inscrita e aprovada. */
+async function createRegistration(
   organizationId: string,
   championshipId: string,
   teamId: string,
-  status: string,
   registrationNumber?: string | null,
 ) {
-  const { error } = await supabase.from("championship_teams").upsert(
-    {
-      organization_id: organizationId,
-      championship_id: championshipId,
-      team_id: teamId,
-      status,
-      registration_number: registrationNumber ?? null,
-    },
-    { onConflict: "championship_id,team_id" },
-  );
+  const { error } = await supabase.from("championship_teams").insert({
+    organization_id: organizationId,
+    championship_id: championshipId,
+    team_id: teamId,
+    status: "approved",
+    registration_number: registrationNumber ?? null,
+  });
+  if (error) throw error;
+}
+
+/** Editar a equipe nao mexe no ciclo de inscricao, que pertence ao portal. */
+async function updateRegistrationNumber(
+  championshipId: string,
+  teamId: string,
+  registrationNumber?: string | null,
+) {
+  const { error } = await supabase
+    .from("championship_teams")
+    .update({ registration_number: registrationNumber ?? null })
+    .eq("championship_id", championshipId)
+    .eq("team_id", teamId);
+  if (error) throw error;
+}
+
+/** Arquivamento mora em archived_at, nao em status. */
+async function setRegistrationArchived(championshipId: string, teamId: string, archived: boolean) {
+  const { error } = await supabase
+    .from("championship_teams")
+    .update({ archived_at: archived ? new Date().toISOString() : null })
+    .eq("championship_id", championshipId)
+    .eq("team_id", teamId);
   if (error) throw error;
 }
 
@@ -137,13 +168,7 @@ export async function createTeam(championshipId: string, input: TeamInput): Prom
     .single();
   if (error) throw error;
   const team = data as Team;
-  await upsertRegistration(
-    organizationId,
-    championshipId,
-    team.id,
-    "active",
-    input.registration_number,
-  );
+  await createRegistration(organizationId, championshipId, team.id, input.registration_number);
   return team;
 }
 
@@ -161,26 +186,20 @@ export async function updateTeam(
     .select("*")
     .single();
   if (error) throw error;
-  await upsertRegistration(
-    organizationId,
-    championshipId,
-    teamId,
-    "active",
-    input.registration_number,
-  );
+  await updateRegistrationNumber(championshipId, teamId, input.registration_number);
   return data as Team;
 }
 
 export async function setTeamArchived(championshipId: string, teamId: string, archived: boolean) {
-  const status = archived ? "archived" : "active";
+  // teams.status tem vocabulario proprio e aceita 'archived'; championship_teams
+  // nao — la o arquivamento e archived_at.
   const { error } = await supabase
     .from("teams")
-    .update({ status })
+    .update({ status: archived ? "archived" : "active" })
     .eq("id", teamId)
     .eq("championship_id", championshipId);
   if (error) throw error;
-  const organizationId = await getChampionshipOrganizationId(championshipId);
-  await upsertRegistration(organizationId, championshipId, teamId, status);
+  await setRegistrationArchived(championshipId, teamId, archived);
 }
 
 export async function removeTeamLink(championshipId: string, teamId: string) {

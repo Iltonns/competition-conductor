@@ -176,6 +176,98 @@ BEGIN
 END
 $$;
 
+-- O cliente escreve championship_teams direto por PostgREST, sem passar pelas
+-- RPCs. teams.ts gravava 'active' e 'archived' — vocabulario de `teams`, nao de
+-- `championship_teams` — e criar, editar e arquivar equipe falhavam com 23514.
+-- Aqui o constraint e verificado pelo mesmo caminho que o cliente usa: como
+-- authenticated, escrita direta na tabela.
+DO $$
+DECLARE
+  definicao text;
+  aceitou text := NULL;
+  valor text;
+BEGIN
+  SELECT pg_get_constraintdef(oid) INTO definicao
+  FROM pg_constraint WHERE conname = 'championship_teams_status_check';
+  IF definicao IS NULL THEN
+    RAISE EXCEPTION 'FAIL: championship_teams_status_check nao existe';
+  END IF;
+
+  -- O vocabulario e contrato: se algum valor sair, os leitores param de casar.
+  FOREACH valor IN ARRAY ARRAY[
+    'draft','submitted','under_review','approved','rejected','cancelled','withdrawn'
+  ] LOOP
+    IF position('''' || valor || '''' IN definicao) = 0 THEN
+      RAISE EXCEPTION 'FAIL: % saiu do vocabulario de championship_teams.status', valor;
+    END IF;
+  END LOOP;
+
+  -- Nenhum valor do vocabulario de `teams` pode ser aceito aqui.
+  FOREACH valor IN ARRAY ARRAY['active','inactive','archived','pending'] LOOP
+    BEGIN
+      UPDATE public.championship_teams SET status = valor
+      WHERE id = '52000000-0000-0000-0000-000000000001';
+      aceitou := valor;
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    IF aceitou IS NOT NULL THEN
+      RAISE EXCEPTION 'FAIL: championship_teams.status aceitou o valor % , que nao e do vocabulario de inscricao', aceitou;
+    END IF;
+  END LOOP;
+
+  -- E o valor correto continua aceito, junto com archived_at.
+  UPDATE public.championship_teams
+     SET status = 'approved', archived_at = now()
+   WHERE id = '52000000-0000-0000-0000-000000000001';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'FAIL: escrita direta do vocabulario correto nao alcancou a linha';
+  END IF;
+  UPDATE public.championship_teams
+     SET archived_at = NULL
+   WHERE id = '52000000-0000-0000-0000-000000000001';
+END
+$$;
+
+-- Um criterio so para "esta equipe participa": status='approved' e nao
+-- arquivada. A policy championship_teams_public_select e a view
+-- public_team_profiles ja diziam isso; as quatro funcoes abaixo diziam outra
+-- coisa, e get_public_championship_portal e SECURITY DEFINER, entao entregava a
+-- anon inscricao que a policy recusa.
+DO $$
+DECLARE
+  assinatura regprocedure;
+  corpo text;
+BEGIN
+  FOREACH assinatura IN ARRAY ARRAY[
+    'public.phase1_team_in_championship(uuid,uuid,uuid)'::regprocedure,
+    'public.publish_competition(uuid)'::regprocedure,
+    'public.recalculate_standings(uuid,uuid,uuid,uuid)'::regprocedure,
+    'public.get_public_championship_portal(text)'::regprocedure
+  ] LOOP
+    corpo := pg_get_functiondef(assinatura);
+    IF corpo !~ 'status\s*=\s*''approved''' THEN
+      RAISE EXCEPTION 'FAIL: % deixou de exigir inscricao aprovada', assinatura;
+    END IF;
+    IF corpo ~ 'status\s*(<>|NOT IN)[^;]{0,30}''rejected''' THEN
+      RAISE EXCEPTION 'FAIL: % voltou ao criterio "tudo menos rejected"', assinatura;
+    END IF;
+  END LOOP;
+
+  -- A policy e a view sao a referencia; se mudarem, as funcoes precisam mudar junto.
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='championship_teams'
+      AND policyname='championship_teams_public_select'
+      AND qual LIKE '%''approved''%'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: a policy de leitura publica deixou de exigir approved';
+  END IF;
+  IF pg_get_viewdef('public.public_team_profiles'::regclass, true) NOT LIKE '%''approved''%' THEN
+    RAISE EXCEPTION 'FAIL: public_team_profiles deixou de exigir approved';
+  END IF;
+END
+$$;
+
 -- Viewer pode ler o tenant, mas nao pode executar mutacoes.
 SELECT set_config('request.jwt.claim.sub', '12000000-0000-0000-0000-000000000002', true);
 SELECT set_config('request.jwt.claims', '{"sub":"12000000-0000-0000-0000-000000000002","role":"authenticated"}', true);

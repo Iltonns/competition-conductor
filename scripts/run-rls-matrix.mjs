@@ -16,8 +16,20 @@
  *   node scripts/run-rls-matrix.mjs 2a phase5  # so os que casam com o filtro
  */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import pg from "pg";
+
+/** Commit que produziu a evidencia. Marca a arvore suja para nao enganar. */
+function commitAtual() {
+  try {
+    const hash = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    const sujo = execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim();
+    return sujo ? `${hash} (arvore com alteracoes nao commitadas)` : hash;
+  } catch {
+    return "desconhecido (git indisponivel)";
+  }
+}
 
 const DIR_TESTES = "supabase/tests";
 const DIR_SAIDA = "docs/closure/p1-matriz-rls";
@@ -119,9 +131,11 @@ const arquivos = readdirSync(DIR_TESTES)
   .sort();
 
 console.log(`Auditando ${arquivos.length} script(s) antes de executar...\n`);
+const auditoria = [];
 const inseguros = [];
 for (const f of arquivos) {
   const a = auditarSeguranca(join(DIR_TESTES, f));
+  auditoria.push({ f, ...a });
   if (!a.seguro) inseguros.push({ f, motivo: a.motivo });
 }
 if (inseguros.length) {
@@ -145,10 +159,48 @@ for (const f of arquivos) {
 }
 
 const falhas = resultados.filter((r) => !r.ok);
+
+// Evidencia duravel. Os .log por script caem no *.log do .gitignore, que existe
+// para ruido de build — entao a evidencia que o PRD exige (saida de cada script,
+// hash do commit, data) e escrita tambem aqui, em arquivo versionado.
+if (!filtros.length) {
+  const evidencia = [
+    "# Evidência — matriz de isolamento",
+    "",
+    "Gerado por `npm run test:rls`. Não editar à mão: é sobrescrito a cada execução.",
+    "",
+    `- **Data:** ${new Date().toISOString()}`,
+    `- **Commit:** \`${commitAtual()}\``,
+    `- **Resultado:** ${resultados.length - falhas.length}/${resultados.length}`,
+    "",
+    "## Conferência de segurança, arquivo por arquivo",
+    "",
+    "Refeita a cada execução. O runner aborta antes de conectar se algum script",
+    "deixar de terminar em `ROLLBACK` ou de ser somente leitura.",
+    "",
+    "| Script | Classificação |",
+    "| --- | --- |",
+    ...auditoria.map((a) => `| \`${a.f}\` | ${a.motivo} |`),
+    "",
+    "## Saída por script",
+    "",
+    ...resultados.flatMap((r) => [
+      `### ${r.ok ? "PASSOU" : "FALHOU"} — \`${r.f}\``,
+      "",
+      "```",
+      r.saida,
+      "```",
+      "",
+    ]),
+  ].join("\n");
+  writeFileSync(join(DIR_SAIDA, "EVIDENCIA.md"), evidencia, "utf8");
+}
+
 console.log(
   `\n${resultados.length - falhas.length}/${resultados.length} passaram. ` +
     `Logs em ${DIR_SAIDA}/`,
 );
+if (!filtros.length) console.log(`Evidencia em ${DIR_SAIDA}/EVIDENCIA.md`);
 if (falhas.length) {
   console.log("\nFalharam:");
   for (const r of falhas) console.log(`  ${r.f}`);
