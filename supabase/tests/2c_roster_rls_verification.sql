@@ -62,11 +62,13 @@ VALUES
   ('42000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', 'Equipe Roster A', 'equipe-roster-a'),
   ('42000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', 'Equipe Roster B', 'equipe-roster-b');
 
+-- 'approved' e o vocabulario real da coluna. 'active' nunca foi aceito pelo
+-- check constraint; a fixture so nao acusava porque este script nunca rodou.
 INSERT INTO public.championship_teams (
   id, organization_id, championship_id, team_id, status
 ) VALUES
-  ('52000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', '32000000-0000-0000-0000-000000000001', '42000000-0000-0000-0000-000000000001', 'active'),
-  ('52000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', '32000000-0000-0000-0000-000000000002', '42000000-0000-0000-0000-000000000002', 'active');
+  ('52000000-0000-0000-0000-000000000001', '22000000-0000-0000-0000-000000000001', '32000000-0000-0000-0000-000000000001', '42000000-0000-0000-0000-000000000001', 'approved'),
+  ('52000000-0000-0000-0000-000000000002', '22000000-0000-0000-0000-000000000002', '32000000-0000-0000-0000-000000000002', '42000000-0000-0000-0000-000000000002', 'approved');
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', '12000000-0000-0000-0000-000000000001', true);
@@ -114,6 +116,154 @@ BEGIN
       AND is_primary
   ) THEN
     RAISE EXCEPTION 'FAIL: responsavel principal nao foi criado';
+  END IF;
+END
+$$;
+
+-- Arquivar nao pode destruir o estado de inscricao nem violar o constraint.
+-- Guarda de regressao do defeito que este script encontrou: a RPC gravava
+-- status='archived', valor que championship_teams_status_check rejeita.
+DO $$
+DECLARE arquivada public.championship_teams%ROWTYPE;
+BEGIN
+  arquivada := public.set_team_championship_archived(
+    '32000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000001',
+    true
+  );
+  IF arquivada.archived_at IS NULL THEN
+    RAISE EXCEPTION 'FAIL: arquivar nao preencheu archived_at';
+  END IF;
+  IF arquivada.status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: arquivar sobrescreveu o estado de inscricao (%)', arquivada.status;
+  END IF;
+
+  arquivada := public.set_team_championship_archived(
+    '32000000-0000-0000-0000-000000000001',
+    '42000000-0000-0000-0000-000000000001',
+    false
+  );
+  IF arquivada.archived_at IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: desarquivar nao limpou archived_at';
+  END IF;
+  IF arquivada.status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: desarquivar reescreveu o estado de inscricao (%)', arquivada.status;
+  END IF;
+END
+$$;
+
+-- Nenhuma funcao pode voltar a tratar 'archived' como estado de inscricao:
+-- e exatamente o valor que championship_teams_status_check rejeita. Os apelidos
+-- abaixo sao os que o schema usa para linhas de championship_teams.
+DO $$
+DECLARE ofensora text;
+BEGIN
+  SELECT string_agg(p.oid::regprocedure::text, ', ' ORDER BY p.oid::regprocedure::text)
+  INTO ofensora
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public' AND p.prokind = 'f'
+    AND pg_get_functiondef(p.oid) ~
+      '\m(ct|v_link|v_participation)\.status\s*(=|<>|IN|NOT IN)[^;]{0,30}''archived''';
+  IF ofensora IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: vocabulario de arquivamento voltou a championship_teams.status em %', ofensora;
+  END IF;
+
+  IF pg_get_functiondef(
+       'public.set_team_championship_archived(uuid,uuid,boolean)'::regprocedure
+     ) LIKE '%''archived''%' THEN
+    RAISE EXCEPTION 'FAIL: set_team_championship_archived voltou a gravar status=archived';
+  END IF;
+END
+$$;
+
+-- O cliente escreve championship_teams direto por PostgREST, sem passar pelas
+-- RPCs. teams.ts gravava 'active' e 'archived' — vocabulario de `teams`, nao de
+-- `championship_teams` — e criar, editar e arquivar equipe falhavam com 23514.
+-- Aqui o constraint e verificado pelo mesmo caminho que o cliente usa: como
+-- authenticated, escrita direta na tabela.
+DO $$
+DECLARE
+  definicao text;
+  aceitou text := NULL;
+  valor text;
+BEGIN
+  SELECT pg_get_constraintdef(oid) INTO definicao
+  FROM pg_constraint WHERE conname = 'championship_teams_status_check';
+  IF definicao IS NULL THEN
+    RAISE EXCEPTION 'FAIL: championship_teams_status_check nao existe';
+  END IF;
+
+  -- O vocabulario e contrato: se algum valor sair, os leitores param de casar.
+  FOREACH valor IN ARRAY ARRAY[
+    'draft','submitted','under_review','approved','rejected','cancelled','withdrawn'
+  ] LOOP
+    IF position('''' || valor || '''' IN definicao) = 0 THEN
+      RAISE EXCEPTION 'FAIL: % saiu do vocabulario de championship_teams.status', valor;
+    END IF;
+  END LOOP;
+
+  -- Nenhum valor do vocabulario de `teams` pode ser aceito aqui.
+  FOREACH valor IN ARRAY ARRAY['active','inactive','archived','pending'] LOOP
+    BEGIN
+      UPDATE public.championship_teams SET status = valor
+      WHERE id = '52000000-0000-0000-0000-000000000001';
+      aceitou := valor;
+    EXCEPTION WHEN check_violation THEN NULL;
+    END;
+    IF aceitou IS NOT NULL THEN
+      RAISE EXCEPTION 'FAIL: championship_teams.status aceitou o valor % , que nao e do vocabulario de inscricao', aceitou;
+    END IF;
+  END LOOP;
+
+  -- E o valor correto continua aceito, junto com archived_at.
+  UPDATE public.championship_teams
+     SET status = 'approved', archived_at = now()
+   WHERE id = '52000000-0000-0000-0000-000000000001';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'FAIL: escrita direta do vocabulario correto nao alcancou a linha';
+  END IF;
+  UPDATE public.championship_teams
+     SET archived_at = NULL
+   WHERE id = '52000000-0000-0000-0000-000000000001';
+END
+$$;
+
+-- Um criterio so para "esta equipe participa": status='approved' e nao
+-- arquivada. A policy championship_teams_public_select e a view
+-- public_team_profiles ja diziam isso; as quatro funcoes abaixo diziam outra
+-- coisa, e get_public_championship_portal e SECURITY DEFINER, entao entregava a
+-- anon inscricao que a policy recusa.
+DO $$
+DECLARE
+  assinatura regprocedure;
+  corpo text;
+BEGIN
+  FOREACH assinatura IN ARRAY ARRAY[
+    'public.phase1_team_in_championship(uuid,uuid,uuid)'::regprocedure,
+    'public.publish_competition(uuid)'::regprocedure,
+    'public.recalculate_standings(uuid,uuid,uuid,uuid)'::regprocedure,
+    'public.get_public_championship_portal(text)'::regprocedure
+  ] LOOP
+    corpo := pg_get_functiondef(assinatura);
+    IF corpo !~ 'status\s*=\s*''approved''' THEN
+      RAISE EXCEPTION 'FAIL: % deixou de exigir inscricao aprovada', assinatura;
+    END IF;
+    IF corpo ~ 'status\s*(<>|NOT IN)[^;]{0,30}''rejected''' THEN
+      RAISE EXCEPTION 'FAIL: % voltou ao criterio "tudo menos rejected"', assinatura;
+    END IF;
+  END LOOP;
+
+  -- A policy e a view sao a referencia; se mudarem, as funcoes precisam mudar junto.
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='championship_teams'
+      AND policyname='championship_teams_public_select'
+      AND qual LIKE '%''approved''%'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: a policy de leitura publica deixou de exigir approved';
+  END IF;
+  IF pg_get_viewdef('public.public_team_profiles'::regclass, true) NOT LIKE '%''approved''%' THEN
+    RAISE EXCEPTION 'FAIL: public_team_profiles deixou de exigir approved';
   END IF;
 END
 $$;

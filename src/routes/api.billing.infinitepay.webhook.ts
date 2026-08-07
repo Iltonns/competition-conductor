@@ -21,11 +21,6 @@ const confirmPaymentSchema = z.object({
   error: z.string().optional(),
 });
 
-type ConfirmPaymentRpc = (
-  name: "confirm_infinitepay_subscription_payment",
-  args: Record<string, unknown>,
-) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-
 function json(payload: unknown, status = 200) {
   return Response.json(payload, {
     status,
@@ -144,15 +139,17 @@ export const Route = createFileRoute("/api/billing/infinitepay/webhook")({
 
           unexpectedCode = "billing.webhook.processing_failed";
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const rpc = supabaseAdmin.rpc as unknown as ConfirmPaymentRpc;
-          const { data, error } = await rpc("confirm_infinitepay_subscription_payment", {
-            p_event_key: payload.transaction_nsu,
-            p_order_nsu: payload.order_nsu,
-            p_transaction_nsu: payload.transaction_nsu,
-            p_invoice_slug: payload.invoice_slug,
-            p_amount_cents: verified.amount,
-            p_receipt_url: payload.receipt_url,
-          });
+          const { data, error } = await supabaseAdmin.rpc(
+            "confirm_infinitepay_subscription_payment",
+            {
+              p_event_key: payload.transaction_nsu,
+              p_order_nsu: payload.order_nsu,
+              p_transaction_nsu: payload.transaction_nsu,
+              p_invoice_slug: payload.invoice_slug,
+              p_amount_cents: verified.amount,
+              p_receipt_url: payload.receipt_url,
+            },
+          );
           if (error) {
             return webhookResponse(
               startedAt,

@@ -15,7 +15,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "prepare": "node scripts/setup-hooks.mjs",
     "security:env": "node scripts/verify-no-tracked-env.mjs",
+    "test:rls": "node scripts/run-rls-matrix.mjs",
     "verify:phase0": "npm run security:env && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run test:e2e"
   },
   "dependencies": {
@@ -91,6 +93,7 @@
     "globals": "^15.15.0",
     "lru-cache": "^11.5.2",
     "nitro": "3.0.260603-beta",
+    "pg": "^8.22.0",
     "prettier": "^3.7.3",
     "supabase": "^2.111.0",
     "typescript": "^5.8.3",

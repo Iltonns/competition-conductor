@@ -60,7 +60,6 @@ function OrganizerHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background">
       <div className="mx-auto flex h-16 w-full max-w-[var(--layout-max-width)] items-center gap-3 px-[var(--content-padding-x)]">
-
         {/* Mobile hamburger */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
@@ -88,10 +87,12 @@ function OrganizerHeader() {
         <div className="mx-1 hidden h-5 w-px bg-border lg:block" aria-hidden />
 
         {/* Navegação principal desktop */}
-        <nav className="hidden flex-1 items-center gap-0.5 lg:flex" aria-label="Navegação do organizador">
+        <nav
+          className="hidden flex-1 items-center gap-0.5 lg:flex"
+          aria-label="Navegação do organizador"
+        >
           {PRIMARY_NAV.map((item) => {
-            const active =
-              pathname === item.to || pathname.startsWith(`${item.to}/`);
+            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
             return (
               <Link
                 key={item.label}

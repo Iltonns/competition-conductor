@@ -10,22 +10,18 @@ export type ServiceOperationalEvent = {
   fingerprint?: string | null;
 };
 
-type ServiceOperationalEventRpc = (
-  name: "record_service_operational_event",
-  args: Record<string, unknown>,
-) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-
 export async function recordServiceOperationalEvent(event: ServiceOperationalEvent) {
   try {
-    const rpc = supabaseAdmin.rpc as unknown as ServiceOperationalEventRpc;
-    const { error } = await rpc("record_service_operational_event", {
+    const { error } = await supabaseAdmin.rpc("record_service_operational_event", {
       p_event_kind: event.eventKind,
       p_source: event.source,
       p_severity: event.severity,
       p_code: event.code,
       p_route: event.route,
       p_duration_ms: Math.min(Math.max(Math.round(event.durationMs), 0), 600_000),
-      p_fingerprint: event.fingerprint ?? null,
+      // Omitido em vez de null: a RPC declara p_fingerprint DEFAULT NULL, e o
+      // PostgREST nao serializa chaves undefined.
+      p_fingerprint: event.fingerprint ?? undefined,
     });
     if (error) throw new Error(error.message);
   } catch {

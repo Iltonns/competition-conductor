@@ -44,3 +44,52 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e -- tests/e2e/public-smoke.spec.ts
+
+  # Matriz de isolamento (P1 do PRD_FECHAMENTO_FINAL_PRODUCAO).
+  #
+  # Roda contra o banco real. E seguro porque o runner reaudita os 29 scripts
+  # antes de executar e aborta se algum deixar de terminar em ROLLBACK ou de ser
+  # somente leitura — a garantia fica na ferramenta, nao na disciplina de quem
+  # abre um PR.
+  #
+  # A credencial exige escrita, porque 27 dos 29 scripts inserem e desfazem
+  # dentro de transacao. Fica em secret e nunca e impressa.
+  rls-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # PR vindo de fork nao recebe secret. Rodar ali passaria em verde sem ter
+    # verificado nada, que e pior do que nao rodar.
+    if: >-
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    # Serializa: duas execucoes concorrentes disputariam os mesmos advisory
+    # locks por campeonato dentro dos scripts de limite de plano.
+    concurrency:
+      group: rls-matrix-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Exigir a credencial
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::secret SUPABASE_DB_URL ausente. Sem ela a matriz nao verifica nada." >&2
+            exit 1
+          fi
+      - name: Matriz de isolamento
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: npm run test:rls
+      - name: Anexar as saidas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matriz-rls
+          path: docs/closure/p1-matriz-rls/
+          if-no-files-found: error

@@ -6,6 +6,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       admin_audit_logs: {
@@ -382,6 +407,123 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      billing_checkout_orders: {
+        Row: {
+          amount_cents: number;
+          checkout_url: string | null;
+          client_request_id: string;
+          created_at: string;
+          created_by: string | null;
+          currency: string;
+          id: string;
+          invoice_slug: string | null;
+          order_nsu: string;
+          organization_id: string;
+          paid_at: string | null;
+          plan_version_id: string;
+          provider: string;
+          receipt_url: string | null;
+          status: string;
+          transaction_nsu: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          amount_cents: number;
+          checkout_url?: string | null;
+          client_request_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          id?: string;
+          invoice_slug?: string | null;
+          order_nsu: string;
+          organization_id: string;
+          paid_at?: string | null;
+          plan_version_id: string;
+          provider?: string;
+          receipt_url?: string | null;
+          status?: string;
+          transaction_nsu?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          amount_cents?: number;
+          checkout_url?: string | null;
+          client_request_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          id?: string;
+          invoice_slug?: string | null;
+          order_nsu?: string;
+          organization_id?: string;
+          paid_at?: string | null;
+          plan_version_id?: string;
+          provider?: string;
+          receipt_url?: string | null;
+          status?: string;
+          transaction_nsu?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "billing_checkout_orders_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "billing_checkout_orders_plan_version_id_fkey";
+            columns: ["plan_version_id"];
+            isOneToOne: false;
+            referencedRelation: "saas_plan_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      billing_provider_events: {
+        Row: {
+          amount_cents: number | null;
+          error_code: string | null;
+          event_key: string;
+          id: string;
+          invoice_slug: string | null;
+          order_nsu: string;
+          processed_at: string | null;
+          provider: string;
+          received_at: string;
+          status: string;
+          transaction_nsu: string | null;
+        };
+        Insert: {
+          amount_cents?: number | null;
+          error_code?: string | null;
+          event_key: string;
+          id?: string;
+          invoice_slug?: string | null;
+          order_nsu: string;
+          processed_at?: string | null;
+          provider: string;
+          received_at?: string;
+          status?: string;
+          transaction_nsu?: string | null;
+        };
+        Update: {
+          amount_cents?: number | null;
+          error_code?: string | null;
+          event_key?: string;
+          id?: string;
+          invoice_slug?: string | null;
+          order_nsu?: string;
+          processed_at?: string | null;
+          provider?: string;
+          received_at?: string;
+          status?: string;
+          transaction_nsu?: string | null;
+        };
+        Relationships: [];
       };
       championship_categories: {
         Row: {
@@ -1079,6 +1221,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -1110,6 +1253,7 @@ export type Database = {
           id?: string;
           instagram_url?: string | null;
           is_public?: boolean;
+          logo_object_path?: string | null;
           logo_url?: string | null;
           metadata?: Json;
           modality?: string | null;
@@ -1141,6 +1285,7 @@ export type Database = {
           id?: string;
           instagram_url?: string | null;
           is_public?: boolean;
+          logo_object_path?: string | null;
           logo_url?: string | null;
           metadata?: Json;
           modality?: string | null;
@@ -4009,11 +4154,13 @@ export type Database = {
           code: string;
           created_at: string;
           created_by: string | null;
+          currency: string;
           description: string | null;
           effective_from: string;
           id: string;
           limits: Json;
           modules: string[];
+          monthly_price_cents: number | null;
           name: string;
           retired_at: string | null;
           status: string;
@@ -4025,11 +4172,13 @@ export type Database = {
           code: string;
           created_at?: string;
           created_by?: string | null;
+          currency?: string;
           description?: string | null;
           effective_from?: string;
           id?: string;
           limits?: Json;
           modules?: string[];
+          monthly_price_cents?: number | null;
           name: string;
           retired_at?: string | null;
           status?: string;
@@ -4041,11 +4190,13 @@ export type Database = {
           code?: string;
           created_at?: string;
           created_by?: string | null;
+          currency?: string;
           description?: string | null;
           effective_from?: string;
           id?: string;
           limits?: Json;
           modules?: string[];
+          monthly_price_cents?: number | null;
           name?: string;
           retired_at?: string | null;
           status?: string;
@@ -5694,30 +5845,18 @@ export type Database = {
         };
         Returns: string;
       };
-      add_team_staff_for_championship:
-        | {
-            Args: {
-              p_championship_id: string;
-              p_custom_role?: string;
-              p_email?: string;
-              p_full_name: string;
-              p_phone?: string;
-              p_role: string;
-              p_team_id: string;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              p_championship_id: string;
-              p_email: string;
-              p_full_name: string;
-              p_phone: string;
-              p_role: string;
-              p_team_id: string;
-            };
-            Returns: string;
-          };
+      add_team_staff_for_championship: {
+        Args: {
+          p_championship_id: string;
+          p_custom_role?: string;
+          p_email?: string;
+          p_full_name: string;
+          p_phone?: string;
+          p_role: string;
+          p_team_id: string;
+        };
+        Returns: string;
+      };
       archive_championship: {
         Args: {
           p_championship_id: string;
@@ -5736,6 +5875,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -5807,6 +5947,14 @@ export type Database = {
         };
         Returns: undefined;
       };
+      assert_championship_limit: {
+        Args: {
+          p_championship_id: string;
+          p_increment?: number;
+          p_resource: string;
+        };
+        Returns: undefined;
+      };
       assert_championship_settings_manager: {
         Args: { p_championship_id: string; p_lock?: boolean };
         Returns: {
@@ -5821,6 +5969,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -5853,6 +6002,10 @@ export type Database = {
           p_organization_id: string;
           p_resource: string;
         };
+        Returns: undefined;
+      };
+      assert_organization_owner: {
+        Args: { p_organization_id: string };
         Returns: undefined;
       };
       assert_organization_role_assignment: {
@@ -5931,6 +6084,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      attach_subscription_checkout_url: {
+        Args: { p_checkout_url: string; p_order_id: string };
+        Returns: Json;
+      };
       audit_championship_context: {
         Args: { p_championship_id: string };
         Returns: {
@@ -5945,6 +6102,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6053,7 +6211,20 @@ export type Database = {
         Args: { p_summary: Json };
         Returns: number;
       };
+      championship_resource_usage: {
+        Args: { p_championship_id: string; p_resource: string };
+        Returns: number;
+      };
       change_organization_member_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["app_role"];
+          p_organization_id: string;
+          p_reason: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      change_organization_member_role_manager_checked_source: {
         Args: {
           p_new_role: Database["public"]["Enums"]["app_role"];
           p_organization_id: string;
@@ -6077,6 +6248,17 @@ export type Database = {
           p_stage_id: string;
         };
         Returns: string;
+      };
+      confirm_infinitepay_subscription_payment: {
+        Args: {
+          p_amount_cents: number;
+          p_event_key: string;
+          p_invoice_slug: string;
+          p_order_nsu: string;
+          p_receipt_url: string;
+          p_transaction_nsu: string;
+        };
+        Returns: Json;
       };
       confirm_stage_advancement: {
         Args: {
@@ -6130,6 +6312,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6452,6 +6635,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6516,6 +6700,10 @@ export type Database = {
         Args: { p_organization_id: string };
         Returns: Json;
       };
+      get_organization_subscription_context_owner_checked_source: {
+        Args: { p_organization_id: string };
+        Returns: Json;
+      };
       get_platform_operational_status: { Args: never; Returns: Json };
       get_public_championship_portal: {
         Args: { p_slug: string };
@@ -6524,6 +6712,33 @@ export type Database = {
       get_public_organization_portal: {
         Args: { p_slug: string };
         Returns: Json;
+      };
+      get_referee_management_detail: {
+        Args: { p_championship_id: string; p_referee_id: string };
+        Returns: {
+          availability: Json;
+          created_at: string;
+          created_by: string | null;
+          default_fee: number;
+          default_role: string;
+          document_number: string | null;
+          email: string | null;
+          full_name: string;
+          id: string;
+          metadata: Json;
+          organization_id: string;
+          phone: string | null;
+          photo_url: string | null;
+          status: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "referees";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       get_support_session_context: {
         Args: { p_session_id: string };
@@ -6544,6 +6759,7 @@ export type Database = {
         Returns: Json;
       };
       get_system_admin_dashboard: { Args: never; Returns: Json };
+      get_system_admin_plan_catalog: { Args: never; Returns: Json };
       get_team_edit_session: {
         Args: { p_session_hash: string };
         Returns: {
@@ -6612,6 +6828,7 @@ export type Database = {
       };
       is_org_member: { Args: { _org: string }; Returns: boolean };
       is_system_admin: { Args: never; Returns: boolean };
+      list_available_plans: { Args: never; Returns: Json };
       list_system_admin_championships: {
         Args: { p_limit?: number; p_offset?: number; p_search?: string };
         Returns: Json;
@@ -6728,6 +6945,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6768,6 +6986,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6802,6 +7021,30 @@ export type Database = {
         Args: { p_invitation_id: string };
         Returns: Json;
       };
+      prepare_subscription_checkout: {
+        Args: {
+          p_client_request_id: string;
+          p_organization_id: string;
+          p_plan_version_id: string;
+        };
+        Returns: Json;
+      };
+      prepare_subscription_checkout_owner_checked_source: {
+        Args: {
+          p_client_request_id: string;
+          p_organization_id: string;
+          p_plan_version_id: string;
+        };
+        Returns: Json;
+      };
+      preview_organization_plan_change: {
+        Args: { p_organization_id: string; p_target_plan_version_id: string };
+        Returns: Json;
+      };
+      preview_organization_plan_change_owner_checked_source: {
+        Args: { p_organization_id: string; p_target_plan_version_id: string };
+        Returns: Json;
+      };
       publish_competition: {
         Args: { p_championship_id: string };
         Returns: {
@@ -6816,6 +7059,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -6841,6 +7085,19 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      publish_system_admin_plan_version: {
+        Args: {
+          p_code: string;
+          p_description: string;
+          p_expected_active_version: number;
+          p_limits: Json;
+          p_modules: string[];
+          p_monthly_price_cents: number;
+          p_name: string;
+          p_reason: string;
+        };
+        Returns: Json;
       };
       purge_expired_audit_logs: { Args: never; Returns: number };
       recalculate_match_score: {
@@ -6899,6 +7156,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      reconcile_expired_organization_subscriptions: {
+        Args: { p_batch_size?: number };
+        Returns: Json;
+      };
       record_match_event: {
         Args: {
           p_athlete_id: string;
@@ -6943,40 +7204,35 @@ export type Database = {
         Args: { p_code: string; p_fingerprint: string; p_route: string };
         Returns: undefined;
       };
-      register_athlete_for_championship:
-        | {
-            Args: {
-              p_athlete_id?: string;
-              p_birth_date?: string;
-              p_championship_id: string;
-              p_document_number?: string;
-              p_document_type?: string;
-              p_full_name?: string;
-              p_is_captain?: boolean;
-              p_is_goalkeeper?: boolean;
-              p_photo_url?: string;
-              p_position?: string;
-              p_shirt_number?: number;
-              p_team_id: string;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              p_birth_date: string;
-              p_championship_id: string;
-              p_document_number: string;
-              p_document_type: string;
-              p_full_name: string;
-              p_is_captain: boolean;
-              p_is_goalkeeper: boolean;
-              p_photo_url: string;
-              p_position: string;
-              p_shirt_number: number;
-              p_team_id: string;
-            };
-            Returns: string;
-          };
+      record_service_operational_event: {
+        Args: {
+          p_code: string;
+          p_duration_ms: number;
+          p_event_kind: string;
+          p_fingerprint?: string;
+          p_route: string;
+          p_severity: string;
+          p_source: string;
+        };
+        Returns: boolean;
+      };
+      register_athlete_for_championship: {
+        Args: {
+          p_athlete_id?: string;
+          p_birth_date?: string;
+          p_championship_id: string;
+          p_document_number?: string;
+          p_document_type?: string;
+          p_full_name?: string;
+          p_is_captain?: boolean;
+          p_is_goalkeeper?: boolean;
+          p_photo_url?: string;
+          p_position?: string;
+          p_shirt_number?: number;
+          p_team_id: string;
+        };
+        Returns: string;
+      };
       register_championship_media: {
         Args: { p_championship_id: string; p_payload: Json };
         Returns: {
@@ -7084,6 +7340,10 @@ export type Database = {
         Returns: undefined;
       };
       remove_organization_member: {
+        Args: { p_organization_id: string; p_reason: string; p_user_id: string };
+        Returns: undefined;
+      };
+      remove_organization_member_manager_checked_source: {
         Args: { p_organization_id: string; p_reason: string; p_user_id: string };
         Returns: undefined;
       };
@@ -7764,6 +8024,51 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_championship_logo: {
+        Args: {
+          p_championship_id: string;
+          p_logo_url: string;
+          p_object_path: string;
+        };
+        Returns: {
+          city: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          ends_at: string | null;
+          id: string;
+          instagram_url: string | null;
+          is_public: boolean;
+          logo_object_path: string | null;
+          logo_url: string | null;
+          metadata: Json;
+          modality: string | null;
+          name: string;
+          organization_id: string;
+          published_at: string | null;
+          registration_closes_at: string | null;
+          registration_opens_at: string | null;
+          regulations_url: string | null;
+          season: string | null;
+          slug: string;
+          sport: string;
+          starts_at: string | null;
+          state: string | null;
+          status: Database["public"]["Enums"]["championship_status"];
+          updated_at: string;
+          updated_by: string | null;
+          website_url: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "championships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       set_championship_match_status: {
         Args: {
           p_championship_id: string;
@@ -7830,6 +8135,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           is_public: boolean;
+          logo_object_path: string | null;
           logo_url: string | null;
           metadata: Json;
           modality: string | null;
@@ -8333,6 +8639,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["owner", "admin", "editor", "viewer", "manager", "team_manager", "referee"],

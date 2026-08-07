@@ -10,7 +10,10 @@ async function participation(championshipId: string, teamId: string) {
     .select("id, organization_id")
     .eq("championship_id", championshipId)
     .eq("team_id", teamId)
-    .neq("status", "archived")
+    // Arquivamento mora em archived_at, nao em status: o check constraint da
+    // coluna so aceita o vocabulario de inscricao (draft..withdrawn), entao
+    // .neq("status","archived") nunca excluia nada.
+    .is("archived_at", null)
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error("A equipe não possui uma inscrição ativa neste campeonato.");

@@ -79,10 +79,14 @@ BEGIN
     RAISE EXCEPTION 'At least one subscription references a missing plan';
   END IF;
 
+  -- O plano padrao deixou de ser 'starter'. A migration do catalogo comercial
+  -- (20260728210000) aposentou o legado e passou a provisionar
+  -- 'small_championships'; exigir 'starter' ativo aqui verificava um contrato
+  -- que a migration seguinte revogou de proposito.
   IF NOT EXISTS (
     SELECT 1
     FROM public.saas_plan_versions plan
-    WHERE plan.code = 'starter'
+    WHERE plan.code = 'small_championships'
       AND plan.status = 'active'
       AND plan.limits ?& ARRAY[
         'organizations',
@@ -92,7 +96,38 @@ BEGIN
         'storage_bytes'
       ]
   ) THEN
-    RAISE EXCEPTION 'The active starter plan or required limit keys are missing';
+    RAISE EXCEPTION 'The active default plan or required limit keys are missing';
+  END IF;
+
+  -- Nenhum plano ativo pode ficar sem as chaves que o motor de limites le:
+  -- limits->>'chave' ausente vira NULL, que assert_organization_limit trata
+  -- como ilimitado. Uma chave esquecida desliga o limite em silencio.
+  IF EXISTS (
+    SELECT 1
+    FROM public.saas_plan_versions plan
+    WHERE plan.status = 'active'
+      AND NOT (plan.limits ?& ARRAY[
+        'organizations',
+        'active_championships',
+        'teams',
+        'users',
+        'storage_bytes'
+      ])
+  ) THEN
+    RAISE EXCEPTION 'An active plan version is missing required limit keys';
+  END IF;
+
+  -- E o legado precisa continuar aposentado, sem assinatura apontando para ele.
+  IF EXISTS (
+    SELECT 1 FROM public.saas_plan_versions
+    WHERE code = 'starter' AND status = 'active'
+  ) OR EXISTS (
+    SELECT 1
+    FROM public.organization_subscriptions subscription
+    JOIN public.saas_plan_versions plan ON plan.id = subscription.plan_version_id
+    WHERE plan.code = 'starter'
+  ) THEN
+    RAISE EXCEPTION 'The retired starter plan is still active or still referenced';
   END IF;
 
   IF NOT EXISTS (
