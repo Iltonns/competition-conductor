@@ -6,9 +6,13 @@
 
 **Resultado: 29/29. Gate G1 aprovado.**
 
-Uma pendência da fase continua aberta e não pode ser fechada pelo repositório: o
-secret do CI (seção 6). Sete defeitos reais foram corrigidos, dois deles
-encontrados pelas guardas de regressão escritas para os anteriores.
+Sete defeitos reais foram corrigidos, dois deles encontrados pelas guardas de
+regressão escritas para os anteriores.
+
+Uma pendência da fase continua aberta e não pode ser fechada pelo repositório: a
+conta do GitHub está bloqueada por faturamento, então o CI não executa — e
+nunca executou (seção 6.1). O secret já foi cadastrado; o bloqueio é anterior e
+independe dele.
 
 ---
 
@@ -282,16 +286,51 @@ Roda a matriz inteira a cada push na `main` e em cada PR do próprio repositóri
   mesmos advisory locks por campeonato dentro dos scripts de limite de plano.
 - **Saídas anexadas** como artefato `matriz-rls`, inclusive quando falha.
 
-**Pendência que não pode ser fechada por aqui:** cadastrar o secret
-`SUPABASE_DB_URL` em Settings → Secrets and variables → Actions, com a connection
-string do pooler. É uma credencial de banco, e cadastrá-la é ação do responsável
-pelo produto. Enquanto não existir, o job falha — de propósito, para não passar
-verde sem ter verificado nada.
+O secret `SUPABASE_DB_URL` foi cadastrado em 07/08/2026, como segredo de
+repositório, com o nome correto. Conferido na interface do GitHub.
 
-Até lá, a entrega 4 está **construída e não comprovada**: o job existe e está
-correto, mas nunca executou. O aceite da P1 pede "job no CI executando em cada
-push", então este é o único item da fase que continua aberto, e depende de uma
-ação fora do repositório.
+### 6.1 O CI não executa, e nunca executou
+
+Ao verificar o job, apareceu o motivo real de a `main` estar vermelha — e não é
+o que a v3.0 do PRD registrou:
+
+> **O trabalho não pôde ser iniciado porque sua conta está bloqueada devido a um
+> problema de faturamento.**
+
+A mensagem aparece nos **três** jobs (`quality`, `e2e-smoke`, `rls-matrix`) da
+execução #49, commit `caf6d61`. Nenhum chegou a iniciar.
+
+E não é novidade nem consequência do job novo. Toda execução visível no
+histórico — da #25 à #49 — está vermelha, com duração entre **3 e 18 segundos**.
+Não existe duração possível de `npm ci` + lint + typecheck + coverage + build
+nessa faixa. **O CI deste repositório nunca rodou de verdade.**
+
+Isso corrige a seção 5 do PRD, que atribuía o vermelho a 285 erros de
+`prettier/prettier`. Aqueles erros existiam — foram medidos e corrigidos
+localmente — mas não eram a causa. O commit `e607339` ("Fix CI: ignore docs/ no
+eslint") tentou consertar o CI sem que nenhuma das duas coisas fosse
+verificável: o lint nunca rodou lá para confirmar nem antes nem depois.
+
+Estado da conta, conferido em 07/08/2026: plano GitHub Free, consumo medido do
+mês em US$ 0, e método de pagamento cadastrado e dentro da validade. Ou seja,
+não é cartão faltando nem estouro de cota — é bloqueio no nível da conta, que só
+o suporte do GitHub levanta.
+
+### 6.2 Situação da entrega 4
+
+**Construída, não comprovada.** O job existe, está correto, e o secret está no
+lugar. Mas o aceite da P1 pede "job no CI executando em cada push", e ele não
+executa por uma razão que está fora do repositório e fora do produto.
+
+Este é o único item da P1 que continua aberto. Depende de resolver o bloqueio de
+faturamento com o suporte do GitHub. Enquanto isso, **nenhum gate de qualquer
+fase seguinte que dependa de "CI verde" pode ser considerado atendido** — o que
+inclui o aceite da P5 no PRD.
+
+A matriz continua sendo executada localmente contra produção, com evidência
+versionada em [`p1-matriz-rls/EVIDENCIA.md`](p1-matriz-rls/EVIDENCIA.md). É
+verificação real, mas manual: não impede que um push futuro quebre o isolamento
+sem ninguém perceber. Era exatamente esse o ponto da entrega 4.
 
 ## 7. Entrega 5
 
