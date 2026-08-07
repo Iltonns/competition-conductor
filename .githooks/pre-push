@@ -1,0 +1,89 @@
+#!/bin/sh
+# Nao deixa um push quebrar o isolamento sem ninguem perceber.
+#
+# Substituto parcial do job rls-matrix do CI, que existe e esta correto mas nao
+# executa: a conta do GitHub esta bloqueada por faturamento e nenhum job inicia.
+# Enquanto isso durar, esta e a unica barreira automatica entre um push e a
+# matriz de verificacao.
+#
+# Parcial de proposito, e vale saber onde nao cobre:
+#   - roda so na maquina de quem empurra, nao no servidor;
+#   - quem clonar precisa ter rodado `npm install` (o script `prepare` aponta o
+#     core.hooksPath para ca);
+#   - --no-verify pula, e nao ha como impedir isso do lado do cliente.
+#
+# Roda contra o banco de producao, como o job do CI faria. E seguro por
+# construcao: o runner reaudita os 29 scripts antes de conectar e aborta se
+# algum deixar de terminar em ROLLBACK ou de ser somente leitura.
+#
+#   git push --no-verify      pula a verificacao
+#   RLS_SEMPRE=1 git push     roda mesmo que o push nao toque supabase/
+
+set -e
+
+VAZIO=0000000000000000000000000000000000000000
+precisa=0
+
+# O git entrega em stdin uma linha por ref sendo empurrada:
+#   <ref local> <sha local> <ref remota> <sha remota>
+while read -r _ref_local sha_local _ref_remota sha_remota; do
+  # Apagando branch no remoto: nao ha o que verificar.
+  if [ "$sha_local" = "$VAZIO" ]; then
+    continue
+  fi
+
+  if [ "$sha_remota" = "$VAZIO" ]; then
+    # Branch que ainda nao existe no remoto. Compara com o ponto em comum com a
+    # main; sem esse ponto, verifica por precaucao.
+    base=$(git merge-base "$sha_local" origin/main 2>/dev/null || echo "")
+    if [ -z "$base" ]; then
+      precisa=1
+      continue
+    fi
+    faixa="$base..$sha_local"
+  else
+    faixa="$sha_remota..$sha_local"
+  fi
+
+  if git diff --name-only "$faixa" | grep -q '^supabase/'; then
+    precisa=1
+  fi
+done
+
+if [ "${RLS_SEMPRE:-0}" = "1" ]; then
+  precisa=1
+fi
+
+if [ "$precisa" = "0" ]; then
+  echo "pre-push: o push nao toca supabase/, matriz dispensada."
+  echo "          RLS_SEMPRE=1 git push  forca a execucao."
+  exit 0
+fi
+
+echo "pre-push: o push mexe em supabase/. Rodando a matriz de isolamento..."
+echo ""
+
+# Sem `if`: depois de um `if cmd; then ... fi` sem else, $? volta 0 mesmo quando
+# cmd falhou, e o codigo de saida do runner se perderia.
+set +e
+npm run --silent test:rls
+codigo=$?
+set -e
+
+if [ "$codigo" = "0" ]; then
+  echo ""
+  echo "pre-push: matriz fechou. Seguindo com o push."
+  exit 0
+fi
+
+echo ""
+if [ "$codigo" = "2" ]; then
+  echo "pre-push: ABORTADO. SUPABASE_DB_URL nao esta disponivel, entao a matriz"
+  echo "          nao rodou — e um push sem verificacao nenhuma nao passa aqui."
+  echo "          Configure a credencial, ou use --no-verify assumindo o risco."
+else
+  echo "pre-push: ABORTADO. A matriz nao fechou."
+  echo "          Corrija antes de empurrar. --no-verify pula, mas ai o push vai"
+  echo "          sem ninguem ter verificado o isolamento."
+fi
+exit 1

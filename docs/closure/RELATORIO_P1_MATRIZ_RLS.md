@@ -332,6 +332,34 @@ versionada em [`p1-matriz-rls/EVIDENCIA.md`](p1-matriz-rls/EVIDENCIA.md). É
 verificação real, mas manual: não impede que um push futuro quebre o isolamento
 sem ninguém perceber. Era exatamente esse o ponto da entrega 4.
 
+### 6.3 Barreira provisória: hook de `pre-push`
+
+[`.githooks/pre-push`](../../.githooks/pre-push) roda `npm run test:rls` antes
+do push e o aborta se a matriz não fechar. Habilitado por
+[`scripts/setup-hooks.mjs`](../../scripts/setup-hooks.mjs), que o script
+`prepare` do npm executa no `npm install` — então quem clonar recebe o hook sem
+precisar lembrar de habilitar.
+
+Roda quando os commits sendo empurrados tocam `supabase/`. Um hook que gastasse
+40 segundos num push de README seria contornado com `--no-verify` por hábito, e
+aí não protegeria nada. `RLS_SEMPRE=1 git push` força a execução.
+
+Os três caminhos foram exercitados antes de confiar nele: push que não toca
+`supabase/` (dispensa), push que toca (roda e passa) e matriz falhando —
+verificado com um script de falha proposital, que abortou o push com saída 1.
+
+**Não substitui a entrega 4**, e a diferença importa:
+
+| | hook | job no CI |
+| --- | --- | --- |
+| Onde roda | máquina de quem empurra | servidor |
+| Contornável | `--no-verify`, sem como impedir | não |
+| Cobre quem não rodou `npm install` | não | sim |
+| Cobre push de outra pessoa/máquina | não | sim |
+
+É contenção enquanto o bloqueio de faturamento durar, não fechamento. A entrega 4
+continua aberta.
+
 ## 7. Entrega 5
 
 `phase3_referee_privacy_verification.sql` já está em `supabase/tests/` e o runner

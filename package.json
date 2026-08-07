@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "prepare": "node scripts/setup-hooks.mjs",
     "security:env": "node scripts/verify-no-tracked-env.mjs",
     "test:rls": "node scripts/run-rls-matrix.mjs",
     "verify:phase0": "npm run security:env && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run test:e2e"
