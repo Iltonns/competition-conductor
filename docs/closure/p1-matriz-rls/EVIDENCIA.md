@@ -2,8 +2,8 @@
 
 Gerado por `npm run test:rls`. Não editar à mão: é sobrescrito a cada execução.
 
-- **Data:** 2026-08-07T20:20:50.771Z
-- **Commit:** `b89ca49c4ff0636cbd4d452d029dff573ad9e87e (arvore com alteracoes nao commitadas)`
+- **Data:** 2026-08-07T20:25:39.394Z
+- **Commit:** `42a0a11bd77e98f7c77718368b49f598d85532eb`
 - **Resultado:** 29/29
 
 ## Conferência de segurança, arquivo por arquivo
@@ -50,7 +50,7 @@ deixar de terminar em `ROLLBACK` ou de ser somente leitura.
 ```
 [{"set_config":"10000000-0000-0000-0000-000000000001"}]
 [{"set_config":"{\"sub\":\"10000000-0000-0000-0000-000000000001\",\"role\":\"authenticated\"}"}]
-[{"id":"aa0ce6b8-b0aa-4ac0-bc6c-3cc185f4008d"}]
+[{"id":"4e59ce8d-8737-4585-9138-61a5727c2320"}]
 [{"set_config":"10000000-0000-0000-0000-000000000002"}]
 [{"set_config":"{\"sub\":\"10000000-0000-0000-0000-000000000002\",\"role\":\"authenticated\"}"}]
 [{"set_config":"10000000-0000-0000-0000-000000000003"}]
@@ -70,7 +70,7 @@ deixar de terminar em `ROLLBACK` ou de ser somente leitura.
 ```
 [{"set_config":"11000000-0000-0000-0000-000000000001"}]
 [{"set_config":"{\"sub\":\"11000000-0000-0000-0000-000000000001\",\"role\":\"authenticated\"}"}]
-[{"id":"44bb7e5a-2e14-44d9-9746-6e4df3457b46"}]
+[{"id":"97215fdc-5c21-4cb2-92c8-225ff7a93109"}]
 [{"set_config":"11000000-0000-0000-0000-000000000001"}]
 [{"set_config":"{\"sub\":\"11000000-0000-0000-0000-000000000001\",\"role\":\"authenticated\"}"}]
 [{"set_config":"11000000-0000-0000-0000-000000000002"}]
@@ -86,9 +86,9 @@ deixar de terminar em `ROLLBACK` ou de ser somente leitura.
 [{"set_config":"{\"sub\":\"12000000-0000-0000-0000-000000000001\",\"role\":\"authenticated\"}"}]
 [{"set_config":"12000000-0000-0000-0000-000000000001"}]
 [{"set_config":"{\"sub\":\"12000000-0000-0000-0000-000000000001\",\"role\":\"authenticated\"}"}]
-[{"register_athlete_for_championship":"955f6004-dd66-423a-8d2c-46762fda44e8"}]
-[{"add_team_staff_for_championship":"c4882734-5d11-4615-b4ea-b2c68bf3fbcf"}]
-[{"add_team_responsible":"01a92c55-a857-4b35-81ce-76dbe04e279c"}]
+[{"register_athlete_for_championship":"cff76698-0ee6-4a52-b1f3-5222f325c850"}]
+[{"add_team_staff_for_championship":"19add65c-bff0-4653-936e-75e66b307721"}]
+[{"add_team_responsible":"0dc6458d-63c8-44ca-ba97-f750f12e308d"}]
 [{"set_config":"12000000-0000-0000-0000-000000000002"}]
 [{"set_config":"{\"sub\":\"12000000-0000-0000-0000-000000000002\",\"role\":\"authenticated\"}"}]
 [{"set_config":"12000000-0000-0000-0000-000000000003"}]
