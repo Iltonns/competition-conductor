@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Edit, Lock, Plus, Search, Shield, Trash2, UserCog } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Lock, Plus, Search, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +8,12 @@ import { EmptyState } from "@/components/empty-state";
 import { TeamCard } from "@/features/teams/components/TeamCard";
 import { useTeams } from "@/features/teams/hooks/useTeams";
 import { getTeamErrorMessage } from "@/features/teams/utils/team-utils";
+import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+import {
+  ORGANIZATION_ROLE_LABEL,
+  canManageRoster,
+  useCurrentPlan,
+} from "@/features/subscription/hooks/useCurrentPlan";
 
 export const Route = createFileRoute("/_authenticated/championships_/$id/teams/")({
   head: () => ({ meta: [{ title: "Equipes do campeonato · IS Arena" }] }),
@@ -17,6 +22,9 @@ export const Route = createFileRoute("/_authenticated/championships_/$id/teams/"
 
 function TeamsListPage() {
   const { id } = Route.useParams();
+  const { organizationId } = useChampionshipContext();
+  const { role } = useCurrentPlan(organizationId);
+  const canManage = canManageRoster(role);
   const query = useTeams(id);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -58,47 +66,31 @@ function TeamsListPage() {
         </div>
       </div>
 
-      {/* Banner informativo */}
-      <div className="rounded-xl border border-[oklch(85%_0.09_85)] bg-[oklch(97%_0.03_85)] px-4 py-3">
-        <p className="text-sm font-semibold text-[oklch(38%_0.09_70)]">
-          Clique em Permissões dos técnicos para gerenciar a inscrição de atletas e times.
-        </p>
-      </div>
+      {/* Banner informativo — só faz sentido para quem pode de fato gerenciar. */}
+      {canManage && (
+        <div className="rounded-xl border border-[oklch(85%_0.09_85)] bg-[oklch(97%_0.03_85)] px-4 py-3">
+          <p className="text-sm font-semibold text-[oklch(38%_0.09_70)]">
+            Abra uma equipe para gerar acessos e definir o que os técnicos podem inscrever.
+          </p>
+        </div>
+      )}
 
-      {/* Action buttons */}
+      {/* Ações — habilitadas pelo papel real do usuário na organização */}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <UserCog className="h-3.5 w-3.5" /> Permissões dos técnicos
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5 border-destructive/30 bg-destructive/5 text-destructive/60"
-        >
-          <Lock className="h-3 w-3" /> Inscrever
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5 border-destructive/30 bg-destructive/5 text-destructive/60"
-        >
-          <Lock className="h-3 w-3" /> Editar
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5 border-destructive/30 bg-destructive/5 text-destructive/60"
-        >
-          <Lock className="h-3 w-3" /> Deletar
-        </Button>
-        <Button size="sm" className="ml-auto gap-1.5 bg-primary text-primary-foreground" asChild>
-          <Link to="/championships/$id/teams/new" params={{ id }}>
-            <Plus className="h-3.5 w-3.5" /> Nova equipe
-          </Link>
-        </Button>
+        {canManage ? (
+          <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground" asChild>
+            <Link to="/championships/$id/teams/new" params={{ id }}>
+              <Plus className="h-3.5 w-3.5" /> Nova equipe
+            </Link>
+          </Button>
+        ) : (
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Lock className="h-3 w-3" />
+            {role
+              ? `Seu papel (${ORGANIZATION_ROLE_LABEL[role]}) permite apenas visualizar as equipes.`
+              : "Você tem acesso somente de leitura a estas equipes."}
+          </p>
+        )}
       </div>
 
       {/* Search + filter */}
@@ -174,7 +166,7 @@ function TeamsListPage() {
                   : "Cadastre a primeira equipe deste campeonato."
               }
               action={
-                !query.data?.length ? (
+                !query.data?.length && canManage ? (
                   <Button asChild>
                     <Link to="/championships/$id/teams/new" params={{ id }}>
                       Cadastrar equipe

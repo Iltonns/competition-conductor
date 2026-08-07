@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { MatchWithTeams } from "@/features/matches/api/matches";
 import { useMatchEvents } from "@/features/matches/hooks/useMatches";
+import { MatchQuickActions } from "./MatchQuickActions";
 import type { LineupEntry, LineupWithAthlete, MatchStaffRow } from "../api/sports-operations";
 import {
   useEligibleAthletes,
@@ -98,7 +99,7 @@ export function MatchReportPage({
       <section className="card-arena p-4 print:border-black print:bg-white">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               Súmula oficial
             </p>
             <h2 className="mt-1 font-display text-xl font-extrabold">
@@ -118,7 +119,8 @@ export function MatchReportPage({
             {report.data && <Badge variant="outline">v{report.data.version}</Badge>}
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-[1fr_72px_24px_72px_1fr] items-center gap-2 text-center">
+        <Label className="mt-5 block text-xs text-muted-foreground">Placar oficial da súmula</Label>
+        <div className="mt-1.5 grid grid-cols-[1fr_72px_24px_72px_1fr] items-center gap-2 text-center">
           <strong>{match.home_team?.name}</strong>
           <Input
             aria-label="Placar do mandante"
@@ -140,6 +142,13 @@ export function MatchReportPage({
           <strong>{match.away_team?.name}</strong>
         </div>
       </section>
+
+      <MatchQuickActions
+        championshipId={championshipId}
+        match={match}
+        events={events.data ?? []}
+        locked={locked}
+      />
 
       <div className="grid gap-4 xl:grid-cols-2">
         {match.home_team_id && (
@@ -196,25 +205,6 @@ export function MatchReportPage({
         substitutions={substitutions}
         locked={locked}
       />
-
-      <section className="card-arena p-4">
-        <h3 className="font-display text-sm font-bold">Eventos e ocorrências</h3>
-        <div className="mt-3 space-y-2">
-          {(events.data ?? []).map((event) => (
-            <div
-              key={event.id}
-              className="flex gap-3 rounded-lg border border-white/10 px-3 py-2 text-xs"
-            >
-              <strong className="w-10">{event.minute == null ? "—" : `${event.minute}'`}</strong>
-              <span>{event.type.replaceAll("_", " ")}</span>
-              <span className="text-muted-foreground">{event.note}</span>
-            </div>
-          ))}
-          {(events.data?.length ?? 0) === 0 && (
-            <p className="text-xs text-muted-foreground">Nenhum evento registrado.</p>
-          )}
-        </div>
-      </section>
 
       <section className="card-arena grid gap-4 p-4 md:grid-cols-2">
         <div className="grid grid-cols-2 gap-3">
@@ -282,7 +272,7 @@ export function MatchReportPage({
           {(attachments.data ?? []).map((attachment) => (
             <div
               key={attachment.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2 text-xs print:border-black"
+              className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-xs print:border-black"
             >
               <a
                 className="min-w-0 truncate underline-offset-4 hover:underline"
@@ -413,7 +403,7 @@ function StaffEditor({
         {(eligible.data ?? []).map((person) => (
           <label
             key={person.id}
-            className="flex items-center gap-2 rounded-lg border border-white/10 p-2 text-xs"
+            className="flex items-center gap-2 rounded-lg border border-border p-2 text-xs"
           >
             <input
               type="checkbox"
@@ -573,14 +563,14 @@ function SubstitutionsEditor({
         {(substitutions.data ?? []).map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs print:border-black"
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs print:border-black"
           >
             <strong>{item.minute}'</strong>
-            <span className="text-red-400 print:text-black">
+            <span className="text-destructive print:text-black">
               Sai: {item.athlete_out?.full_name}
             </span>
             <ArrowRightLeft className="h-3.5 w-3.5" />
-            <span className="text-emerald-400 print:text-black">
+            <span className="text-[oklch(45%_0.13_155)] print:text-black">
               Entra: {item.athlete_in?.full_name}
             </span>
             {!locked && (
@@ -670,7 +660,7 @@ function LineupEditor({
           return (
             <div
               key={athlete.id}
-              className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-lg border border-white/10 p-2 text-xs"
+              className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-lg border border-border p-2 text-xs"
             >
               <input
                 type="checkbox"
@@ -684,7 +674,7 @@ function LineupEditor({
               {selected && (
                 <select
                   aria-label={`Função de ${athlete.full_name}`}
-                  className="rounded border border-white/10 bg-background p-1"
+                  className="rounded border border-border bg-background p-1"
                   value={selected.role}
                   disabled={locked}
                   onChange={(event) =>

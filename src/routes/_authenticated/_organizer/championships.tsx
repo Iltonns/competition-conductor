@@ -24,8 +24,10 @@ import {
   CHAMPIONSHIP_STATUS_LABELS,
   getChampionshipErrorMessage,
 } from "@/features/championships/utils/championship-display";
+import { useCurrentPlan } from "@/features/subscription/hooks/useCurrentPlan";
 import { useAuth } from "@/lib/auth-context";
 import type { Championship } from "@/features/championships/types/championship.types";
+import type { SubscriptionStatus } from "@/features/subscription/types/subscription.types";
 
 export const Route = createFileRoute("/_authenticated/_organizer/championships")({
   head: () => ({ meta: [{ title: "Meus campeonatos · IS Arena" }] }),
@@ -71,9 +73,7 @@ function ChampionshipsPage() {
         aria-label="Indicadores gerais"
       >
         {dashboard.isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
-          ))
+          Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
         ) : dashboard.data ? (
           <>
             <KpiCard
@@ -82,31 +82,15 @@ function ChampionshipsPage() {
               label="Campeonatos ativos"
               tone="violet"
             />
-            <KpiCard
-              icon={Shield}
-              value={dashboard.data.teams}
-              label="Equipes"
-              tone="emerald"
-            />
-            <KpiCard
-              icon={Users}
-              value={dashboard.data.athletes}
-              label="Atletas"
-              tone="amber"
-            />
+            <KpiCard icon={Shield} value={dashboard.data.teams} label="Equipes" tone="emerald" />
+            <KpiCard icon={Users} value={dashboard.data.athletes} label="Atletas" tone="amber" />
             <KpiCard
               icon={CalendarDays}
               value={dashboard.data.finishedMatches}
               label="Partidas"
               tone="blue"
             />
-            <article className="overflow-hidden rounded-xl bg-primary p-5 text-primary-foreground">
-              <p className="text-xs font-bold uppercase tracking-[0.03em] text-primary-foreground/80">
-                Plano Elite
-              </p>
-              <p className="mt-2 font-display text-2xl font-extrabold">50% off</p>
-              <p className="mt-1 text-[11px] text-primary-foreground/70">1º mês</p>
-            </article>
+            <PlanCard />
           </>
         ) : null}
       </section>
@@ -137,16 +121,14 @@ function ChampionshipsPage() {
         />
       )}
 
-      {!championships.isLoading &&
-        !championships.error &&
-        championships.data?.length === 0 && (
-          <EmptyState
-            icon={Trophy}
-            title="Nenhum campeonato criado"
-            description="Crie a primeira competição para começar a configurar categorias e regulamento."
-            action={<Button onClick={openCreate}>Criar primeiro campeonato</Button>}
-          />
-        )}
+      {!championships.isLoading && !championships.error && championships.data?.length === 0 && (
+        <EmptyState
+          icon={Trophy}
+          title="Nenhum campeonato criado"
+          description="Crie a primeira competição para começar a configurar categorias e regulamento."
+          action={<Button onClick={openCreate}>Criar primeiro campeonato</Button>}
+        />
+      )}
 
       {championships.data && championships.data.length > 0 && (
         <section
@@ -168,6 +150,42 @@ function ChampionshipsPage() {
 
       <ChampionshipDialog open={formOpen} championship={editing} onOpenChange={setFormOpen} />
     </div>
+  );
+}
+
+const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
+  trial: "Em teste",
+  active: "Ativa",
+  past_due: "Pagamento pendente",
+  cancelled: "Cancelada",
+  suspended: "Suspensa",
+};
+
+/**
+ * Quinto card da faixa de KPIs. O mockup traz uma peça promocional fixa
+ * ("Plano Elite — 50% off"); aqui ela mostra o plano real da organização.
+ * Só proprietários enxergam assinatura (`assert_organization_owner`), então
+ * para os demais papéis o card simplesmente não é renderizado.
+ */
+function PlanCard() {
+  const { plan, subscription, isOwner, isLoading } = useCurrentPlan();
+
+  if (isLoading) return <Skeleton className="h-24 rounded-xl" />;
+  if (!isOwner || !plan || !subscription) return null;
+
+  return (
+    <Link
+      to="/settings/subscription"
+      className="overflow-hidden rounded-xl bg-primary p-5 text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <p className="text-xs font-bold uppercase tracking-[0.03em] text-primary-foreground/80">
+        Seu plano
+      </p>
+      <p className="mt-2 truncate font-display text-2xl font-extrabold">{plan.name}</p>
+      <p className="mt-1 text-[11px] text-primary-foreground/70">
+        {SUBSCRIPTION_STATUS_LABELS[subscription.status]}
+      </p>
+    </Link>
   );
 }
 

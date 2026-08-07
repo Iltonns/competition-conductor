@@ -1,25 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Goal,
-  Shield,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { CalendarDays, ChevronRight, Goal, Shield, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
 import { fetchDashboardData } from "@/features/dashboard/dashboard.service";
 import { CHAMPIONSHIP_STATUS_LABELS } from "@/features/championships/utils/championship-display";
-import { cn } from "@/lib/utils";
+import { useCurrentPlan } from "@/features/subscription/hooks/useCurrentPlan";
 
 export const Route = createFileRoute("/_authenticated/championships_/$id/")({
   component: ChampionshipOverviewPage,
 });
+
+/** Tons de equipe derivados no `dashboard.service` a partir de `primary_color`. */
+const TONE_COLORS: Record<string, string> = {
+  amber: "oklch(72% 0.18 85)",
+  emerald: "oklch(62% 0.17 150)",
+  violet: "oklch(55% 0.18 290)",
+  red: "oklch(58% 0.19 25)",
+  blue: "oklch(47% 0.17 258)",
+  lime: "oklch(62% 0.2 130)",
+};
+
+const toneColor = (tone: string | undefined) => TONE_COLORS[tone ?? ""] ?? TONE_COLORS.blue;
 
 function ChampionshipOverviewPage() {
   const { activeChampionship } = useChampionshipContext();
@@ -108,36 +112,18 @@ function ChampionshipOverviewPage() {
         )}
       </div>
 
-      {/* Plan upsell — amber */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[oklch(85%_0.09_85)] bg-[oklch(97%_0.03_85)] px-5 py-4">
-        <p className="text-sm font-semibold text-[oklch(38%_0.09_70)]">
-          Tenha o app e o site do seu campeonato — disponível nos planos Prata e Ouro.
-        </p>
-        <Button
-          size="sm"
-          className="shrink-0 bg-[oklch(55%_0.13_75)] text-white hover:bg-[oklch(50%_0.13_75)]"
-          asChild
-        >
-          <Link to="/championships/$id/settings" params={{ id }}>
-            Conhecer planos
-          </Link>
-        </Button>
-      </div>
+      {/* Plan upsell — amber. Só aparece quando o plano atual não inclui publicação. */}
+      <PublishingUpsell organizationId={activeChampionship.organization_id} />
 
       {/* Standings preview */}
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-base font-bold">Classificação</h2>
-          <div className="flex gap-1.5">
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-              <Link to="/championships/$id/standings" params={{ id }}>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/championships/$id/standings" params={{ id }}>
+              Ver tabela completa <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </div>
 
         {dashboard.isLoading ? (
@@ -165,13 +151,15 @@ function ChampionshipOverviewPage() {
               <div key={scorer.name} className="flex items-center gap-3">
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-[10px] font-bold text-white"
-                  style={{ background: "oklch(47% 0.17 258)" }}
+                  style={{ background: toneColor(scorer.team.tone) }}
                 >
                   {scorer.initials}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-[12px] font-semibold">{scorer.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{scorer.goals} gols</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {scorer.team.shortName} · {scorer.goals} gols
+                  </p>
                 </div>
               </div>
             ))}
@@ -209,6 +197,32 @@ function ChampionshipOverviewPage() {
   );
 }
 
+/**
+ * Banner de upsell do mockup. O texto original citava planos fixos; aqui a
+ * peça só aparece quando o plano real da organização não tem o módulo
+ * `publishing` — e some sozinha depois do upgrade.
+ */
+function PublishingUpsell({ organizationId }: { organizationId: string }) {
+  const { modules, isOwner, isLoading } = useCurrentPlan(organizationId);
+
+  if (isLoading || !isOwner || modules.includes("publishing")) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[oklch(85%_0.09_85)] bg-[oklch(97%_0.03_85)] px-5 py-4">
+      <p className="text-sm font-semibold text-[oklch(38%_0.09_70)]">
+        Tenha o app e o site do seu campeonato — disponível nos planos com módulo de publicação.
+      </p>
+      <Button
+        size="sm"
+        className="shrink-0 bg-[oklch(55%_0.13_75)] text-white hover:bg-[oklch(50%_0.13_75)]"
+        asChild
+      >
+        <Link to="/settings/subscription">Conhecer planos</Link>
+      </Button>
+    </div>
+  );
+}
+
 function StandingsGroup({
   name,
   rows,
@@ -225,15 +239,6 @@ function StandingsGroup({
     goalDifference: number;
   }>;
 }) {
-  const TONE_COLORS: Record<string, string> = {
-    amber: "oklch(72% 0.18 85)",
-    emerald: "oklch(62% 0.17 150)",
-    violet: "oklch(55% 0.18 290)",
-    red: "oklch(58% 0.19 25)",
-    blue: "oklch(47% 0.17 258)",
-    lime: "oklch(62% 0.2 130)",
-  };
-
   return (
     <div className="overflow-hidden rounded-xl border border-border">
       <div className="border-b border-border px-4 py-3">
@@ -247,7 +252,7 @@ function StandingsGroup({
             </span>
             <span
               className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-display text-[8px] font-bold text-white"
-              style={{ background: TONE_COLORS[row.team.tone] ?? "oklch(47% 0.17 258)" }}
+              style={{ background: toneColor(row.team.tone) }}
             >
               {row.team.initials}
             </span>

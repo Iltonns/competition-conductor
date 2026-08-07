@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   INTEGRATION_KEYS,
@@ -141,7 +142,7 @@ export function ChampionshipSettingsPage({ championshipId }: { championshipId: s
   if (settings.error || !settings.data) {
     return (
       <section className="card-arena p-8 text-center" role="alert">
-        <ShieldAlert className="mx-auto h-8 w-8 text-red-300" />
+        <ShieldAlert className="mx-auto h-8 w-8 text-destructive" />
         <h2 className="mt-3 font-display text-sm font-bold">
           Não foi possível abrir as configurações
         </h2>
@@ -187,9 +188,8 @@ export function ChampionshipSettingsPage({ championshipId }: { championshipId: s
     <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-neon">Gestão e governança</p>
-          <h2 className="font-display text-xl font-extrabold">Configurações do campeonato</h2>
-          <p className="text-xs text-muted-foreground">
+          <h2 className="font-display text-xl font-extrabold tracking-[-0.03em]">Configurações</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
             Preferências operacionais separadas do regulamento esportivo.
           </p>
         </div>
@@ -199,258 +199,279 @@ export function ChampionshipSettingsPage({ championshipId }: { championshipId: s
           ) : (
             <Save className="h-4 w-4" />
           )}
-          Salvar configurações
+          Salvar alterações
         </Button>
       </header>
 
       {data.identity.status === "archived" && (
-        <section className="rounded-xl border border-amber-300/20 bg-amber-300/5 p-4">
-          <div className="flex items-center gap-2 text-amber-200">
+        <section className="rounded-xl border border-[oklch(85%_0.09_85)] bg-[oklch(97%_0.03_85)] p-4">
+          <div className="flex items-center gap-2 text-[oklch(38%_0.09_70)]">
             <Archive className="h-4 w-4" />
             <strong className="text-xs">Campeonato arquivado</strong>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             O histórico foi preservado e a exposição pública está desativada.
           </p>
         </section>
       )}
 
-      <SettingsSection
-        icon={Globe2}
-        title="Identidade e contato"
-        description="Dados administrativos. A publicação pública continua controlada pela página pública."
-      >
-        <div className="space-y-2 sm:col-span-2">
-          <Label className="text-xs">Logo do campeonato</Label>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-xl border border-dashed border-white/15 bg-white/[0.03]">
-              {data.identity.logo_url ? (
-                <img
-                  src={data.identity.logo_url}
-                  alt={`Logo de ${data.identity.name}`}
-                  className="h-full w-full object-contain p-1"
-                />
-              ) : (
-                <ImagePlus className="h-7 w-7 text-muted-foreground" />
-              )}
+      {/* Abas do mockup. "Categorias" e "Tags" não têm backend (a tabela
+          championship_categories existe no schema mas nenhuma API a expõe),
+          então as abas refletem as seções que de fato persistem. */}
+      <Tabs defaultValue="geral">
+        <TabsList>
+          <TabsTrigger value="geral">Informações gerais</TabsTrigger>
+          <TabsTrigger value="preferencias">Preferências</TabsTrigger>
+          <TabsTrigger value="governanca">Governança</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="geral" className="mt-4 space-y-5">
+          <SettingsSection
+            icon={Globe2}
+            title="Identidade e contato"
+            description="Dados administrativos. A publicação pública continua controlada pela página pública."
+          >
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs">Logo do campeonato</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-xl border border-dashed border-border bg-muted">
+                  {data.identity.logo_url ? (
+                    <img
+                      src={data.identity.logo_url}
+                      alt={`Logo de ${data.identity.name}`}
+                      className="h-full w-full object-contain p-1"
+                    />
+                  ) : (
+                    <ImagePlus className="h-7 w-7 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    id="championship-logo"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="max-w-sm file:mr-3 file:border-0 file:bg-transparent file:text-xs"
+                    disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      event.target.value = "";
+                      if (!file) return;
+                      try {
+                        await settings.uploadLogo.mutateAsync(file);
+                        toast.success("Logo do campeonato atualizada.");
+                      } catch (error) {
+                        toast.error(settingsErrorMessage(error));
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    JPG, PNG ou WebP, até 5 MB. A imagem será usada no painel e na página pública.
+                  </p>
+                  {data.identity.logo_url && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
+                      onClick={async () => {
+                        try {
+                          await settings.removeLogo.mutateAsync();
+                          toast.success("Logo do campeonato removida.");
+                        } catch (error) {
+                          toast.error(settingsErrorMessage(error));
+                        }
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Remover logo
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Input
-                id="championship-logo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="max-w-sm file:mr-3 file:border-0 file:bg-transparent file:text-xs"
-                disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
-                onChange={async (event) => {
-                  const file = event.target.files?.[0];
-                  event.target.value = "";
-                  if (!file) return;
-                  try {
-                    await settings.uploadLogo.mutateAsync(file);
-                    toast.success("Logo do campeonato atualizada.");
-                  } catch (error) {
-                    toast.error(settingsErrorMessage(error));
-                  }
-                }}
+            <TextField
+              label="Nome"
+              value={identity.name}
+              maxLength={120}
+              onChange={(value) => updateIdentity("name", value)}
+            />
+            <TextField
+              label="Temporada"
+              value={identity.season}
+              maxLength={40}
+              onChange={(value) => updateIdentity("season", value)}
+            />
+            <div className="sm:col-span-2">
+              <Label className="text-xs">Descrição</Label>
+              <Textarea
+                className="mt-1 min-h-24"
+                maxLength={4000}
+                value={identity.description}
+                onChange={(event) => updateIdentity("description", event.target.value)}
               />
-              <p className="text-[10px] text-muted-foreground">
-                JPG, PNG ou WebP, até 5 MB. A imagem será usada no painel e na página pública.
-              </p>
-              {data.identity.logo_url && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={settings.uploadLogo.isPending || settings.removeLogo.isPending}
-                  onClick={async () => {
-                    try {
-                      await settings.removeLogo.mutateAsync();
-                      toast.success("Logo do campeonato removida.");
-                    } catch (error) {
-                      toast.error(settingsErrorMessage(error));
-                    }
-                  }}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  Remover logo
-                </Button>
-              )}
             </div>
-          </div>
-        </div>
-        <TextField
-          label="Nome"
-          value={identity.name}
-          maxLength={120}
-          onChange={(value) => updateIdentity("name", value)}
-        />
-        <TextField
-          label="Temporada"
-          value={identity.season}
-          maxLength={40}
-          onChange={(value) => updateIdentity("season", value)}
-        />
-        <div className="sm:col-span-2">
-          <Label className="text-xs">Descrição</Label>
-          <Textarea
-            className="mt-1 min-h-24"
-            maxLength={4000}
-            value={identity.description}
-            onChange={(event) => updateIdentity("description", event.target.value)}
-          />
-        </div>
-        <TextField
-          label="Data inicial"
-          type="date"
-          value={identity.starts_at}
-          onChange={(value) => updateIdentity("starts_at", value)}
-        />
-        <TextField
-          label="Data final"
-          type="date"
-          value={identity.ends_at}
-          onChange={(value) => updateIdentity("ends_at", value)}
-        />
-        <TextField
-          label="Cidade"
-          value={identity.city}
-          maxLength={120}
-          onChange={(value) => updateIdentity("city", value)}
-        />
-        <TextField
-          label="Estado/região"
-          value={identity.state}
-          maxLength={120}
-          onChange={(value) => updateIdentity("state", value)}
-        />
-        <TextField
-          label="E-mail de contato"
-          type="email"
-          value={identity.contact_email}
-          maxLength={254}
-          onChange={(value) => updateIdentity("contact_email", value)}
-        />
-        <TextField
-          label="Telefone de contato"
-          type="tel"
-          value={identity.contact_phone}
-          maxLength={40}
-          onChange={(value) => updateIdentity("contact_phone", value)}
-        />
-        <TextField
-          label="Website HTTPS"
-          type="url"
-          value={identity.website_url}
-          maxLength={2048}
-          placeholder="https://"
-          onChange={(value) => updateIdentity("website_url", value)}
-        />
-        <TextField
-          label="Instagram HTTPS"
-          type="url"
-          value={identity.instagram_url}
-          maxLength={2048}
-          placeholder="https://instagram.com/..."
-          onChange={(value) => updateIdentity("instagram_url", value)}
-        />
-      </SettingsSection>
+            <TextField
+              label="Data inicial"
+              type="date"
+              value={identity.starts_at}
+              onChange={(value) => updateIdentity("starts_at", value)}
+            />
+            <TextField
+              label="Data final"
+              type="date"
+              value={identity.ends_at}
+              onChange={(value) => updateIdentity("ends_at", value)}
+            />
+            <TextField
+              label="Cidade"
+              value={identity.city}
+              maxLength={120}
+              onChange={(value) => updateIdentity("city", value)}
+            />
+            <TextField
+              label="Estado/região"
+              value={identity.state}
+              maxLength={120}
+              onChange={(value) => updateIdentity("state", value)}
+            />
+            <TextField
+              label="E-mail de contato"
+              type="email"
+              value={identity.contact_email}
+              maxLength={254}
+              onChange={(value) => updateIdentity("contact_email", value)}
+            />
+            <TextField
+              label="Telefone de contato"
+              type="tel"
+              value={identity.contact_phone}
+              maxLength={40}
+              onChange={(value) => updateIdentity("contact_phone", value)}
+            />
+            <TextField
+              label="Website HTTPS"
+              type="url"
+              value={identity.website_url}
+              maxLength={2048}
+              placeholder="https://"
+              onChange={(value) => updateIdentity("website_url", value)}
+            />
+            <TextField
+              label="Instagram HTTPS"
+              type="url"
+              value={identity.instagram_url}
+              maxLength={2048}
+              placeholder="https://instagram.com/..."
+              onChange={(value) => updateIdentity("instagram_url", value)}
+            />
+          </SettingsSection>
+        </TabsContent>
 
-      <SettingsSection
-        icon={Settings2}
-        title="Preferências regionais"
-        description="Controlam a apresentação de datas e o contexto operacional."
-      >
-        <SelectField
-          label="Fuso horário"
-          value={timezone}
-          onChange={setTimezone}
-          options={[
-            ["America/Sao_Paulo", "Brasília / São Paulo"],
-            ["America/Manaus", "Manaus"],
-            ["America/Cuiaba", "Cuiabá"],
-            ["America/Rio_Branco", "Rio Branco"],
-            ["UTC", "UTC"],
-          ]}
-        />
-        <SelectField
-          label="Idioma"
-          value={locale}
-          onChange={(value) => setLocale(value as SaveChampionshipSettingsInput["locale"])}
-          options={[
-            ["pt-BR", "Português (Brasil)"],
-            ["en-US", "English (US)"],
-            ["es-ES", "Español"],
-          ]}
-        />
-      </SettingsSection>
-
-      <SettingsSection
-        icon={BellRing}
-        title="Notificações"
-        description="Preferências para notificações internas. Entrega por e-mail depende de SMTP validado."
-      >
-        {(Object.keys(NOTIFICATION_LABELS) as Array<keyof NotificationPreferences>).map((key) => (
-          <ToggleRow
-            key={key}
-            title={NOTIFICATION_LABELS[key]}
-            checked={notifications[key]}
-            onChange={(checked) => setNotifications((current) => ({ ...current, [key]: checked }))}
-          />
-        ))}
-      </SettingsSection>
-
-      <SettingsSection
-        icon={Link2}
-        title="Integrações permitidas"
-        description="Estes controles apenas autorizam fluxos idempotentes; não ativam provedores externos."
-      >
-        {INTEGRATION_KEYS.map((key) => (
-          <ToggleRow
-            key={key}
-            title={INTEGRATION_LABELS[key].title}
-            description={INTEGRATION_LABELS[key].description}
-            checked={integrations.includes(key)}
-            onChange={() => toggleIntegration(key)}
-          />
-        ))}
-      </SettingsSection>
-
-      <section className="rounded-xl border border-red-400/20 bg-red-500/[0.035] p-4">
-        <div className="flex items-center gap-2 text-red-200">
-          <ShieldAlert className="h-4 w-4" />
-          <h3 className="font-display text-sm font-bold">Zona de perigo</h3>
-        </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">
-          Arquivar preserva todo o histórico. A exclusão física é exclusiva do owner e somente para
-          campeonatos sem dependências.
-        </p>
-
-        <DependencySummary dependencies={data.governance.dependencies} />
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            disabled={data.identity.status === "archived"}
-            onClick={() => setDangerAction("archive")}
+        <TabsContent value="preferencias" className="mt-4 space-y-5">
+          <SettingsSection
+            icon={Settings2}
+            title="Preferências regionais"
+            description="Controlam a apresentação de datas e o contexto operacional."
           >
-            <Archive className="h-4 w-4" /> Arquivar campeonato
-          </Button>
-          <Button
-            variant="destructive"
-            disabled={
-              !data.governance.can_permanently_delete || data.governance.dependency_total > 0
-            }
-            onClick={() => setDangerAction("delete")}
+            <SelectField
+              label="Fuso horário"
+              value={timezone}
+              onChange={setTimezone}
+              options={[
+                ["America/Sao_Paulo", "Brasília / São Paulo"],
+                ["America/Manaus", "Manaus"],
+                ["America/Cuiaba", "Cuiabá"],
+                ["America/Rio_Branco", "Rio Branco"],
+                ["UTC", "UTC"],
+              ]}
+            />
+            <SelectField
+              label="Idioma"
+              value={locale}
+              onChange={(value) => setLocale(value as SaveChampionshipSettingsInput["locale"])}
+              options={[
+                ["pt-BR", "Português (Brasil)"],
+                ["en-US", "English (US)"],
+                ["es-ES", "Español"],
+              ]}
+            />
+          </SettingsSection>
+
+          <SettingsSection
+            icon={BellRing}
+            title="Notificações"
+            description="Preferências para notificações internas. Entrega por e-mail depende de SMTP validado."
           >
-            <Trash2 className="h-4 w-4" /> Excluir permanentemente
-          </Button>
-        </div>
-        {!data.governance.can_permanently_delete && (
-          <p className="mt-2 text-[10px] text-muted-foreground">
-            Somente o owner da organização pode realizar a exclusão física.
-          </p>
-        )}
-      </section>
+            {(Object.keys(NOTIFICATION_LABELS) as Array<keyof NotificationPreferences>).map(
+              (key) => (
+                <ToggleRow
+                  key={key}
+                  title={NOTIFICATION_LABELS[key]}
+                  checked={notifications[key]}
+                  onChange={(checked) =>
+                    setNotifications((current) => ({ ...current, [key]: checked }))
+                  }
+                />
+              ),
+            )}
+          </SettingsSection>
+
+          <SettingsSection
+            icon={Link2}
+            title="Integrações permitidas"
+            description="Estes controles apenas autorizam fluxos idempotentes; não ativam provedores externos."
+          >
+            {INTEGRATION_KEYS.map((key) => (
+              <ToggleRow
+                key={key}
+                title={INTEGRATION_LABELS[key].title}
+                description={INTEGRATION_LABELS[key].description}
+                checked={integrations.includes(key)}
+                onChange={() => toggleIntegration(key)}
+              />
+            ))}
+          </SettingsSection>
+        </TabsContent>
+
+        <TabsContent value="governanca" className="mt-4 space-y-5">
+          <section className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+            <div className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-4 w-4" />
+              <h3 className="font-display text-sm font-bold">Zona de perigo</h3>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Arquivar preserva todo o histórico. A exclusão física é exclusiva do owner e somente
+              para campeonatos sem dependências.
+            </p>
+
+            <DependencySummary dependencies={data.governance.dependencies} />
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                disabled={data.identity.status === "archived"}
+                onClick={() => setDangerAction("archive")}
+              >
+                <Archive className="h-4 w-4" /> Arquivar campeonato
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={
+                  !data.governance.can_permanently_delete || data.governance.dependency_total > 0
+                }
+                onClick={() => setDangerAction("delete")}
+              >
+                <Trash2 className="h-4 w-4" /> Excluir permanentemente
+              </Button>
+            </div>
+            {!data.governance.can_permanently_delete && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Somente o owner da organização pode realizar a exclusão física.
+              </p>
+            )}
+          </section>
+        </TabsContent>
+      </Tabs>
 
       <DangerActionDialog
         action={dangerAction}
@@ -492,10 +513,10 @@ function SettingsSection({
   return (
     <section className="card-arena p-4">
       <div className="flex items-start gap-2">
-        <Icon className="mt-0.5 h-4 w-4 text-neon" />
+        <Icon className="mt-0.5 h-4 w-4 text-primary" />
         <div>
           <h3 className="font-display text-sm font-bold">{title}</h3>
-          <p className="text-[10px] text-muted-foreground">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">{children}</div>
@@ -574,10 +595,10 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.07] p-3">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
       <div>
         <p className="text-xs font-semibold">{title}</p>
-        {description && <p className="mt-0.5 text-[9px] text-muted-foreground">{description}</p>}
+        {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
@@ -590,8 +611,8 @@ function DependencySummary({ dependencies }: { dependencies: ChampionshipDepende
   ).filter(([, count]) => count > 0);
 
   return (
-    <div className="mt-4 rounded-lg border border-white/[0.06] bg-black/10 p-3">
-      <p className="text-[10px] font-semibold">Dependências protegidas</p>
+    <div className="mt-4 rounded-lg border border-border bg-muted/50 p-3">
+      <p className="text-xs font-semibold">Dependências protegidas</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {active.length ? (
           active.map(([key, count]) => (
@@ -600,7 +621,7 @@ function DependencySummary({ dependencies }: { dependencies: ChampionshipDepende
             </Badge>
           ))
         ) : (
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Nenhuma dependência bloqueadora encontrada.
           </span>
         )}

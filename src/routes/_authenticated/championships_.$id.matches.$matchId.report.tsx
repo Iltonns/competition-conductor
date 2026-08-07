@@ -19,7 +19,7 @@ function MatchReportRoute() {
     <div className="space-y-4">
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-neon" />
+          <ClipboardList className="h-5 w-5 text-primary" />
           <h2 className="font-display text-lg font-extrabold">Súmula</h2>
         </div>
         <Button variant="ghost" size="sm" asChild>

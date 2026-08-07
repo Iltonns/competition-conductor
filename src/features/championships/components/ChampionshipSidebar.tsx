@@ -14,6 +14,10 @@ import {
 } from "@/features/navigation/championship-nav.config";
 import { navRowClassName } from "@/features/navigation/nav-row";
 import { useChampionshipContext } from "@/features/championships/context/use-championship-context";
+import {
+  ORGANIZATION_ROLE_LABEL,
+  useCurrentPlan,
+} from "@/features/subscription/hooks/useCurrentPlan";
 import type { Championship } from "@/features/championships/types/championship.types";
 
 /** Mobile horizontal quick-nav — rendered inside <main> by ChampionshipShell. */
@@ -28,12 +32,7 @@ export function ChampionshipMobileNav({ championshipId }: { championshipId: stri
         const active =
           item.to === "/championships/$id" ? pathname === href : pathname.startsWith(href);
         return (
-          <Button
-            key={item.label}
-            variant={active ? "default" : "outline"}
-            size="sm"
-            asChild
-          >
+          <Button key={item.label} variant={active ? "default" : "outline"} size="sm" asChild>
             <Link to={item.to} params={{ id: championshipId }}>
               <item.icon className="h-3.5 w-3.5" /> {item.label}
             </Link>
@@ -124,6 +123,7 @@ export function ChampionshipSidebar({ championshipId }: { championshipId: string
 }
 
 function ChampionshipIdentity({ championship }: { championship: Championship }) {
+  const { plan } = useCurrentPlan(championship.organization_id);
   const initials = championship.name
     .split(/\s+/)
     .slice(0, 2)
@@ -147,9 +147,11 @@ function ChampionshipIdentity({ championship }: { championship: Championship }) 
         )}
       </Link>
       <p className="mt-2 truncate font-display text-sm font-bold">{championship.name}</p>
-      <Badge variant="outline" className="mt-1.5 text-[9px]">
-        Gratuito
-      </Badge>
+      {plan && (
+        <Badge variant="outline" className="mt-1.5 text-[9px]">
+          {plan.name}
+        </Badge>
+      )}
     </div>
   );
 }
@@ -157,8 +159,11 @@ function ChampionshipIdentity({ championship }: { championship: Championship }) 
 function SidebarUserFooter({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { organizationId } = useChampionshipContext();
+  const { role } = useCurrentPlan(organizationId);
 
-  const displayName = (user?.user_metadata?.display_name as string | undefined) ?? user?.email ?? "Organizador";
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined) ?? user?.email ?? "Organizador";
   const initials = displayName
     .split(" ")
     .slice(0, 2)
@@ -167,12 +172,7 @@ function SidebarUserFooter({ collapsed }: { collapsed: boolean }) {
     .toUpperCase();
 
   return (
-    <div
-      className={cn(
-        "border-t border-border",
-        collapsed ? "px-2 py-3" : "px-4 py-3",
-      )}
-    >
+    <div className={cn("border-t border-border", collapsed ? "px-2 py-3" : "px-4 py-3")}>
       <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-2.5")}>
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarFallback className="bg-secondary text-[9px] font-bold text-primary">
@@ -183,7 +183,9 @@ function SidebarUserFooter({ collapsed }: { collapsed: boolean }) {
           <>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground">Organizadora</p>
+              {role && (
+                <p className="text-[10px] text-muted-foreground">{ORGANIZATION_ROLE_LABEL[role]}</p>
+              )}
             </div>
             <button
               type="button"
